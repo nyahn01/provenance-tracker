@@ -82,12 +82,18 @@ export default function ProvenanceGlobe() {
       // Auto rotate
       let autoRotate = true
       let lastInteraction = Date.now()
+      let rotationSpeed = 0.0001
 
-      globe.onRender(() => {
+      const rotationInterval = setInterval(() => {
         if (autoRotate && Date.now() - lastInteraction > 3000) {
-          globe.rotation().x -= 0.0001
+          const rot = globe.rotation()
+          globe.rotation({
+            x: rot.x - rotationSpeed,
+            y: rot.y,
+            z: rot.z,
+          })
         }
-      })
+      }, 50)
 
       containerRef.current?.addEventListener('mousedown', () => {
         autoRotate = false
@@ -98,19 +104,22 @@ export default function ProvenanceGlobe() {
         lastInteraction = Date.now()
       })
 
-      setInterval(() => {
+      const idleCheckInterval = setInterval(() => {
         if (Date.now() - lastInteraction > 3000 && !autoRotate) {
           autoRotate = true
         }
       }, 1000)
 
-      globeRef.current = globe
+      globeRef.current = { globe, rotationInterval, idleCheckInterval }
     }
 
     initGlobe()
 
     return () => {
       if (globeRef.current) {
+        const { rotationInterval, idleCheckInterval } = globeRef.current
+        clearInterval(rotationInterval)
+        clearInterval(idleCheckInterval)
         globeRef.current = null
       }
     }

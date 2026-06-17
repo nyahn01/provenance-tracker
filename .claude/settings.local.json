@@ -3,7 +3,14 @@
     "allow": [
       "WebSearch",
       "WebFetch(domain:data.rijksmuseum.nl)",
-      "WebFetch(domain:www.rijksmuseum.nl)"
+      "WebFetch(domain:www.rijksmuseum.nl)",
+      "WebFetch(domain:data.getty.edu)",
+      "WebFetch(domain:pro.europeana.eu)",
+      "WebFetch(domain:www.rkd.nl)",
+      "WebFetch(domain:www.cambridge.org)",
+      "WebFetch(domain:americanart.si.edu)",
+      "WebFetch(domain:us.bbrown.com)",
+      "WebFetch(domain:www.getty.edu)"
     ]
   }
 }
