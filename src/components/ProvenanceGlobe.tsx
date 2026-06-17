@@ -2,192 +2,167 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import type { SearchResult } from '../app/api/search/route'
-import type { ProvenanceData, ProvenanceLocation } from '../app/api/provenance/route'
+import type { ProvenanceResponse, LocationEntry } from '../app/api/provenance/route'
 
-// ─── Design-token constants ────────────────────────────────────────────────
-const TOKEN = {
-  bg:        '#0a0908',
-  border:    '#2a2218',
-  panelBg:   'rgba(10,9,8,0.85)',
-  dropdownBg:'rgba(10,9,8,0.95)',
-  textWarm:  '#f6f1e8',
-  textMuted: '#9a8f85',
-  clay:      '#c87855',
-  sage:      '#6f8d7d',
-  pinGlow:   '#d4a853',
-  land:      '#1c1612',
-  gap:       '#9a8f85',
+// ─── Design tokens ─────────────────────────────────────────────────────────
+const T = {
+  bg:          '#0a0908',
+  border:      '#2a2218',
+  panelBg:     'rgba(10,9,8,0.85)',
+  dropdownBg:  'rgba(10,9,8,0.95)',
+  textWarm:    '#f6f1e8',
+  textMuted:   '#9a8f85',
+  clay:        '#c87855',
+  sage:        '#6f8d7d',
+  pinGlow:     '#d4a853',
+  land:        '#1c1612',
 } as const
 
-// ─── Museum data ───────────────────────────────────────────────────────────
+// ─── Museum data ────────────────────────────────────────────────────────────
 const TOP_MUSEUMS = [
-  { id: 'louvre',           name: 'Louvre',           city: 'Paris',         country: 'France',       lat: 48.8606, lng: 2.3376,   focus: 'Ancient & Renaissance',  count: 38000   },
-  { id: 'met',              name: 'The Met',           city: 'New York',      country: 'USA',          lat: 40.7794, lng: -73.9632, focus: 'Global / All Eras',       count: 490000  },
-  { id: 'national-gallery', name: 'National Gallery',  city: 'London',        country: 'UK',           lat: 51.5089, lng: -0.1283, focus: 'Western European',        count: 2300    },
-  { id: 'uffizi',           name: 'Uffizi',            city: 'Florence',      country: 'Italy',        lat: 43.7678, lng: 11.2553, focus: 'Italian Renaissance',     count: 20000   },
-  { id: 'rijksmuseum',      name: 'Rijksmuseum',       city: 'Amsterdam',     country: 'Netherlands',  lat: 52.3600, lng: 4.8852,  focus: 'Dutch Golden Age',        count: 8000    },
-  { id: 'prado',            name: 'Prado',             city: 'Madrid',        country: 'Spain',        lat: 40.4138, lng: -3.6922, focus: 'Spanish & Flemish',       count: 8200    },
-  { id: 'hermitage',        name: 'Hermitage',         city: 'St Petersburg', country: 'Russia',       lat: 59.9398, lng: 30.3146, focus: 'Imperial European',       count: 3000000 },
-  { id: 'smithsonian',      name: 'Smithsonian',       city: 'Washington DC', country: 'USA',          lat: 38.8913, lng: -77.0261,focus: 'American & Global',       count: 154000  },
-  { id: 'aic',              name: 'Art Institute',     city: 'Chicago',       country: 'USA',          lat: 41.8796, lng: -87.6237,focus: 'Impressionism',           count: 300000  },
-  { id: 'taipei',           name: 'National Palace',   city: 'Taipei',        country: 'Taiwan',       lat: 25.1024, lng: 121.5489,focus: 'Chinese Imperial',        count: 700000  },
+  { id: 'louvre',           name: 'Louvre',           city: 'Paris',         country: 'France',      lat: 48.8606, lng:   2.3376,  focus: 'Ancient & Renaissance', count:  38000 },
+  { id: 'met',              name: 'The Met',           city: 'New York',      country: 'USA',         lat: 40.7794, lng: -73.9632,  focus: 'Global / All Eras',     count: 490000 },
+  { id: 'national-gallery', name: 'National Gallery',  city: 'London',        country: 'UK',          lat: 51.5089, lng:  -0.1283,  focus: 'Western European',      count:   2300 },
+  { id: 'uffizi',           name: 'Uffizi',            city: 'Florence',      country: 'Italy',       lat: 43.7678, lng:  11.2553,  focus: 'Italian Renaissance',   count:  20000 },
+  { id: 'rijksmuseum',      name: 'Rijksmuseum',       city: 'Amsterdam',     country: 'Netherlands', lat: 52.3600, lng:   4.8852,  focus: 'Dutch Golden Age',      count:   8000 },
+  { id: 'prado',            name: 'Prado',             city: 'Madrid',        country: 'Spain',       lat: 40.4138, lng:  -3.6922,  focus: 'Spanish & Flemish',     count:   8200 },
+  { id: 'hermitage',        name: 'Hermitage',         city: 'St Petersburg', country: 'Russia',      lat: 59.9398, lng:  30.3146,  focus: 'Imperial European',     count: 3000000 },
+  { id: 'smithsonian',      name: 'Smithsonian',       city: 'Washington DC', country: 'USA',         lat: 38.8913, lng: -77.0261,  focus: 'American & Global',     count: 154000 },
+  { id: 'aic',              name: 'Art Institute',     city: 'Chicago',       country: 'USA',         lat: 41.8796, lng: -87.6237,  focus: 'Impressionism',         count: 300000 },
+  { id: 'taipei',           name: 'National Palace',   city: 'Taipei',        country: 'Taiwan',      lat: 25.1024, lng: 121.5489,  focus: 'Chinese Imperial',      count: 700000 },
 ]
 
-// ─── Arc helpers ───────────────────────────────────────────────────────────
+// Default arc shown before any search
+const DEFAULT_ARC = [{
+  startLat: 40.7614, startLng: -73.9776,
+  endLat:   40.4138, endLng:   -3.6922,
+  color: T.clay,
+  label: 'Guernica: MoMA 1939 → Prado 1981',
+}]
+
+// ─── Arc builder ────────────────────────────────────────────────────────────
 interface GlobeArc {
-  startLat: number
-  startLng: number
-  endLat:   number
-  endLng:   number
-  label:    string
-  color:    string
+  startLat: number; startLng: number
+  endLat: number;   endLng: number
+  color: string;    label: string
 }
 
-function buildArcs(locations: ProvenanceLocation[]): GlobeArc[] {
+function buildArcs(locations: LocationEntry[]): GlobeArc[] {
   const arcs: GlobeArc[] = []
   for (let i = 0; i < locations.length - 1; i++) {
-    const from = locations[i]
-    const to   = locations[i + 1]
-    if (
-      from.lat == null || from.lng == null ||
-      to.lat   == null || to.lng   == null
-    ) continue
-
-    const color =
-      from.confidence === 'confirmed' && to.confidence === 'confirmed'
-        ? TOKEN.clay
-        : TOKEN.sage
-
+    const a = locations[i]
+    const b = locations[i + 1]
+    if (a.lat == null || a.lng == null || b.lat == null || b.lng == null) continue
     arcs.push({
-      startLat: from.lat,
-      startLng: from.lng,
-      endLat:   to.lat,
-      endLng:   to.lng,
-      label:    `${from.name} → ${to.name}`,
-      color,
+      startLat: a.lat, startLng: a.lng,
+      endLat:   b.lat, endLng:   b.lng,
+      color: T.clay,
+      label: `${a.name} → ${b.name}`,
     })
   }
   return arcs
 }
 
-// ─── Source badge colours ──────────────────────────────────────────────────
-const SOURCE_COLOR: Record<string, string> = {
-  Wikidata: TOKEN.sage,
-  Met:      TOKEN.clay,
-  AIC:      TOKEN.clay,
+// ─── Source label helpers ───────────────────────────────────────────────────
+function sourceBadgeLabel(source: string): string {
+  if (source === 'met') return 'MET'
+  if (source === 'aic') return 'AIC'
+  return source.toUpperCase()
 }
 
-// ─── Confidence dot colour ─────────────────────────────────────────────────
-function confidenceColor(c: ProvenanceLocation['confidence']): string {
-  if (c === 'confirmed') return TOKEN.clay
-  if (c === 'uncertain') return TOKEN.sage
-  return TOKEN.gap
-}
-
-// ─── Component ────────────────────────────────────────────────────────────
+// ─── Component ──────────────────────────────────────────────────────────────
 export default function ProvenanceGlobe() {
   const containerRef = useRef<HTMLDivElement>(null)
   const globeRef     = useRef<any>(null)
 
-  // Sidebar / museum
+  // Museum sidebar
   const [selectedMuseum, setSelectedMuseum] = useState<string | null>(null)
 
   // Search
-  const [query,          setQuery]          = useState('')
-  const [searchResults,  setSearchResults]  = useState<SearchResult[]>([])
-  const [showDropdown,   setShowDropdown]   = useState(false)
-  const [isSearching,    setIsSearching]    = useState(false)
+  const [query,         setQuery]         = useState('')
+  const [results,       setResults]       = useState<SearchResult[]>([])
+  const [showDropdown,  setShowDropdown]  = useState(false)
+  const [isSearching,   setIsSearching]   = useState(false)
 
-  // Provenance
-  const [selectedArtwork, setSelectedArtwork] = useState<SearchResult | null>(null)
-  const [provenanceData,  setProvenanceData]  = useState<ProvenanceData | null>(null)
-  const [isLoadingProv,   setIsLoadingProv]   = useState(false)
+  // Provenance panel
+  const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null)
+  const [provenance,     setProvenance]     = useState<ProvenanceResponse | null>(null)
+  const [isLoadingProv,  setIsLoadingProv]  = useState(false)
 
-  // ── Globe init (runs once) ───────────────────────────────────────────────
+  // ── Globe init (single useEffect, never re-runs) ─────────────────────────
   useEffect(() => {
     if (!containerRef.current) return
     let mounted = true
 
-    const init = async () => {
+    ;(async () => {
       const GlobeGL = (await import('globe.gl')).default
       if (!mounted || !containerRef.current) return
 
-      const globe = GlobeGL()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const globe = (GlobeGL as any)()(containerRef.current) as any
+      globe
         .globeImageUrl(null)
-        .backgroundColor(TOKEN.bg)
+        .backgroundColor(T.bg)
         .showAtmosphere(true)
-        .atmosphereColor(TOKEN.clay)
-        .atmosphereAltitude(0.12)(containerRef.current)
+        .atmosphereColor(T.clay)
+        .atmosphereAltitude(0.12)
 
-      // Museum pins
+      // Museum HTML pins
       const pins = TOP_MUSEUMS.map(m => {
         const el = document.createElement('div')
-        el.className = 'museum-pin'
         el.innerHTML = `
-          <div class="relative w-5 h-5 cursor-pointer group" title="${m.name}">
-            <div class="absolute inset-0 bg-[#d4a853] rounded-full"></div>
-            <div class="absolute inset-0 rounded-full pulse-ring bg-[#d4a853]"></div>
-            <div class="absolute left-6 top-0 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity bg-[rgba(10,9,8,0.95)] px-3 py-1 rounded text-xs text-[#f6f1e8] border border-[#2a2218] pointer-events-none">
-              ${m.name}
-            </div>
+          <div style="position:relative;width:20px;height:20px;cursor:pointer;" title="${m.name}">
+            <div style="position:absolute;inset:0;background:${T.pinGlow};border-radius:50%;"></div>
+            <div class="pulse-ring" style="position:absolute;inset:0;background:${T.pinGlow};border-radius:50%;"></div>
           </div>`
         el.onclick = () => setSelectedMuseum(m.id)
         return { ...m, el }
       })
       globe.htmlElementsData(pins).htmlElement((d: any) => d.el)
 
-      // Default arc (Guernica) — will be overridden on provenance load
+      // Default arcs
       globe
-        .arcsData([{
-          startLat: 40.7614, startLng: -73.9776,
-          endLat:   40.4138, endLng:   -3.6922,
-          label: 'Guernica: MoMA 1939 → Prado 1981',
-          color: TOKEN.clay,
-        }])
-        .arcColor((d: any) => d.color ?? TOKEN.clay)
+        .arcsData(DEFAULT_ARC)
+        .arcColor((d: any) => d.color ?? T.clay)
         .arcAltitude(0.3)
         .arcDashLength(0.4)
         .arcDashGap(0.4)
         .arcDashAnimateTime(4000)
 
       globeRef.current = globe
-    }
+    })()
 
-    init()
     return () => { mounted = false }
   }, [])
 
-  // ── Update arcs when provenance changes ─────────────────────────────────
+  // ── Update arcs when provenance changes ──────────────────────────────────
   useEffect(() => {
     const g = globeRef.current
     if (!g) return
-    if (!provenanceData) {
-      // Reset to default Guernica arc
-      g.arcsData([{
-        startLat: 40.7614, startLng: -73.9776,
-        endLat:   40.4138, endLng:   -3.6922,
-        label: 'Guernica: MoMA 1939 → Prado 1981',
-        color: TOKEN.clay,
-      }])
+    if (!provenance) {
+      g.arcsData(DEFAULT_ARC)
       return
     }
-    const arcs = buildArcs(provenanceData.locations)
-    g.arcsData(arcs)
-  }, [provenanceData])
+    const arcs = buildArcs(provenance.locations)
+    g.arcsData(arcs.length ? arcs : [])
+  }, [provenance])
 
-  // ── Search handler ───────────────────────────────────────────────────────
+  // ── Search ───────────────────────────────────────────────────────────────
   const runSearch = useCallback(async (q: string) => {
-    if (q.trim().length < 2) return
+    const trimmed = q.trim()
+    if (trimmed.length < 2) return
     setIsSearching(true)
     setShowDropdown(true)
-    setProvenanceData(null)
-    setSelectedArtwork(null)
+    setResults([])
+    setProvenance(null)
+    setSelectedResult(null)
+    if (globeRef.current) globeRef.current.arcsData([])
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(q.trim())}`)
+      const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`)
       const data = (await res.json()) as { results: SearchResult[] }
-      setSearchResults(data.results ?? [])
+      setResults(data.results ?? [])
     } catch {
-      setSearchResults([])
+      setResults([])
     } finally {
       setIsSearching(false)
     }
@@ -195,174 +170,143 @@ export default function ProvenanceGlobe() {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') runSearch(query)
-    if (e.key === 'Escape') { setShowDropdown(false) }
+    if (e.key === 'Escape') setShowDropdown(false)
   }
 
-  // ── Provenance fetch ─────────────────────────────────────────────────────
-  const selectResult = useCallback(async (result: SearchResult) => {
+  // ── Provenance fetch ──────────────────────────────────────────────────────
+  const selectArtwork = useCallback(async (result: SearchResult) => {
     setShowDropdown(false)
-    setSelectedArtwork(result)
-    setProvenanceData(null)
+    setSelectedResult(result)
+    setProvenance(null)
     setIsLoadingProv(true)
-    // Clear arcs immediately on new search
     if (globeRef.current) globeRef.current.arcsData([])
+
+    // Derive numeric id from composite "met-12345" / "aic-56789"
+    const dashIdx = result.id.indexOf('-')
+    const rawId   = dashIdx >= 0 ? result.id.slice(dashIdx + 1) : result.id
+
     try {
-      const res = await fetch(
-        `/api/provenance?source=${result.source}&id=${result.objectId}`,
-      )
-      if (!res.ok) throw new Error('Not found')
-      const data = (await res.json()) as { provenance: ProvenanceData }
-      setProvenanceData(data.provenance)
+      const res = await fetch(`/api/provenance?source=${result.source}&id=${rawId}`)
+      if (!res.ok) throw new Error('fetch failed')
+      const data = (await res.json()) as ProvenanceResponse
+      setProvenance(data)
     } catch {
-      // Show gap state by setting empty locations
-      setProvenanceData({
-        id: result.id,
-        title: result.title,
-        artist: result.artist,
+      // Empty provenance — gap state
+      setProvenance({
+        artwork: {
+          id: result.id,
+          source: result.source,
+          title: result.title,
+          artist: result.artist,
+          date: result.date,
+          thumbnail: result.thumbnail,
+          geoLocation: null,
+        },
         locations: [],
-        sources: [],
+        gaps: [{
+          from: null,
+          to: null,
+          note: 'No documented movement history found in structured data sources.',
+        }],
+        hasGap: true,
       })
     } finally {
       setIsLoadingProv(false)
     }
   }, [])
 
-  // ── Unique source string ─────────────────────────────────────────────────
-  const sourceList = provenanceData
-    ? [...new Set(provenanceData.locations.map(l => l.source))].join(' · ')
-    : null
+  // ── Computed values ───────────────────────────────────────────────────────
+  const uniqueSources = provenance
+    ? [...new Set(provenance.locations.map(l => l.source))]
+    : []
+  const sourceFooter = uniqueSources.length
+    ? `Sources: ${uniqueSources.join(' · ')}`
+    : 'Sources: Wikidata · Met · AIC'
 
-  // ─── Render ────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="relative w-full h-full">
-      {/* Globe */}
+      {/* Globe canvas */}
       <div ref={containerRef} className="absolute inset-0" />
 
-      {/* Loading overlay */}
+      {/* Provenance-tracing loading overlay */}
       {isLoadingProv && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
           <div
             className="px-6 py-3 rounded-lg border text-sm font-medium tracking-wide animate-pulse"
-            style={{
-              background: TOKEN.dropdownBg,
-              borderColor: TOKEN.border,
-              color: TOKEN.clay,
-            }}
+            style={{ background: T.dropdownBg, borderColor: T.border, color: T.clay }}
           >
             Tracing provenance...
           </div>
         </div>
       )}
 
-      {/* ── Left sidebar ── */}
+      {/* ── Left sidebar (museum list) ─────────────────────────────────────── */}
       <div
-        className="absolute left-0 top-0 w-80 h-full border-r overflow-y-auto float-in"
-        style={{
-          background: TOKEN.panelBg,
-          borderColor: TOKEN.border,
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-        }}
+        className="absolute left-0 top-0 w-80 h-full border-r overflow-y-auto"
+        style={{ background: T.panelBg, borderColor: T.border, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
       >
         <div className="p-6">
-          <div
-            className="text-xs uppercase tracking-widest font-semibold mb-2"
-            style={{ color: TOKEN.clay }}
-          >
+          <div className="text-xs uppercase tracking-widest font-semibold mb-2" style={{ color: T.clay }}>
             Provenance
           </div>
-          <h1 className="text-3xl font-bold mb-1" style={{ color: TOKEN.textWarm }}>
-            Tracker
-          </h1>
-          <p className="text-sm mb-8" style={{ color: TOKEN.textMuted }}>
-            Where art has been
-          </p>
+          <h1 className="text-3xl font-bold mb-1" style={{ color: T.textWarm }}>Tracker</h1>
+          <p className="text-sm mb-8" style={{ color: T.textMuted }}>Where art has been</p>
 
           <div className="space-y-3">
-            {TOP_MUSEUMS.map(museum => (
+            {TOP_MUSEUMS.map(m => (
               <button
-                key={museum.id}
-                onClick={() => setSelectedMuseum(museum.id)}
+                key={m.id}
+                onClick={() => setSelectedMuseum(m.id)}
                 className="block w-full text-left p-3 rounded border transition-colors"
                 style={{
-                  background:
-                    selectedMuseum === museum.id
-                      ? 'rgba(200,120,85,0.15)'
-                      : 'transparent',
-                  borderColor:
-                    selectedMuseum === museum.id ? TOKEN.clay : TOKEN.border,
+                  background: selectedMuseum === m.id ? 'rgba(200,120,85,0.15)' : 'transparent',
+                  borderColor: selectedMuseum === m.id ? T.clay : T.border,
                 }}
               >
-                <div className="font-semibold" style={{ color: TOKEN.textWarm }}>
-                  {museum.name}
-                </div>
-                <div className="text-xs mt-0.5" style={{ color: TOKEN.textMuted }}>
-                  {museum.city}, {museum.country}
-                </div>
-                <div className="text-xs mt-1" style={{ color: TOKEN.textMuted }}>
-                  {museum.focus}
-                </div>
-                <div className="text-xs mt-1" style={{ color: TOKEN.clay }}>
-                  {(museum.count / 1000).toFixed(0)}k artworks
-                </div>
+                <div className="font-semibold" style={{ color: T.textWarm }}>{m.name}</div>
+                <div className="text-xs mt-0.5" style={{ color: T.textMuted }}>{m.city}, {m.country}</div>
+                <div className="text-xs mt-1" style={{ color: T.textMuted }}>{m.focus}</div>
+                <div className="text-xs mt-1" style={{ color: T.clay }}>{(m.count / 1000).toFixed(0)}k artworks</div>
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* ── Right panel (provenance) ── */}
-      {selectedArtwork && (
+      {/* ── Right panel (provenance timeline) ─────────────────────────────── */}
+      {selectedResult && (
         <div
           className="absolute right-0 top-0 w-80 h-full border-l overflow-y-auto"
-          style={{
-            background: TOKEN.panelBg,
-            borderColor: TOKEN.border,
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-          }}
+          style={{ background: T.panelBg, borderColor: T.border, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
         >
           <div className="p-6">
+
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
-              <div className="flex-1 pr-3">
-                <div
-                  className="text-xs uppercase tracking-widest font-semibold mb-1"
-                  style={{ color: TOKEN.clay }}
-                >
-                  {selectedArtwork.source}
+              <div className="flex-1 pr-3 min-w-0">
+                <div className="text-xs uppercase tracking-widest font-semibold mb-1" style={{ color: T.clay }}>
+                  {sourceBadgeLabel(selectedResult.source)}
                 </div>
-                <h2
-                  className="text-lg font-bold leading-snug"
-                  style={{ color: TOKEN.textWarm }}
-                >
-                  {selectedArtwork.title}
+                <h2 className="text-lg font-bold leading-snug" style={{ color: T.textWarm }}>
+                  {selectedResult.title}
                 </h2>
-                <p className="text-sm mt-1" style={{ color: TOKEN.textMuted }}>
-                  {selectedArtwork.artist}
+                <p className="text-sm mt-1 truncate" style={{ color: T.textMuted }}>
+                  {selectedResult.artist}
                 </p>
-                {provenanceData?.dateCreated && (
-                  <p className="text-xs mt-1" style={{ color: TOKEN.textMuted }}>
-                    {provenanceData.dateCreated}
-                  </p>
+                {selectedResult.date && (
+                  <p className="text-xs mt-1" style={{ color: T.textMuted }}>{selectedResult.date}</p>
                 )}
               </div>
               <button
                 onClick={() => {
-                  setSelectedArtwork(null)
-                  setProvenanceData(null)
-                  if (globeRef.current) {
-                    globeRef.current.arcsData([{
-                      startLat: 40.7614, startLng: -73.9776,
-                      endLat:   40.4138, endLng:   -3.6922,
-                      label: 'Guernica: MoMA 1939 → Prado 1981',
-                      color: TOKEN.clay,
-                    }])
-                  }
+                  setSelectedResult(null)
+                  setProvenance(null)
+                  if (globeRef.current) globeRef.current.arcsData(DEFAULT_ARC)
                 }}
-                className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded text-xs transition-opacity hover:opacity-70"
-                style={{ color: TOKEN.textMuted, border: `1px solid ${TOKEN.border}` }}
                 aria-label="Close panel"
+                className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded text-xs transition-opacity hover:opacity-60"
+                style={{ color: T.textMuted, border: `1px solid ${T.border}` }}
               >
                 ✕
               </button>
@@ -370,246 +314,187 @@ export default function ProvenanceGlobe() {
 
             {/* Loading skeleton */}
             {isLoadingProv && (
-              <div className="space-y-3 mt-6">
-                {[1, 2, 3].map(i => (
+              <div className="space-y-3 mt-2">
+                {[72, 56, 64].map((h, i) => (
                   <div
                     key={i}
-                    className="h-14 rounded animate-pulse"
-                    style={{ background: TOKEN.land }}
+                    className="rounded animate-pulse"
+                    style={{ height: h, background: T.land }}
                   />
                 ))}
               </div>
             )}
 
             {/* Timeline */}
-            {!isLoadingProv && provenanceData && (
+            {!isLoadingProv && provenance && (
               <>
-                {provenanceData.locations.length === 0 ? (
-                  /* Empty / gap state */
+                {/* Gap-only state */}
+                {provenance.hasGap && provenance.locations.length === 0 && (
                   <div
-                    className="mt-6 p-4 rounded border"
+                    className="mt-2 p-4 rounded text-sm"
                     style={{
-                      borderStyle: 'dashed',
-                      borderColor: TOKEN.textMuted,
+                      border: `1px dashed ${T.textMuted}`,
                       background: 'rgba(154,143,133,0.07)',
+                      color: T.textMuted,
                     }}
                   >
-                    <div
-                      className="text-sm font-semibold mb-1"
-                      style={{ color: TOKEN.textMuted }}
-                    >
-                      Provenance gap
-                    </div>
-                    <div className="text-xs" style={{ color: TOKEN.textMuted }}>
-                      No documented movement history found. Help complete it.
+                    <div className="font-semibold mb-1">Provenance gap</div>
+                    <div className="text-xs leading-relaxed">
+                      {provenance.gaps[0]?.note ?? 'No documented movement history found. Help complete it.'}
                     </div>
                   </div>
-                ) : (
+                )}
+
+                {/* Location entries */}
+                {provenance.locations.length > 0 && (
                   <div className="mt-2">
-                    <div
-                      className="text-xs uppercase tracking-widest font-semibold mb-4"
-                      style={{ color: TOKEN.textMuted }}
-                    >
+                    <div className="text-xs uppercase tracking-widest font-semibold mb-4" style={{ color: T.textMuted }}>
                       Movement history
                     </div>
-                    <div className="relative">
-                      {/* Vertical line */}
-                      <div
-                        className="absolute left-[7px] top-2 bottom-2 w-px"
-                        style={{ background: TOKEN.border }}
-                      />
 
+                    {/* Timeline with vertical rule */}
+                    <div className="relative">
+                      <div
+                        className="absolute top-2 bottom-2"
+                        style={{ left: 7, width: 1, background: T.border }}
+                      />
                       <div className="space-y-4">
-                        {provenanceData.locations.map((loc, i) => (
+                        {provenance.locations.map((loc, i) => (
                           <div key={i} className="pl-6 relative">
-                            {/* Confidence dot */}
+                            {/* Dot */}
                             <div
-                              className="absolute left-0 top-1.5 w-3.5 h-3.5 rounded-full border-2 flex-shrink-0"
+                              className="absolute top-1.5 w-3.5 h-3.5 rounded-full border-2"
                               style={{
-                                background: TOKEN.bg,
-                                borderColor: confidenceColor(loc.confidence),
+                                left: 0,
+                                background: T.bg,
+                                borderColor: T.clay,
                               }}
                             />
 
-                            {/* Gap badge */}
-                            {loc.hasGap && (
-                              <div
-                                className="mb-2 px-2 py-1 text-xs rounded"
-                                style={{
-                                  borderStyle: 'dashed',
-                                  border: `1px dashed ${TOKEN.textMuted}`,
-                                  color: TOKEN.textMuted,
-                                  background: 'rgba(154,143,133,0.07)',
-                                }}
-                              >
-                                Provenance gap — help complete it
-                              </div>
-                            )}
-
-                            <div
-                              className="text-xs mb-0.5"
-                              style={{ color: TOKEN.textMuted }}
-                            >
-                              {loc.dateFrom ?? '?'}
-                              {loc.dateTo ? ` – ${loc.dateTo}` : ''}
+                            {/* Date range */}
+                            <div className="text-xs mb-0.5" style={{ color: T.textMuted }}>
+                              {loc.startDate ?? '?'}{loc.endDate ? ` – ${loc.endDate}` : ''}
                             </div>
-                            <div
-                              className="text-sm font-medium leading-snug"
-                              style={{ color: TOKEN.textWarm }}
-                            >
+
+                            {/* Location name */}
+                            <div className="text-sm font-medium leading-snug" style={{ color: T.textWarm }}>
                               {loc.name}
                             </div>
-                            {(loc.city || loc.country) && (
-                              <div
-                                className="text-xs mt-0.5"
-                                style={{ color: TOKEN.textMuted }}
-                              >
-                                {[loc.city, loc.country].filter(Boolean).join(', ')}
-                              </div>
-                            )}
-                            <div className="flex items-center gap-2 mt-1">
+
+                            {/* Source badge */}
+                            <div className="mt-1">
                               <span
                                 className="text-[10px] px-1.5 py-0.5 rounded-sm"
                                 style={{
                                   background: 'rgba(200,120,85,0.12)',
-                                  color: SOURCE_COLOR[loc.source] ?? TOKEN.clay,
-                                  border: `1px solid ${SOURCE_COLOR[loc.source] ?? TOKEN.clay}33`,
+                                  color: T.clay,
+                                  border: `1px solid ${T.clay}44`,
                                 }}
                               >
                                 {loc.source}
                               </span>
-                              <span
-                                className="text-[10px] capitalize"
-                                style={{ color: confidenceColor(loc.confidence) }}
-                              >
-                                {loc.confidence}
-                              </span>
                             </div>
                           </div>
                         ))}
+
+                        {/* Inline gap entry at end if hasGap */}
+                        {provenance.hasGap && provenance.locations.length > 0 && (
+                          <div className="pl-6 relative">
+                            <div
+                              className="absolute top-1.5 w-3.5 h-3.5 rounded-full border-2"
+                              style={{ left: 0, background: T.bg, borderColor: T.textMuted }}
+                            />
+                            <div
+                              className="p-2 rounded text-xs"
+                              style={{
+                                border: `1px dashed ${T.textMuted}`,
+                                background: 'rgba(154,143,133,0.07)',
+                                color: T.textMuted,
+                              }}
+                            >
+                              <span className="font-semibold">Provenance gap</span> — help complete it
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
                 )}
 
                 {/* Sources footer */}
-                {sourceList && (
-                  <div
-                    className="mt-6 pt-4 text-xs"
-                    style={{
-                      borderTop: `1px solid ${TOKEN.border}`,
-                      color: TOKEN.textMuted,
-                    }}
-                  >
-                    Sources: {sourceList}
-                  </div>
-                )}
-                {!sourceList && (
-                  <div
-                    className="mt-6 pt-4 text-xs"
-                    style={{
-                      borderTop: `1px solid ${TOKEN.border}`,
-                      color: TOKEN.textMuted,
-                    }}
-                  >
-                    Sources: Wikidata · Met · AIC
-                  </div>
-                )}
+                <div
+                  className="mt-6 pt-4 text-xs"
+                  style={{ borderTop: `1px solid ${T.border}`, color: T.textMuted }}
+                >
+                  {sourceFooter}
+                </div>
               </>
             )}
           </div>
         </div>
       )}
 
-      {/* ── Bottom bar ── */}
+      {/* ── Bottom bar + search ────────────────────────────────────────────── */}
       <div
         className="absolute bottom-0 left-0 right-0 border-t px-6 py-4 flex justify-between items-center"
-        style={{
-          background: TOKEN.panelBg,
-          borderColor: TOKEN.border,
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-        }}
+        style={{ background: T.panelBg, borderColor: T.border, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
       >
-        <div className="text-sm" style={{ color: TOKEN.textMuted }}>
+        <div className="text-sm" style={{ color: T.textMuted }}>
           10 museums · 4.8M artworks tracked
         </div>
 
-        {/* Search wrapper — relative so dropdown can anchor here */}
+        {/* Search group */}
         <div className="relative flex items-center gap-2">
-          <span className="text-sm" style={{ color: TOKEN.textMuted }}>
-            Search any painting
-          </span>
+          <span className="text-sm" style={{ color: T.textMuted }}>Search any painting</span>
 
-          {/* Dropdown (appears above) */}
+          {/* Results dropdown (anchors above the input group) */}
           {showDropdown && (
             <div
-              className="absolute bottom-full mb-2 right-0 w-80 rounded-lg border overflow-hidden shadow-xl z-30"
-              style={{
-                background: TOKEN.dropdownBg,
-                borderColor: TOKEN.border,
-              }}
+              className="absolute bottom-full right-0 mb-2 w-80 rounded-lg border overflow-hidden shadow-2xl z-30"
+              style={{ background: T.dropdownBg, borderColor: T.border }}
             >
               {isSearching ? (
-                <div
-                  className="px-4 py-5 text-sm text-center animate-pulse"
-                  style={{ color: TOKEN.textMuted }}
-                >
+                <div className="px-4 py-5 text-sm text-center animate-pulse" style={{ color: T.textMuted }}>
                   Searching...
                 </div>
-              ) : searchResults.length === 0 ? (
+              ) : results.length === 0 ? (
+                /* Empty state */
                 <div className="px-4 py-5">
-                  <div
-                    className="text-sm font-semibold mb-1"
-                    style={{ color: TOKEN.textMuted }}
-                  >
+                  <div className="text-sm font-semibold mb-1" style={{ color: T.textMuted }}>
                     Provenance gap — help complete it
                   </div>
-                  <div className="text-xs" style={{ color: TOKEN.textMuted }}>
-                    No artworks found matching &ldquo;{query}&rdquo;. Try a
-                    different title or artist name.
+                  <div className="text-xs leading-relaxed" style={{ color: T.textMuted }}>
+                    No artworks found for &ldquo;{query}&rdquo;. Try a different title or artist.
                   </div>
                 </div>
               ) : (
                 <ul>
-                  {searchResults.map((r, i) => (
+                  {results.slice(0, 5).map((r, i) => (
                     <li key={r.id}>
                       <button
-                        onClick={() => selectResult(r)}
+                        onMouseDown={() => selectArtwork(r)}
                         className="w-full text-left px-4 py-3 flex items-start gap-3 transition-colors"
-                        style={{
-                          borderTop: i > 0 ? `1px solid ${TOKEN.border}` : undefined,
-                        }}
-                        onMouseEnter={e =>
-                          (e.currentTarget.style.background = 'rgba(200,120,85,0.1)')
-                        }
-                        onMouseLeave={e =>
-                          (e.currentTarget.style.background = 'transparent')
-                        }
+                        style={{ borderTop: i > 0 ? `1px solid ${T.border}` : undefined }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(200,120,85,0.1)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                       >
                         <div className="flex-1 min-w-0">
-                          <div
-                            className="text-sm font-medium truncate"
-                            style={{ color: TOKEN.textWarm }}
-                          >
+                          <div className="text-sm font-medium truncate" style={{ color: T.textWarm }}>
                             {r.title}
                           </div>
-                          <div
-                            className="text-xs mt-0.5 truncate"
-                            style={{ color: TOKEN.textMuted }}
-                          >
-                            {r.artist}
+                          <div className="text-xs mt-0.5 truncate" style={{ color: T.textMuted }}>
+                            {r.artist}{r.date ? ` · ${r.date}` : ''}
                           </div>
                         </div>
                         <span
                           className="flex-shrink-0 text-[10px] px-1.5 py-0.5 rounded-sm self-start mt-0.5"
                           style={{
                             background: 'rgba(200,120,85,0.15)',
-                            color: TOKEN.clay,
-                            border: `1px solid ${TOKEN.clay}44`,
+                            color: T.clay,
+                            border: `1px solid ${T.clay}44`,
                           }}
                         >
-                          {r.source}
+                          {sourceBadgeLabel(r.source)}
                         </span>
                       </button>
                     </li>
@@ -624,28 +509,26 @@ export default function ProvenanceGlobe() {
             value={query}
             onChange={e => {
               setQuery(e.target.value)
-              if (e.target.value.trim().length < 2) {
-                setShowDropdown(false)
-                setSearchResults([])
-              }
+              if (e.target.value.trim().length < 2) { setShowDropdown(false); setResults([]) }
             }}
             onKeyDown={handleKeyDown}
-            onFocus={() => { if (searchResults.length > 0) setShowDropdown(true) }}
-            onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+            onFocus={() => { if (results.length > 0) setShowDropdown(true) }}
+            onBlur={() => setTimeout(() => setShowDropdown(false), 100)}
             placeholder="e.g. Starry Night"
             className="rounded px-3 py-1.5 text-sm focus:outline-none"
             style={{
-              background: TOKEN.land,
-              border: `1px solid ${TOKEN.border}`,
-              color: TOKEN.textWarm,
+              background: T.land,
+              border: `1px solid ${T.border}`,
+              color: T.textWarm,
+              width: 180,
             }}
             aria-label="Search artworks"
           />
           <button
             onClick={() => runSearch(query)}
-            className="transition-opacity hover:opacity-70"
-            style={{ color: TOKEN.clay }}
             aria-label="Submit search"
+            className="transition-opacity hover:opacity-60 text-lg leading-none"
+            style={{ color: T.clay }}
           >
             →
           </button>
