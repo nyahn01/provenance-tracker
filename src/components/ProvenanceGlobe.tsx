@@ -79,47 +79,13 @@ export default function ProvenanceGlobe() {
         .arcDashGap(0.4)
         .arcDashAnimateTime(4000)
 
-      // Auto rotate
-      let autoRotate = true
-      let lastInteraction = Date.now()
-      let rotationSpeed = 0.0001
-
-      const rotationInterval = setInterval(() => {
-        if (autoRotate && Date.now() - lastInteraction > 3000) {
-          const rot = globe.rotation()
-          globe.rotation({
-            x: rot.x - rotationSpeed,
-            y: rot.y,
-            z: rot.z,
-          })
-        }
-      }, 50)
-
-      containerRef.current?.addEventListener('mousedown', () => {
-        autoRotate = false
-        lastInteraction = Date.now()
-      })
-
-      globe.onZoom(() => {
-        lastInteraction = Date.now()
-      })
-
-      const idleCheckInterval = setInterval(() => {
-        if (Date.now() - lastInteraction > 3000 && !autoRotate) {
-          autoRotate = true
-        }
-      }, 1000)
-
-      globeRef.current = { globe, rotationInterval, idleCheckInterval }
+      globeRef.current = { globe }
     }
 
     initGlobe()
 
     return () => {
       if (globeRef.current) {
-        const { rotationInterval, idleCheckInterval } = globeRef.current
-        clearInterval(rotationInterval)
-        clearInterval(idleCheckInterval)
         globeRef.current = null
       }
     }
