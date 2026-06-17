@@ -1,0 +1,9 @@
+{
+  "userIgnoreFilters": [
+    "node_modules/",
+    ".next/",
+    ".git/",
+    "dist/",
+    "out/"
+  ]
+}
