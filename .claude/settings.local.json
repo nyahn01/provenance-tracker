@@ -10,7 +10,10 @@
       "WebFetch(domain:www.cambridge.org)",
       "WebFetch(domain:americanart.si.edu)",
       "WebFetch(domain:us.bbrown.com)",
-      "WebFetch(domain:www.getty.edu)"
+      "WebFetch(domain:www.getty.edu)",
+      "Bash(npm run *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
