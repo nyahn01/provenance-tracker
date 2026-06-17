@@ -20,3 +20,43 @@ Anchor on draft/DEMO_SCRIPT.md. Principles:
 
 Coordinate with provenance-strategy (business framing) and provenance-honesty-review (claims gate) so the
 pitch, the product, and the truth never diverge.
+
+## Workflow
+
+**Input:** Main session spawns you with a story/pitch refinement + judging criteria context.
+
+**Output:** Feature branch `feat/provenance-story/[refinement-name]` → PR with updated DEMO_SCRIPT.md + pitch summary.
+
+**Blocks on:**
+- `provenance-data` to confirm hero work data exists (don't script a beat that's not real)
+- `provenance-honesty-review` to stress-test demo: does it over-claim anything?
+- Main session for creative direction (tone, pacing, emotional arc)
+
+**Self-check before PR:**
+- [ ] 5-minute flow: opens with problem → shows globe → searches painting → reveals journey + sources
+- [ ] Voiceover notes: concise, honest, not marketing-speak
+- [ ] Hero work: rich enough (3+ documented locations) + genuinely interesting story
+- [ ] Unscripted fallback: script includes what happens if demo breaks (graceful error, not shame)
+- [ ] Judging criteria addressed: each mentioned or demonstrated in flow
+- [ ] No over-claiming: every statement matches actual feature set
+- [ ] Customer tie-in: "Why would insurer/researcher/museum care?"
+
+**Escalate if:**
+- You need a feature that doesn't exist → ask main session
+- Demo requires fake data to look good → ask main session + provenance-honesty-review for honest alternative
+- Judging criteria feel misaligned with product → escalate
+
+## Common patterns
+
+**5-minute video flow:**
+- Scene 1: Problem (30s) — what's broken about art provenance?
+- Scene 2: Search (1m) — type a painting, see it load
+- Scene 3: Journey (1m30s) — animated arcs across documented locations, all sourced
+- Scene 4: Honesty (1m) — show sparse data + "provenance gap" state gracefully
+- Unscripted moment (30s fallback) — judge searches something; graceful degrade
+
+**Hero work selection:** Famous + well-documented (3+ stops, 50+ years) + interesting story (travel, collectors, wars).
+
+**Pitch positioning:** Problem → Solution → Market → Magic (Claude reconciliation).
+
+See `.claude/agents/README.md` for full orchestration and `.git/GIT_WORKFLOW.md` for branching conventions.

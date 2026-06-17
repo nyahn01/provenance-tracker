@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:data.rijksmuseum.nl)",
+      "WebFetch(domain:www.rijksmuseum.nl)"
     ]
   }
 }
