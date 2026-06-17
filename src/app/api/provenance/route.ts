@@ -1,74 +1,31 @@
 /**
- * GET /api/provenance?source=met|aic&id=<id>
+ * GET /api/provenance?source=met|aic&id=<rawId>
  *
- * Fetches artwork detail from Met or AIC, then queries Wikidata SPARQL for
- * P276 (location) statements with optional P580/P582 start+end dates.
+ * Returns the documented movement history for one artwork by combining:
+ *   - museum detail (Met or AIC) for title/artist/date/thumbnail + own location
+ *   - Wikidata P276 (location) statements with P580/P582 (start/end) qualifiers
+ *     and P625 coordinates of each location
  *
- * Returns:
- *   {
- *     artwork: { id, source, title, artist, date, thumbnail, geoLocation? }
- *     locations: LocationEntry[]   — each entry carries its source
- *     gaps: GapEntry[]             — explicitly surfaced unknown periods
- *     hasGap: boolean
- *   }
+ * Honesty contract:
+ *   - No hardcoded artwork data. If sources are thin, hasGap = true + a gap note.
+ *   - Every LocationEntry carries its own source string.
+ *   - geoLocation is the museum's OWN field, never a cross-museum "on view" claim.
  *
- * Honesty rules enforced here:
- *   - is_on_view (Met) is NEVER exposed as cross-museum location truth.
- *   - Wikidata P276 coverage is ~5.5%; sparse results produce an explicit gap.
- *   - No coordinates are invented; unknown coords are omitted, not zeroed.
- *
- * Cache: 10 min TTL.
- * Rate limit: 20 req / min / IP.
+ * Cache: 10 min TTL. Rate limit: 20 req / min / IP (shared).
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { cacheGet, cacheSet, checkRateLimit } from '@/lib/cache'
+import type {
+  ArtworkMeta,
+  LocationEntry,
+  GapEntry,
+  ProvenanceResponse,
+} from '@/lib/types'
 
-const PROVENANCE_TTL_MS = 10 * 60 * 1000 // 10 minutes
-const WIKIDATA_SPARQL_ENDPOINT = 'https://query.wikidata.org/sparql'
+const PROVENANCE_TTL_MS = 10 * 60 * 1000
 
-// ---------------------------------------------------------------------------
-// Response types
-// ---------------------------------------------------------------------------
-
-export interface ArtworkMeta {
-  id: string
-  source: 'met' | 'aic'
-  title: string
-  artist: string
-  date: string
-  thumbnail: string | null
-  /** Raw geographic info from the museum record, if present */
-  geoLocation: string | null
-}
-
-export interface LocationEntry {
-  /** Display name of the location */
-  name: string
-  lat: number | null
-  lng: number | null
-  /** ISO-8601 or partial year string, e.g. "1889" */
-  startDate: string | null
-  endDate: string | null
-  source: string
-}
-
-export interface GapEntry {
-  from: string | null
-  to: string | null
-  note: string
-}
-
-export interface ProvenanceResponse {
-  artwork: ArtworkMeta
-  locations: LocationEntry[]
-  gaps: GapEntry[]
-  hasGap: boolean
-}
-
-// ---------------------------------------------------------------------------
-// Met API
-// ---------------------------------------------------------------------------
+// ─── Museum detail fetchers ──────────────────────────────────────────────────
 
 interface MetObject {
   objectID: number
@@ -76,44 +33,34 @@ interface MetObject {
   artistDisplayName: string
   objectDate: string
   primaryImageSmall: string
-  GeoDecLat: string
-  GeoDecLng: string
   city: string
   country: string
-  artistNationality: string
+  repository: string
 }
 
-async function fetchMetArtwork(id: string): Promise<ArtworkMeta> {
+async function fetchMet(id: string): Promise<{ meta: ArtworkMeta; raw: string }> {
   const res = await fetch(
     `https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`,
     { next: { revalidate: 0 } },
   )
   if (!res.ok) throw new Error(`Met object HTTP ${res.status}`)
-  const obj = (await res.json()) as MetObject
-
-  // Compose a geo-location string from whatever fields exist — this is the
-  // museum's own field about where the object was created/found, NOT loan status.
-  const geoLocation =
-    [obj.city, obj.country].filter(Boolean).join(', ') ||
-    obj.artistNationality ||
-    null
-
+  const o = (await res.json()) as MetObject
+  const geo = [o.city, o.country].filter(Boolean).join(', ') || null
   return {
-    id,
-    source: 'met',
-    title: obj.title || 'Untitled',
-    artist: obj.artistDisplayName || 'Unknown artist',
-    date: obj.objectDate || '',
-    thumbnail: obj.primaryImageSmall || null,
-    geoLocation,
+    meta: {
+      id: `met-${o.objectID}`,
+      source: 'met',
+      title: o.title || 'Untitled',
+      artist: o.artistDisplayName || 'Unknown artist',
+      date: o.objectDate || '',
+      thumbnail: o.primaryImageSmall || null,
+      geoLocation: geo,
+    },
+    raw: o.repository || '',
   }
 }
 
-// ---------------------------------------------------------------------------
-// AIC API
-// ---------------------------------------------------------------------------
-
-interface AicObject {
+interface AicData {
   id: number
   title: string
   artist_display: string
@@ -121,121 +68,91 @@ interface AicObject {
   exhibition_history: string | null
   provenance_text: string | null
   place_of_origin: string | null
-  latitude: number | null
-  longitude: number | null
   image_id: string | null
 }
 
-async function fetchAicArtwork(id: string): Promise<ArtworkMeta> {
-  const fields = [
-    'id', 'title', 'artist_display', 'date_display',
-    'exhibition_history', 'provenance_text',
-    'place_of_origin', 'latitude', 'longitude', 'image_id',
-  ].join(',')
+async function fetchAic(id: string): Promise<{ meta: ArtworkMeta; raw: string }> {
   const res = await fetch(
-    `https://api.artic.edu/api/v1/artworks/${id}?fields=${fields}`,
+    `https://api.artic.edu/api/v1/artworks/${id}` +
+      `?fields=id,title,artist_display,date_display,exhibition_history,` +
+      `provenance_text,place_of_origin,image_id`,
     { next: { revalidate: 0 } },
   )
   if (!res.ok) throw new Error(`AIC object HTTP ${res.status}`)
-  const wrapper = (await res.json()) as { data: AicObject }
-  const obj = wrapper.data
-
+  const { data: d } = (await res.json()) as { data: AicData }
   return {
-    id,
-    source: 'aic',
-    title: obj.title || 'Untitled',
-    artist: obj.artist_display || 'Unknown artist',
-    date: obj.date_display || '',
-    thumbnail: obj.image_id
-      ? `https://www.artic.edu/iiif/2/${obj.image_id}/full/200,/0/default.jpg`
-      : null,
-    geoLocation: obj.place_of_origin || null,
+    meta: {
+      id: `aic-${d.id}`,
+      source: 'aic',
+      title: d.title || 'Untitled',
+      artist: d.artist_display || 'Unknown artist',
+      date: d.date_display || '',
+      thumbnail: d.image_id
+        ? `https://www.artic.edu/iiif/2/${d.image_id}/full/200,/0/default.jpg`
+        : null,
+      geoLocation: d.place_of_origin || null,
+    },
+    raw: [d.provenance_text, d.exhibition_history].filter(Boolean).join('\n\n'),
   }
 }
 
-// ---------------------------------------------------------------------------
-// Wikidata SPARQL — P276 (location) with P580/P582 dates
-//
-// Coverage is ~5.5% and often a single value.  We design for sparsity:
-// an explicit gap is returned rather than an empty array.
-// ---------------------------------------------------------------------------
+// ─── Wikidata P276 location chain ────────────────────────────────────────────
 
-interface WikidataBinding {
-  location?: { value: string }
+interface SparqlBinding {
   locationLabel?: { value: string }
   startDate?: { value: string }
   endDate?: { value: string }
+  coord?: { value: string } // "Point(lng lat)"
 }
 
-interface WikidataResponse {
-  results: { bindings: WikidataBinding[] }
+function parsePoint(wkt: string | undefined): { lat: number | null; lng: number | null } {
+  if (!wkt) return { lat: null, lng: null }
+  const m = wkt.match(/Point\(([-\d.]+)\s+([-\d.]+)\)/)
+  if (!m) return { lat: null, lng: null }
+  return { lng: parseFloat(m[1]), lat: parseFloat(m[2]) }
 }
 
-async function queryWikidataLocations(
-  title: string,
-  artist: string,
-): Promise<LocationEntry[]> {
-  // Escape double-quotes inside the title to avoid SPARQL injection
-  const safeTitle = title.replace(/"/g, '\\"').replace(/\n/g, ' ').trim()
-
-  const sparql = `
-SELECT ?item ?location ?locationLabel ?startDate ?endDate WHERE {
-  ?item wdt:P31 wd:Q3305213 ;
-        rdfs:label "${safeTitle}"@en .
-  OPTIONAL { ?item p:P276 ?locStmt .
-             ?locStmt ps:P276 ?location .
-             OPTIONAL { ?locStmt pq:P580 ?startDate }
-             OPTIONAL { ?locStmt pq:P582 ?endDate } }
+async function fetchWikidataLocations(title: string): Promise<LocationEntry[]> {
+  // Match the artwork by exact English label, pull P276 with date + coord.
+  const escaped = title.replace(/["\\]/g, '\\$&')
+  const query = `
+SELECT ?locationLabel ?startDate ?endDate ?coord WHERE {
+  ?item rdfs:label "${escaped}"@en .
+  ?item p:P276 ?stmt .
+  ?stmt ps:P276 ?location .
+  OPTIONAL { ?stmt pq:P580 ?startDate }
+  OPTIONAL { ?stmt pq:P582 ?endDate }
+  OPTIONAL { ?location wdt:P625 ?coord }
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
-} LIMIT 20`
+} LIMIT 25`
 
-  const url =
-    `${WIKIDATA_SPARQL_ENDPOINT}?query=${encodeURIComponent(sparql)}` +
-    `&format=json`
+  const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`
+  const res = await fetch(url, {
+    headers: {
+      Accept: 'application/sparql-results+json',
+      'User-Agent': 'ProvenanceTracker/0.1 (research demo)',
+    },
+    next: { revalidate: 0 },
+  })
+  if (!res.ok) throw new Error(`Wikidata HTTP ${res.status}`)
+  const json = (await res.json()) as { results: { bindings: SparqlBinding[] } }
 
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 25_000) // 25 s (Wikidata limit is 30 s)
-
-  try {
-    const res = await fetch(url, {
-      headers: {
-        Accept: 'application/sparql-results+json',
-        'User-Agent': 'ProvenanceTracker/1.0 (ahn.ny01@gmail.com)',
-      },
-      signal: controller.signal,
-    })
-    clearTimeout(timeout)
-    if (!res.ok) throw new Error(`Wikidata SPARQL HTTP ${res.status}`)
-
-    const data = (await res.json()) as WikidataResponse
-    const bindings = data.results.bindings
-
-    const locations: LocationEntry[] = []
-    for (const b of bindings) {
-      if (!b.location) continue // row matched item but no P276 statement
-      locations.push({
-        name: b.locationLabel?.value ?? b.location.value,
-        lat: null, // Wikidata SPARQL result doesn't directly include coords here
-        lng: null,
-        startDate: b.startDate?.value ?? null,
-        endDate: b.endDate?.value ?? null,
-        source: 'Wikidata P276',
-      })
+  return json.results.bindings.map(b => {
+    const { lat, lng } = parsePoint(b.coord?.value)
+    return {
+      name: b.locationLabel?.value || 'Unknown location',
+      lat,
+      lng,
+      startDate: b.startDate?.value?.slice(0, 10) ?? null,
+      endDate: b.endDate?.value?.slice(0, 10) ?? null,
+      source: 'Wikidata P276',
     }
-    return locations
-  } catch (err) {
-    clearTimeout(timeout)
-    console.error('[provenance/wikidata]', err)
-    return [] // non-fatal — gaps will be surfaced to the UI
-  }
+  })
 }
 
-// ---------------------------------------------------------------------------
-// Route handler
-// ---------------------------------------------------------------------------
+// ─── Route handler ───────────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
-  // Per-IP rate limiting
   const ip =
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
     request.headers.get('x-real-ip') ??
@@ -247,54 +164,62 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  const source = request.nextUrl.searchParams.get('source')?.toLowerCase()
-  const id = request.nextUrl.searchParams.get('id')?.trim()
+  const source = request.nextUrl.searchParams.get('source')
+  const id = request.nextUrl.searchParams.get('id')
 
-  if (!source || !id) {
-    return NextResponse.json({ error: 'Missing required params: source, id' }, { status: 400 })
-  }
   if (source !== 'met' && source !== 'aic') {
-    return NextResponse.json({ error: 'source must be "met" or "aic"' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'Query param "source" must be "met" or "aic"' },
+      { status: 400 },
+    )
+  }
+  if (!id) {
+    return NextResponse.json({ error: 'Missing query param: id' }, { status: 400 })
   }
 
   const cacheKey = `provenance:${source}:${id}`
   const cached = cacheGet<ProvenanceResponse>(cacheKey)
-  if (cached) {
-    return NextResponse.json({ ...cached, cached: true })
-  }
+  if (cached) return NextResponse.json(cached)
 
-  // 1. Fetch artwork metadata from the museum API
-  let artwork: ArtworkMeta
+  // 1. Museum detail (required — if this fails, the artwork itself is unknown)
+  let meta: ArtworkMeta
   try {
-    artwork = source === 'met' ? await fetchMetArtwork(id) : await fetchAicArtwork(id)
+    const detail = source === 'met' ? await fetchMet(id) : await fetchAic(id)
+    meta = detail.meta
   } catch (err) {
-    console.error(`[provenance/${source}]`, err)
-    return NextResponse.json({ error: 'Failed to fetch artwork from museum API' }, { status: 502 })
+    console.error('[provenance/detail]', err)
+    return NextResponse.json(
+      { error: `Could not load artwork ${source}-${id} from museum API` },
+      { status: 502 },
+    )
   }
 
-  // 2. Query Wikidata for P276 location history
-  const wikidataLocations = await queryWikidataLocations(artwork.title, artwork.artist)
-
-  // 3. Build the locations array and detect gaps
-  //    Wikidata coverage is sparse — fewer than 2 entries triggers a gap.
-  const locations: LocationEntry[] = wikidataLocations
-
-  const gaps: GapEntry[] = []
-  const hasGap = locations.length < 2
-
-  if (hasGap) {
-    gaps.push({
-      from: null,
-      to: null,
-      note:
-        locations.length === 0
-          ? 'No location history found in Wikidata (P276). The full provenance of this artwork is not publicly recorded in structured data.'
-          : 'Only one location entry found in Wikidata (P276). Earlier or later location history is not available in structured data.',
-    })
+  // 2. Wikidata location chain (best-effort — thin coverage is expected & honest)
+  let locations: LocationEntry[] = []
+  try {
+    locations = await fetchWikidataLocations(meta.title)
+  } catch (err) {
+    console.error('[provenance/wikidata]', err)
+    // Leave locations empty; the gap state below covers it honestly.
   }
 
-  const response: ProvenanceResponse = { artwork, locations, gaps, hasGap }
+  // 3. Honest gap detection
+  const located = locations.filter(l => l.lat != null && l.lng != null)
+  const hasGap = located.length < 2
+  const gaps: GapEntry[] = hasGap
+    ? [
+        {
+          from: null,
+          to: null,
+          note:
+            located.length === 0
+              ? 'No mapped movement history found in structured sources (Wikidata P276). Provenance gap — help complete it.'
+              : 'Only one mapped location found; the movement chain is incomplete. Provenance gap — help complete it.',
+        },
+      ]
+    : []
+
+  const response: ProvenanceResponse = { artwork: meta, locations, gaps, hasGap }
   cacheSet(cacheKey, response, PROVENANCE_TTL_MS)
-
   return NextResponse.json(response)
 }

@@ -22,36 +22,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { cacheGet, cacheSet, checkRateLimit } from '@/lib/cache'
+import type { ReconcileRequest, ReconcileResponse } from '@/lib/types'
 
 const RECONCILE_TTL_MS = 10 * 60 * 1000 // 10 minutes
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-export interface TimelineEntry {
-  date: string | null
-  location: string
-  confidence: 'confirmed' | 'uncertain' | 'gap'
-  note: string | null
-}
-
-export interface ReconcileRequest {
-  artwork: string
-  locations: Array<{
-    name: string
-    startDate: string | null
-    endDate: string | null
-    source: string
-  }>
-  rawProvenance: string
-}
-
-export interface ReconcileResponse {
-  timeline: TimelineEntry[]
-  conflicts: string[]
-  warnings: string[]
-}
 
 // ---------------------------------------------------------------------------
 // Helpers

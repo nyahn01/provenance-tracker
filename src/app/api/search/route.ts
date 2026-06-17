@@ -10,30 +10,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { cacheGet, cacheSet, checkRateLimit } from '@/lib/cache'
+import type { SearchResult, SearchResponse } from '@/lib/types'
 
 const SEARCH_TTL_MS = 5 * 60 * 1000 // 5 minutes
-
-// ---------------------------------------------------------------------------
-// Public types (re-exported so other routes can import the shape)
-// ---------------------------------------------------------------------------
-
-export interface SearchResult {
-  /** Globally unique within this API: "<source>-<raw id>" */
-  id: string
-  source: 'met' | 'aic'
-  title: string
-  artist: string
-  date: string
-  thumbnail: string | null
-}
-
-export interface SearchResponse {
-  results: SearchResult[]
-  query: string
-  /** Human-readable list of upstream data sources consulted */
-  sources: string[]
-  cached?: boolean
-}
 
 // ---------------------------------------------------------------------------
 // Met Museum helpers

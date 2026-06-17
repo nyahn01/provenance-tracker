@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import type { SearchResult } from '../app/api/search/route'
-import type { ProvenanceResponse, LocationEntry } from '../app/api/provenance/route'
+import type { SearchResult, ProvenanceResponse, LocationEntry } from '@/lib/types'
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
 const T = {
