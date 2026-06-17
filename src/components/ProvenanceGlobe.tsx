@@ -52,19 +52,6 @@ export default function ProvenanceGlobe() {
         .atmosphereColor('#c87855')
         .atmosphereAltitude(0.12)(containerRef.current!)
 
-      // Set globe colors
-      globe.onGlobeReady(() => {
-        const canvas = containerRef.current?.querySelector('canvas')
-        if (canvas) {
-          const context = canvas.getContext('2d')
-          // The globe is already rendered, just set colors via geometry
-          const geometry = globe.getGlobeGeometry()
-          if (geometry && geometry.attributes.color) {
-            // Colors are set via material, not here
-          }
-        }
-      })
-
       // Add museum pins
       const pinMarkers = TOP_MUSEUMS.map(museum => {
         const el = document.createElement('div')
