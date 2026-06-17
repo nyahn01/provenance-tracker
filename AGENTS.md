@@ -25,13 +25,13 @@ tool by `subagent_type`; continue an existing one with SendMessage so it keeps i
 
 ## The constant-improvement loop (run every working session)
 
-1. **Read in:** CLAUDE.md → TONIGHT.md/TOMORROW.md → MEMORY.md → BUSINESS_CASE.md → PROGRESS.md.
-2. **Plan:** pick the next item from TOMORROW.md priority order (priority 0 = honest unscripted path).
+1. **Read in:** [[CLAUDE.md]] → [[TONIGHT.md]] / [[TOMORROW.md]] → [[MEMORY.md]] → [[BUSINESS_CASE.md]] → [[PROGRESS.md]].
+2. **Plan:** pick the next item from [[TOMORROW.md]] priority order (priority 0 = honest unscripted path).
 3. **Build:** route to the owning agent. One feature at a time.
 4. **Gate:** run `provenance-honesty-review` on the diff + running app. If BLOCK, fix before commit.
 5. **Verify:** `npm run build` clean; exercise the unscripted-search path live.
 6. **Commit & push** per feature (small commits).
-7. **Retro:** append to PROGRESS.md — what shipped, what broke, what the honesty gate caught,
+7. **Retro:** append to [[PROGRESS.md]] — what shipped, what broke, what the honesty gate caught,
    one improvement to the *process or an agent prompt* itself.
 8. **Improve the team:** if the gate caught the same class of issue twice, tighten the relevant
    agent's prompt in `.claude/agents/`. The team gets sharper over time, not just the app.

@@ -5,7 +5,7 @@ An interactive 3D globe showing where the world's greatest art **has been** — 
 cross-institution provenance & exhibition-movement explorer.
 Visual reference: war-tracker.com — dark, alive, cinematic — but for art.
 Design reference: Open Design warm palette applied over dark background.
-Globe = funnel; provenance data API = product (see BUSINESS_CASE.md).
+Globe = funnel; provenance data API = product (see [[BUSINESS_CASE.md]]).
 Purpose: sourced, dated, honest movement history for insurers, researchers, and curious people.
 
 ## What Alibi does
@@ -79,9 +79,9 @@ Font:            Pretendard
 - Budget-cap the Anthropic key
 - Tailwind for all styling
 - Commit after every completed feature, push immediately
-- Update PROGRESS.md after every session
-- Read TONIGHT.md (or TOMORROW.md) at session start
-- Read MEMORY.md and BUSINESS_CASE.md for all context
+- Update [[PROGRESS.md]] after every session
+- Read [[TONIGHT.md]] (or [[TOMORROW.md]]) at session start
+- Read [[MEMORY.md]] and [[BUSINESS_CASE.md]] for all context
 
 ## The agent team (see .claude/agents/)
 - provenance-globe — globe visuals & design-token fidelity
