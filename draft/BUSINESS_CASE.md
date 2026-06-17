@@ -1,4 +1,4 @@
-# Alibi — Business Case
+# Provenance Tracker — Business Case
 
 > One line: **A cross-institution provenance & exhibition-movement graph for the world's art — public-facing globe as the funnel, a provenance data API as the product.**
 
@@ -15,7 +15,7 @@ Nobody offers a **single, queryable, cross-institution "where has this work been
 
 - ❌ "Live tracking of where every artwork is on view right now." No public API supports cross-museum loan status.
 - ❌ A precise "transit risk score" from 5%-coverage data. Underwriters will not trust it as-is.
-- ❌ €3 PDF of public facts as a real business. It's a novelty, not a model.
+- ❌ One-off PDF sales as a real business. It's a novelty, not a model.
 
 ## 3. What we ARE building
 
@@ -35,9 +35,11 @@ A provenance/exhibition-history explorer backed by a reconciled data layer:
 
 Market signal: fine-art insurance is large and growing (AXA Art, Chubb, Allianz, Hiscox, Lloyd's, AIG); transit frequency/distance is an explicit pricing input.
 
-## 5. The "alibi" angle (positioning)
+## 5. Positioning (neutral, broad-appeal)
 
-*Alibi* = a defense against accusation. Lean into **provenance integrity, authenticity, theft, looting, Nazi-era / repatriation** — a fundable, topical area — rather than tourist convenience. This also aligns the name with the more defensible product.
+A straightforward provenance & movement tracker. No niche angle — serves insurers (transit risk), 
+researchers/dealers (due diligence), curators (exhibition planning), public curiosity (the globe).
+Broad appeal, multiple revenue vectors from the same data layer.
 
 ## 6. Moat & sustainability
 

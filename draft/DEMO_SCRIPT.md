@@ -1,4 +1,4 @@
-# Alibi — 5-Minute Demo Script (honest cut)
+# Provenance Tracker — 5-Minute Demo Script (honest cut)
 
 Format: screen recording + voiceover. No slides. Record at Retina/1440p. Globe must look cinematic.
 
@@ -16,7 +16,7 @@ Voiceover:
 "Every great painting has a past — owners, exhibitions, border crossings, disputes.
 That history is scattered across museum sites, Wikidata, and old PDFs.
 No one place lets you *see* it.
-So I built Alibi."
+So I built Provenance Tracker."
 
 [Globe fades in, slowly rotating. Museum pins glow.]
 
@@ -84,10 +84,10 @@ The product underneath is a provenance data API."
 [Globe back to full world view, all pins glow.]
 
 Voiceover:
-"Alibi runs on public museum APIs and Wikidata.
+"Provenance Tracker runs on public museum APIs and Wikidata.
 No scraping. No proprietary data. Every fact is sourced and dated.
 Where the record is incomplete, we say so — and let the world help fill it.
-Every artwork has an alibi. Now you can trace it."
+Complete, sourced, honest provenance history — for everyone."
 
 [URL fades in.]
 

@@ -1,12 +1,12 @@
-# Alibi — Painting Location Tracker
+# Provenance Tracker — Art Movement & Exhibition History
 
 ## Vision
 An interactive 3D globe showing where the world's greatest art **has been** — a
 cross-institution provenance & exhibition-movement explorer.
 Visual reference: war-tracker.com — dark, alive, cinematic — but for art.
 Design reference: Open Design warm palette applied over dark background.
-Positioning: provenance integrity / authenticity / theft & repatriation (the "alibi" angle),
-not tourist convenience. Globe = funnel; provenance data API = product (see BUSINESS_CASE.md).
+Globe = funnel; provenance data API = product (see BUSINESS_CASE.md).
+Purpose: sourced, dated, honest movement history for insurers, researchers, and curious people.
 
 ## What Alibi does
 - Shows the world's top 10 museums as glowing pins on a 3D globe
@@ -84,11 +84,11 @@ Font:            Pretendard
 - Read MEMORY.md and BUSINESS_CASE.md for all context
 
 ## The agent team (see .claude/agents/)
-- alibi-globe — globe visuals & design-token fidelity
-- alibi-data — Wikidata/Met/AIC integration, reconciliation, honest empty states
-- alibi-strategy — business case, market/competitor research, positioning
-- alibi-story — demo script & narrative, keeps it cinematic
-- alibi-honesty-review — BLOCKING gate: catches overclaiming, missing source lines, faked data
+- provenance-globe — globe visuals & design-token fidelity
+- provenance-data — Wikidata/Met/AIC integration, reconciliation, honest empty states
+- provenance-strategy — business case, market/competitor research, positioning
+- provenance-story — demo script & narrative, keeps it cinematic
+- provenance-honesty-review — BLOCKING gate: catches overclaiming, missing source lines, faked data
 Orchestration & the constant-improvement loop: see AGENTS.md.
 
 ## Deployment

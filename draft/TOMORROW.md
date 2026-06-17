@@ -1,4 +1,4 @@
-# Tomorrow Night's Task — Night 2: Live Data + Demo Polish
+# Tomorrow Night's Task — Session 2: Live Data + Demo Polish
 
 ## Goal
 Add real API data and one working search. Make it demo-ready.

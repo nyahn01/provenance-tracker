@@ -1,4 +1,4 @@
-# Tonight's Task — Night 1: The Globe
+# Session 1 Task — Build the Globe
 
 ## Goal
 Build a visually stunning globe interface showing the world's top 10 museums.
