@@ -20,6 +20,15 @@ written to a file, it's lost when the context window rolls. This file is the saf
 
 <!-- append insights below, newest first -->
 
+- `#data` PRECISION FIX (custody vs loan) — the biggest credibility win. Exhibition loans were
+  folded into the movement chain, so a work LOANED to a show and returned looked like it "moved."
+  La Grande Jatte showed 18 "locations"; the true custody chain is 4 (Paris 1891 → Paris 1900 →
+  Chicago 1924). Fix: split by SOURCE FIELD — provenance_text → custody (ProvenanceResponse.locations,
+  the journey/arcs); exhibition_history → ProvenanceResponse.exhibitions (loans, listed separately,
+  never arcs). Wikidata now only fills custody when prose is empty (dodges wrong-entity matches).
+  verify.mjs asserts custody ≥2 mapped, exhibitions separated, and NO loan in the custody chain.
+  Lesson: the AIC fields already encode the distinction — don't flatten them. Live-DB review caught this.
+
 - `#data #design` Curation + globe rethink (the globe was decoration). Shipped: src/lib/featured.ts
   (8 verified data-rich AIC works — mostly European masterpieces that crossed the Atlantic to
   Chicago, so the arcs are real and dramatic), landing now LEADS WITH ART ("Featured Journeys"
