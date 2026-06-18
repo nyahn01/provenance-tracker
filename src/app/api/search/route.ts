@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { cacheGet, cacheSet, checkRateLimit } from '@/lib/cache'
+import { searchRijks } from '@/lib/rijksmuseum'
 import type { SearchResult, SearchResponse } from '@/lib/types'
 
 const SEARCH_TTL_MS = 5 * 60 * 1000 // 5 minutes
@@ -138,9 +139,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ...cached, cached: true })
   }
 
-  const [metResult, aicResult] = await Promise.allSettled([
+  const [metResult, aicResult, rijksResult] = await Promise.allSettled([
     searchMet(q),
     searchAic(q),
+    searchRijks(q),
   ])
 
   if (metResult.status === 'rejected') {
@@ -149,15 +151,20 @@ export async function GET(request: NextRequest) {
   if (aicResult.status === 'rejected') {
     console.error('[search/aic]', aicResult.reason)
   }
+  if (rijksResult.status === 'rejected') {
+    console.error('[search/rijks]', rijksResult.reason)
+  }
 
   const results: SearchResult[] = [
     ...(metResult.status === 'fulfilled' ? metResult.value : []),
     ...(aicResult.status === 'fulfilled' ? aicResult.value : []),
+    ...(rijksResult.status === 'fulfilled' ? rijksResult.value : []),
   ]
 
   const sources: string[] = []
   if (metResult.status === 'fulfilled') sources.push('Metropolitan Museum of Art API')
   if (aicResult.status === 'fulfilled') sources.push('Art Institute of Chicago API')
+  if (rijksResult.status === 'fulfilled') sources.push('Rijksmuseum API')
 
   const response: SearchResponse = { results, query: q, sources }
   cacheSet(cacheKey, response, SEARCH_TTL_MS)

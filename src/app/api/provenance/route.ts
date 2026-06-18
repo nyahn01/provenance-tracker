@@ -22,6 +22,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { cacheGet, cacheSet, checkRateLimit } from '@/lib/cache'
 import { geocode, geocodeNamed } from '@/lib/geocode'
+import { fetchRijks } from '@/lib/rijksmuseum'
 import type {
   ArtworkMeta,
   LocationEntry,
@@ -305,9 +306,9 @@ export async function GET(request: NextRequest) {
   const source = request.nextUrl.searchParams.get('source')
   const id = request.nextUrl.searchParams.get('id')
 
-  if (source !== 'met' && source !== 'aic') {
+  if (source !== 'met' && source !== 'aic' && source !== 'rijks') {
     return NextResponse.json(
-      { error: 'Query param "source" must be "met" or "aic"' },
+      { error: 'Query param "source" must be "met", "aic", or "rijks"' },
       { status: 400 },
     )
   }
@@ -324,7 +325,10 @@ export async function GET(request: NextRequest) {
   let provenanceText = ''
   let exhibitionText = ''
   try {
-    const detail = source === 'met' ? await fetchMet(id) : await fetchAic(id)
+    const detail =
+      source === 'met' ? await fetchMet(id)
+      : source === 'rijks' ? await fetchRijks(id)
+      : await fetchAic(id)
     meta = detail.meta
     provenanceText = detail.provenance
     exhibitionText = detail.exhibitions
@@ -339,21 +343,23 @@ export async function GET(request: NextRequest) {
   // 2. CUSTODY chain (the journey) from provenance_text — Claude, else deterministic,
   //    else Wikidata P276. Exhibitions are handled separately so a LOAN is never shown
   //    as a change of custody. This is the precision fix.
+  const srcName = source === 'met' ? 'Met' : source === 'rijks' ? 'Rijksmuseum' : 'AIC'
+  const provLabel = `${srcName} provenance`
   let [ownership, wikiLocs] = await Promise.all([
-    extractOwnershipLocations(meta.title, meta.artist, provenanceText, 'AIC provenance').catch(err => {
+    extractOwnershipLocations(meta.title, meta.artist, provenanceText, provLabel).catch(err => {
       console.error('[provenance/ownership]', err); return [] as LocationEntry[]
     }),
     fetchWikidataLocations(meta.title, meta.artist).catch(err => {
       console.error('[provenance/wikidata]', err); return [] as LocationEntry[]
     }),
   ])
-  if (ownership.length === 0) ownership = deterministicExtract(provenanceText, 'AIC provenance')
+  if (ownership.length === 0) ownership = deterministicExtract(provenanceText, provLabel)
   // Wikidata only fills the custody chain when the prose gave us nothing — prose is
   // tier-A and avoids the wrong-entity matches Wikidata sometimes returns.
   if (ownership.length === 0) ownership = wikiLocs
 
   // Exhibitions = loans. Deterministic is fine — exhibition_history is highly structured.
-  const exhibitions = deterministicExtract(exhibitionText, 'AIC exhibition history')
+  const exhibitions = deterministicExtract(exhibitionText, `${srcName} exhibition history`)
 
   const yr = (l: LocationEntry) => (l.startDate ? parseInt(l.startDate.slice(0, 4), 10) : Number.MAX_SAFE_INTEGER)
   const locations = ownership.sort((a, b) => yr(a) - yr(b))

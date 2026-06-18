@@ -11,7 +11,7 @@
 export interface SearchResult {
   /** Globally unique within this API: "<source>-<raw id>" */
   id: string
-  source: 'met' | 'aic'
+  source: 'met' | 'aic' | 'rijks'
   title: string
   artist: string
   date: string
@@ -30,7 +30,7 @@ export interface SearchResponse {
 
 export interface ArtworkMeta {
   id: string
-  source: 'met' | 'aic'
+  source: 'met' | 'aic' | 'rijks'
   title: string
   artist: string
   date: string

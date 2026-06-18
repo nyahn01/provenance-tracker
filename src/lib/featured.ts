@@ -13,7 +13,7 @@
  */
 
 export interface FeaturedWork {
-  source: 'aic'
+  source: 'aic' | 'rijks'
   id: string
   title: string
   artist: string
@@ -22,6 +22,12 @@ export interface FeaturedWork {
 }
 
 export const FEATURED_WORKS: FeaturedWork[] = [
+  {
+    source: 'rijks', id: '200108369',
+    title: 'The Milkmaid',
+    artist: 'Johannes Vermeer',
+    hook: 'Eleven Amsterdam owners across two centuries — provenance depth without leaving one city.',
+  },
   {
     source: 'aic', id: '27992',
     title: 'A Sunday on La Grande Jatte',

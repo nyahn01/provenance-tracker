@@ -90,6 +90,7 @@ function tierLabel(source: string): string {
   const s = source.toLowerCase()
   if (s === 'met' || s.includes('metropolitan')) return 'MET'
   if (s === 'aic' || s.includes('art institute'))  return 'AIC'
+  if (s === 'rijks' || s.includes('rijksmuseum'))  return 'RIJKS'
   if (s.includes('wikidata'))  return 'Wikidata'
   return source.toUpperCase().slice(0, 12)
 }
@@ -98,7 +99,7 @@ type TierStyle = { bg: string; color: string; border: string }
 
 function badgeStyle(source: string, gallery = false): TierStyle {
   const s = source.toLowerCase()
-  if (s === 'met' || s === 'aic' || s.includes('metropolitan') || s.includes('art institute')) {
+  if (s === 'met' || s === 'aic' || s === 'rijks' || s.includes('metropolitan') || s.includes('art institute') || s.includes('rijksmuseum')) {
     return gallery
       ? { bg: `rgba(160,120,48,0.10)`, color: GAL.gold,  border: `rgba(160,120,48,0.25)` }
       : { bg: `rgba(212,168,83,0.10)`, color: OBS.gold,  border: `rgba(212,168,83,0.25)` }
@@ -464,7 +465,7 @@ export default function ProvenanceGlobe() {
   }, [])
 
   // ── Featured journey: load a curated work straight into the provenance view ──
-  const selectFeatured = useCallback((f: { source: 'aic'; id: string; title: string; artist: string }) => {
+  const selectFeatured = useCallback((f: { source: 'aic' | 'rijks'; id: string; title: string; artist: string }) => {
     setQuery('')
     setResults([])
     setShowDropdown(false)
