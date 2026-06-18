@@ -100,8 +100,27 @@ async function main() {
     }
   }
 
-  // ── 3. NO FAKED DATA on disk ────────────────────────────────────────────────
-  console.log('\n3. honesty grep (no hardcoded provenance)')
+  // ── 3. DATA DEPTH — a known rich AIC work must yield a real mapped journey ───
+  // La Grande Jatte (aic-27992) has dense provenance + exhibition prose. This proves
+  // the prose-extraction layer turns tier-A text into a dated, mapped chain (works
+  // even without Claude credits, via the deterministic fallback).
+  console.log('\n3. data depth (/api/provenance?source=aic&id=27992)')
+  const depth = await getJson('/api/provenance?source=aic&id=27992')
+  if (depth.status !== 200) {
+    fail(`depth probe returned HTTP ${depth.status}`)
+  } else {
+    const locs = depth.json?.locations ?? []
+    const mapped = locs.filter(l => l.lat != null && l.lng != null)
+    if (mapped.length < 2) fail(`expected ≥2 mapped locations for La Grande Jatte, got ${mapped.length}`)
+    else pass(`La Grande Jatte yields ${mapped.length} mapped locations (real journey)`)
+    // honesty: no entry may invent a year outside a plausible range
+    const badYear = locs.find(l => l.startDate && !/^(1[5-9]\d{2}|20[0-2]\d)$/.test(l.startDate.slice(0,4)))
+    if (badYear) fail(`a location has an implausible/invented date: ${badYear.startDate}`)
+    else pass('all extracted dates are plausible 4-digit years')
+  }
+
+  // ── 4. NO FAKED DATA on disk ────────────────────────────────────────────────
+  console.log('\n4. honesty grep (no hardcoded provenance)')
   const { readFileSync } = await import('node:fs')
   const routeSrc = readFileSync(
     new URL('../src/app/api/provenance/route.ts', import.meta.url), 'utf8',

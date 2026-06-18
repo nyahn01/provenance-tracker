@@ -1,21 +1,27 @@
 /**
  * GET /api/provenance?source=met|aic&id=<rawId>
  *
- * Returns the documented movement history for one artwork by combining:
- *   - museum detail (Met or AIC) for title/artist/date/thumbnail + own location
- *   - Wikidata P276 (location) statements with P580/P582 (start/end) qualifiers
- *     and P625 coordinates of each location
+ * Returns the documented movement history for one artwork by combining, in
+ * descending credibility tier (see draft/DATA_SOURCES.md):
+ *   - Museum prose (tier A): AIC provenance_text + exhibition_history, extracted
+ *     by Claude into dated, structured locations — the real journeys live here.
+ *   - Wikidata P276 (tier B): location statements with P580/P582 dates + P625 coords.
+ *   - Museum detail for title/artist/date/thumbnail + the museum's OWN location.
  *
  * Honesty contract:
- *   - No hardcoded artwork data. If sources are thin, hasGap = true + a gap note.
- *   - Every LocationEntry carries its own source string.
+ *   - No hardcoded artwork data. Claude only EXTRACTS what the prose states; it
+ *     never invents dates or places. If sources are thin, hasGap = true + a note.
+ *   - Every LocationEntry carries its own source string (its tier).
  *   - geoLocation is the museum's OWN field, never a cross-museum "on view" claim.
+ *   - A place we can't geocode keeps lat/lng null: shown in the timeline, not faked on the map.
  *
  * Cache: 10 min TTL. Rate limit: 20 req / min / IP (shared).
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import Anthropic from '@anthropic-ai/sdk'
 import { cacheGet, cacheSet, checkRateLimit } from '@/lib/cache'
+import { geocode, geocodeNamed } from '@/lib/geocode'
 import type {
   ArtworkMeta,
   LocationEntry,
@@ -112,13 +118,39 @@ function parsePoint(wkt: string | undefined): { lat: number | null; lng: number 
   return { lng: parseFloat(m[1]), lat: parseFloat(m[2]) }
 }
 
-async function fetchWikidataLocations(title: string): Promise<LocationEntry[]> {
-  // Match the artwork by exact English label, pull P276 with date + coord.
-  const escaped = title.replace(/["\\]/g, '\\$&')
+const WD_UA = 'ProvenanceTracker/0.1 (research demo; provenance reconciliation)'
+
+// Find the artwork's Wikidata entity by title (robust to em-dashes / aliases /
+// date suffixes that exact-label matching misses). Prefer a candidate whose
+// description names the artist or calls it a painting/artwork.
+async function findWikidataQid(title: string, artist: string): Promise<string | null> {
+  const surname = artist.replace(/\(.*?\)/g, '').trim().split(/\s+/).pop()?.toLowerCase() ?? ''
+  const tries = [title, title.split(/[—–\-:(]/)[0].trim()].filter((v, i, a) => v && a.indexOf(v) === i)
+
+  for (const q of tries) {
+    const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(q)}&language=en&type=item&format=json&limit=7&origin=*`
+    const res = await fetch(url, { headers: { 'User-Agent': WD_UA }, next: { revalidate: 0 } })
+    if (!res.ok) continue
+    const json = (await res.json()) as { search?: Array<{ id: string; description?: string }> }
+    const hits = json.search ?? []
+    if (!hits.length) continue
+    // Prefer a hit whose description mentions the artist surname or "painting".
+    const best =
+      hits.find(h => surname && (h.description ?? '').toLowerCase().includes(surname)) ??
+      hits.find(h => /painting|artwork|sculpture|drawing|print/i.test(h.description ?? '')) ??
+      hits[0]
+    if (best) return best.id
+  }
+  return null
+}
+
+async function fetchWikidataLocations(title: string, artist: string): Promise<LocationEntry[]> {
+  const qid = await findWikidataQid(title, artist)
+  if (!qid) return []
+
   const query = `
 SELECT ?locationLabel ?startDate ?endDate ?coord WHERE {
-  ?item rdfs:label "${escaped}"@en .
-  ?item p:P276 ?stmt .
+  wd:${qid} p:P276 ?stmt .
   ?stmt ps:P276 ?location .
   OPTIONAL { ?stmt pq:P580 ?startDate }
   OPTIONAL { ?stmt pq:P582 ?endDate }
@@ -128,10 +160,7 @@ SELECT ?locationLabel ?startDate ?endDate ?coord WHERE {
 
   const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`
   const res = await fetch(url, {
-    headers: {
-      Accept: 'application/sparql-results+json',
-      'User-Agent': 'ProvenanceTracker/0.1 (research demo)',
-    },
+    headers: { Accept: 'application/sparql-results+json', 'User-Agent': WD_UA },
     next: { revalidate: 0 },
   })
   if (!res.ok) throw new Error(`Wikidata HTTP ${res.status}`)
@@ -148,6 +177,115 @@ SELECT ?locationLabel ?startDate ?endDate ?coord WHERE {
       source: 'Wikidata P276',
     }
   })
+}
+
+// ─── Claude prose extraction (tier A — the real journeys) ─────────────────────
+// Turn scholarly provenance/exhibition prose into dated, structured locations.
+// Claude is instructed to EXTRACT ONLY what the text states — never to invent.
+
+interface ExtractedEntry {
+  place: string
+  startYear: string | null
+  endYear: string | null
+  kind: 'creation' | 'ownership' | 'exhibition' | 'institution'
+}
+
+async function extractProseLocations(
+  title: string,
+  artist: string,
+  prose: string,
+): Promise<LocationEntry[]> {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey || prose.trim().length < 20) return []
+
+  const client = new Anthropic({ apiKey })
+  const prompt = `You extract a movement timeline from museum provenance/exhibition text.
+ARTWORK: ${title} — ${artist}
+
+TEXT:
+${prose.slice(0, 4000)}
+
+Return ONLY JSON: {"entries":[{"place": string, "startYear": string|null, "endYear": string|null, "kind": "creation"|"ownership"|"exhibition"|"institution"}]}
+Rules:
+- Extract ONLY places/dates explicitly in the text. NEVER invent a place or a date.
+- "place" should be a city when stated (e.g. "Paris", "Chicago"); include the venue if useful ("Brussels (Musée de l'Art Moderne)").
+- Use 4-digit years only; null if the text gives no year for that move.
+- One entry per documented location/owner/exhibition, in chronological order.
+- If the text documents no location, return {"entries":[]}.`
+
+  let raw: string
+  try {
+    const msg = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 700,
+      messages: [{ role: 'user', content: prompt }],
+    })
+    const block = msg.content[0]
+    raw = block.type === 'text' ? block.text : ''
+  } catch (err) {
+    console.error('[provenance/extract]', err)
+    return []
+  }
+
+  let parsed: { entries?: ExtractedEntry[] }
+  try {
+    parsed = JSON.parse(raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim())
+  } catch {
+    return []
+  }
+
+  const kindSource: Record<ExtractedEntry['kind'], string> = {
+    creation: 'AIC provenance',
+    ownership: 'AIC provenance',
+    institution: 'AIC provenance',
+    exhibition: 'AIC exhibition history',
+  }
+
+  return (parsed.entries ?? [])
+    .filter(e => e && typeof e.place === 'string' && e.place.trim())
+    .map(e => {
+      const pt = geocode(e.place)
+      return {
+        name: e.place.trim(),
+        lat: pt?.lat ?? null,
+        lng: pt?.lng ?? null,
+        startDate: e.startYear?.match(/\d{4}/)?.[0] ?? null,
+        endDate: e.endYear?.match(/\d{4}/)?.[0] ?? null,
+        source: kindSource[e.kind] ?? 'AIC provenance',
+      }
+    })
+}
+
+// Deterministic fallback: when Claude is unavailable (no key / no credits / error),
+// still mine the same tier-A prose. Split into clauses, geocode each, take its year.
+// Lower precision than Claude (it can't resolve "by descent to his mother" to a city),
+// but it's honest: it only emits a location when a KNOWN city literally appears in the
+// clause, and it never invents a coordinate or a date. Claude upgrades this when funded.
+function deterministicExtract(prose: string): LocationEntry[] {
+  if (!prose || prose.trim().length < 20) return []
+  const clauses = prose.split(/[;\n]+/).map(c => c.trim()).filter(Boolean)
+  const out: LocationEntry[] = []
+  const seen = new Set<string>()
+  for (const clause of clauses) {
+    const city = geocodeNamed(clause)
+    if (!city) continue
+    const isExhibition = /exposition|exhibition|salon|biennale|cat\.|mus[eé]e|gallery|museum/i.test(clause)
+    const years = clause.match(/\b(1[5-9]\d{2}|20[0-2]\d)\b/g)
+    const year = years ? years[years.length - 1] : null
+    // Collapse exact city+year duplicates (e.g. two catalogue lines for one show).
+    const key = `${city.name}:${year ?? ''}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push({
+      name: city.name,
+      lat: city.lat,
+      lng: city.lng,
+      startDate: year,
+      endDate: null,
+      source: isExhibition ? 'AIC exhibition history' : 'AIC provenance',
+    })
+  }
+  return out
 }
 
 // ─── Route handler ───────────────────────────────────────────────────────────
@@ -183,9 +321,11 @@ export async function GET(request: NextRequest) {
 
   // 1. Museum detail (required — if this fails, the artwork itself is unknown)
   let meta: ArtworkMeta
+  let prose = ''
   try {
     const detail = source === 'met' ? await fetchMet(id) : await fetchAic(id)
     meta = detail.meta
+    prose = detail.raw
   } catch (err) {
     console.error('[provenance/detail]', err)
     return NextResponse.json(
@@ -194,16 +334,29 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  // 2. Wikidata location chain (best-effort — thin coverage is expected & honest)
-  let locations: LocationEntry[] = []
-  try {
-    locations = await fetchWikidataLocations(meta.title)
-  } catch (err) {
-    console.error('[provenance/wikidata]', err)
-    // Leave locations empty; the gap state below covers it honestly.
-  }
+  // 2. Pull from sources in parallel: museum prose (tier A, via Claude) + Wikidata (tier B).
+  let [proseLocs, wikiLocs] = await Promise.all([
+    extractProseLocations(meta.title, meta.artist, prose).catch(err => {
+      console.error('[provenance/prose]', err); return [] as LocationEntry[]
+    }),
+    fetchWikidataLocations(meta.title, meta.artist).catch(err => {
+      console.error('[provenance/wikidata]', err); return [] as LocationEntry[]
+    }),
+  ])
+  // Fallback: if Claude produced nothing (unavailable / no credits), mine the prose deterministically.
+  if (proseLocs.length === 0) proseLocs = deterministicExtract(prose)
 
-  // 3. Honest gap detection
+  // 3. Merge: prose journey first (it's the real chain), then any Wikidata location
+  // not already represented. Sort chronologically; undated entries sink to the end.
+  const seen = new Set(proseLocs.map(l => l.name.toLowerCase().slice(0, 12)))
+  const merged = [
+    ...proseLocs,
+    ...wikiLocs.filter(l => !seen.has(l.name.toLowerCase().slice(0, 12))),
+  ]
+  const yr = (l: LocationEntry) => (l.startDate ? parseInt(l.startDate.slice(0, 4), 10) : Number.MAX_SAFE_INTEGER)
+  const locations = merged.sort((a, b) => yr(a) - yr(b))
+
+  // 4. Honest gap detection — based on what we can actually MAP.
   const located = locations.filter(l => l.lat != null && l.lng != null)
   const hasGap = located.length < 2
   const gaps: GapEntry[] = hasGap
@@ -212,9 +365,11 @@ export async function GET(request: NextRequest) {
           from: null,
           to: null,
           note:
-            located.length === 0
-              ? 'No mapped movement history found in structured sources (Wikidata P276). Provenance gap — help complete it.'
-              : 'Only one mapped location found; the movement chain is incomplete. Provenance gap — help complete it.',
+            locations.length === 0
+              ? 'No documented movement history found in structured sources or museum records. Provenance gap — help complete it.'
+              : located.length === 0
+                ? 'Provenance is documented but its locations could not be mapped to coordinates. Provenance gap — help complete it.'
+                : 'Only one mapped location found; the movement chain is incomplete. Provenance gap — help complete it.',
         },
       ]
     : []

@@ -20,6 +20,22 @@ written to a file, it's lost when the context window rolls. This file is the saf
 
 <!-- append insights below, newest first -->
 
+- `#data` DATA DEPTH unlocked from museum prose (the project's real thesis). AIC's
+  `provenance_text` + `exhibition_history` are dense, dated, scholarly (tier-A) — e.g. La Grande
+  Jatte: a true Paris 1886 → Brussels 1887 → Paris → Chicago 1924 → Boston → NY 1958 → Chicago
+  chain. New /api/provenance pipeline: Claude extracts structured dated locations from the prose
+  (tier A) + Wikidata P276 (tier B), geocoded via a static art-city gazetteer (src/lib/geocode.ts),
+  merged + sorted chronologically. KEY REALITY: Wikidata alone gives ~1 location/work (current
+  museum) — it can NOT produce journeys. The prose can. verify.mjs now asserts aic-27992 yields
+  ≥2 mapped locations so this can't regress.
+
+- `#risk #data` BLOCKER: the ANTHROPIC_API_KEY account is OUT OF CREDITS ("credit balance is too
+  low"). This kills BOTH the /api/reconcile route and Claude-based prose extraction until funded.
+  Mitigation shipped: a deterministic fallback extractor (geocode each prose clause + pull its year)
+  runs when Claude is unavailable — lower precision (can't resolve "by descent to his mother" to a
+  city) but honest (only emits a KNOWN city literally in the text, never invents). Claude becomes the
+  quality upgrade once the key is funded. ACTION FOR HUMAN: add Anthropic credits to restore Claude.
+
 - `#design #process` Polish pass verified live (orchestrator, screenshots). CONFIRMED good: globe
   now shows continent outlines + atmospheric glow + glowing pins (luminous, no longer an empty
   sphere); detail panel confirmed warm off-white gallery palette. FOUND + FIXED a new bug: the
