@@ -4,7 +4,19 @@ The loop picks the top unchecked `[ ]` item, routes it to the owning agent, and 
 agent ships it through `node scripts/ship.mjs --commit "..."`. Never skip a P0 for polish.
 Mark `[x]` when shipped (gate green + committed). One item per cycle.
 
-## P0 — world-class redesign (the demo is currently "hideous")
+## P0 — REAL landing redesign (the reskin left the v0 skeleton; it "looks the same")
+- [ ] design-director: produce an ACTUAL redesigned landing mockup that LEADS WITH ART
+      (featured works as large imagery / editorial composition), globe demoted to a cinematic
+      accent or "view on map" — for the user to react to BEFORE implementation. Not another reskin.
+- [ ] Rethink information architecture: the museum list is not the point; the works + their
+      journeys are. Reconsider the persistent sidebar, hierarchy, spacing rhythm.
+
+## Blocked — needs a key from the human
+- [ ] Rijksmuseum: register free key at rijksmuseum.nl/en/rijksstudio, add RIJKSMUSEUM_KEY to
+      .env.local, then integrate (search + provenance). API returns 410 without a key. Owner: provenance-data.
+- [ ] Anthropic credits exhausted → restore Claude reconciliation/extraction (currently deterministic fallback).
+
+## P1 (was P0) — world-class redesign polish
 - [ ] `design-director`: author `draft/DESIGN_SYSTEM.md` — type system (display serif + UI
       grotesque), elevated archival palette, spacing grid, motion, component specs. Gallery/museum bar.
 - [ ] `design-director`: produce the redesign direction for the hero + provenance detail view

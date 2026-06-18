@@ -20,6 +20,24 @@ written to a file, it's lost when the context window rolls. This file is the saf
 
 <!-- append insights below, newest first -->
 
+- `#data #design` Curation + globe rethink (the globe was decoration). Shipped: src/lib/featured.ts
+  (8 verified data-rich AIC works — mostly European masterpieces that crossed the Atlantic to
+  Chicago, so the arcs are real and dramatic), landing now LEADS WITH ART ("Featured Journeys"
+  above the museum list), and the globe AUTO-FRAMES to each work's mapped journey (centroid +
+  spread → altitude) so you can actually read the destinations/continents. Verified: The Bedroom
+  loads a 7-city journey (Paris/Amsterdam/Berlin/NY/Chicago/Vienna/London).
+
+- `#risk #data` Rijksmuseum is BLOCKED: no RIJKSMUSEUM_KEY in .env.local (only ANTHROPIC_API_KEY +
+  app name) and the API returns 410 without one. ACTION FOR HUMAN: register a free key at
+  rijksmuseum.nl/en/rijksstudio and add RIJKSMUSEUM_KEY to .env.local. Until then, AIC is our
+  richest no-key prose source.
+
+- `#design #process` Admitted: the "redesign" was a RESKIN, not a redesign — fonts + a gallery
+  detail panel, but the v0 information architecture was untouched (same dark globe, same museum-list
+  sidebar, same bottom search), which is why it "looked the same." Real fix = rethink the composition
+  and LEAD WITH ART. Started this turn (Featured Journeys on landing); a full landing redesign is
+  queued (see [[TOMORROW]]). Lesson: typography ≠ layout; changing tokens doesn't change the skeleton.
+
 - `#data` DATA DEPTH unlocked from museum prose (the project's real thesis). AIC's
   `provenance_text` + `exhibition_history` are dense, dated, scholarly (tier-A) — e.g. La Grande
   Jatte: a true Paris 1886 → Brussels 1887 → Paris → Chicago 1924 → Boston → NY 1958 → Chicago
