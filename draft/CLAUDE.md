@@ -1,27 +1,29 @@
-# Provenance Tracker — Art Movement & Exhibition History
+# Provenance Tracker — The Hidden Journeys of Masterpieces
 
 ## Vision
-An interactive 3D globe showing where the world's greatest art **has been** — a
-cross-institution provenance & exhibition-movement explorer.
-Visual reference: war-tracker.com — dark, alive, cinematic — but for art.
-Design reference: Open Design warm palette applied over dark background.
-Globe = funnel; provenance data API = product (see [[BUSINESS_CASE.md]]).
-Purpose: sourced, dated, honest movement history for insurers, researchers, and curious people.
+A curated, rigorously-sourced provenance-storytelling web app. A small set of famous
+paintings, each shown with a documented, dated **chain of custody** — every fact sourced,
+every gap shown honestly, exhibition loans kept separate from ownership.
+Audience: museums, educators, and the art-curious. Doubles as a method proof-of-concept
+for any future B2B due-diligence/data product. See [[BUSINESS_CASE.md]].
+Honestly NOT: an insurance-grade API, live "where is it now" tracking, or exhaustive coverage.
 
-## What Alibi does
-- Shows the world's top 10 museums as glowing pins on a 3D globe
-- Users search any painting or artist
-- Shows the painting's **documented** movement history as animated arcs (Wikidata P276 +
-  museum exhibition-history endpoints), with every claim sourced and dated
-- When the record is thin, shows an honest "Provenance gap — help complete it" state
-- Uses Claude to reconcile conflicting provenance fragments into one timeline and flag gaps
+## What it does
+- **Landing** = an editorial gallery of curated public-domain masterpieces (lead with the art).
+- **Story view** = artwork hero + dated chain-of-custody timeline (every entry sourced) + a
+  cinematic map auto-framed to that work's journey + a separate exhibition-loan list + credit.
+- When the record is thin, shows an honest "Provenance gap — help complete it" state.
+- "Explore beyond the collection" search spans Met / AIC / Rijksmuseum with a truthful empty state.
+- Reconciles multi-source fragments into one custody timeline (Claude when funded; deterministic
+  extraction from museum prose otherwise).
 
 ## Honesty rules (non-negotiable — these protect credibility)
 - NEVER claim live cross-museum "currently on view" status — no public API supports it.
-  `is_on_view` describes ONLY that museum's own collection.
-- Every on-screen fact must carry a visible source (Wikidata / Met / AIC).
-- Sparse data is shown as a gap, never faked. No invented "risk scores" from thin data.
-- The unscripted-search path must degrade gracefully and honestly before any polish.
+- Every on-screen fact carries a visible source (Met / AIC / Rijksmuseum / Wikidata).
+- Sparse data is shown as a gap, never faked. No invented dates, coordinates, or risk scores.
+- Custody (ownership) is never conflated with exhibition loans (a loan is not a move).
+- Images shown ONLY for public-domain works, credited to the institution.
+- The unscripted-search path degrades gracefully and honestly.
 
 ## Design tokens (follow exactly, never deviate)
 ```
@@ -51,8 +53,8 @@ Font:            Pretendard
 - Metropolitan Museum API (no key): https://collectionapi.metmuseum.org/public/collection/v1
 - Art Institute of Chicago API (no key): https://api.artic.edu/api/v1
 - Wikidata SPARQL (no key): https://query.wikidata.org/sparql
-- Rijksmuseum API (key: RIJKSMUSEUM_KEY): https://www.rijksmuseum.nl/api/en/collection
-- Anthropic API (key: ANTHROPIC_API_KEY)
+- Rijksmuseum (NO key — new Linked Art API): https://data.rijksmuseum.nl/search/collection (creator=/title=/type=schilderij) + https://id.rijksmuseum.nl/<id>. Old www.rijksmuseum.nl/api is retired (410).
+- Anthropic API (key: ANTHROPIC_API_KEY) — currently OUT OF CREDITS; extraction falls back to deterministic prose mining until funded. Do not call /api/reconcile in the demo.
 
 ## Top 10 Museums
 ```ts

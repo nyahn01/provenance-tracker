@@ -1,69 +1,52 @@
-# Provenance Tracker — Business Case
+# Provenance Tracker — Positioning
 
-> One line: **A cross-institution provenance & exhibition-movement graph for the world's art — public-facing globe as the funnel, a provenance data API as the product.**
+> One line: **A curated, rigorously-sourced provenance-storytelling app — "the hidden journeys of masterpieces" — that shows a famous painting's documented chain of custody, every fact sourced and every gap shown honestly.**
 
 ## 1. The honest problem
+A painting's ownership history is real, fascinating, and fragmented — scattered across museum
+records, catalogues, auction archives, and Wikidata. The public almost never sees a work's
+documented journey, and provenance transparency matters more than ever (restitution and
+looted-art debates). Nobody offers a beautiful, honest, *sourced* way to read these journeys.
 
-Provenance and exhibition-movement data for artworks is **real, valuable, and fragmented**:
-- Museum sites each hold only their own collection and their own exhibition history.
-- Wikidata has location (`P276`) on only ~5.5% of art objects, usually a single current value, rarely a dated chain.
-- Auction, loan, and repatriation records live in PDFs, press releases, and closed databases.
+## 2. What we are NOT claiming (this is what protects credibility)
+- ❌ Insurance-grade data or a transit-risk API. Coverage is too thin and uneven — underwriters
+  would not trust it. (Earlier pivot away from this was correct.)
+- ❌ Live "where is it now" tracking. No public API supports cross-museum status.
+- ❌ Exhaustive coverage of all art. We are **curated, not comprehensive** — and we say so.
 
-Nobody offers a **single, queryable, cross-institution "where has this work been" graph** with confidence/coverage flags. That gap is the wedge.
+## 3. What we ARE
+A curated set of famous, **public-domain** works, each with:
+- a **documented, dated chain of custody** (owners/locations over time), every entry sourced;
+- **exhibition loans kept separate** from ownership (a loan is not a change of custody);
+- **honest gaps** shown as a feature, not hidden;
+- a cinematic map auto-framed to that work's actual journey.
+Method: multi-source reconciliation across Met, Art Institute of Chicago, Rijksmuseum, and
+Wikidata (Claude-assisted when funded; deterministic prose-mining otherwise).
 
-## 2. What we are NOT claiming (kills credibility if we do)
+## 4. Who it's for (in order of realism)
+| Segment | Why it matters | What they get |
+|---|---|---|
+| **Museums / educators** | Engaging, transparent provenance storytelling; restitution-era credibility | Embeddable, sourced provenance stories |
+| **Art-curious public / press** | "Where has this masterpiece been?" | The public gallery (top of funnel) |
+| **(Later) due-diligence buyers** | Dealers/researchers want sourced ownership trails | Same data layer as a method proof-of-concept — not pitched as insurance |
 
-- ❌ "Live tracking of where every artwork is on view right now." No public API supports cross-museum loan status.
-- ❌ A precise "transit risk score" from 5%-coverage data. Underwriters will not trust it as-is.
-- ❌ One-off PDF sales as a real business. It's a novelty, not a model.
+## 5. Why it's credible (the only real asset)
+Every fact is sourced and dated; gaps are shown, never invented; images appear only for
+public-domain works with attribution. Credibility — not coverage — is the moat. The reconciled,
+gap-aware, custody-vs-loan dataset compounds as we add works and sources.
 
-## 3. What we ARE building
+## 6. Honest limitations (today)
+- Coverage is narrow (a curated set, mostly Art Institute of Chicago + Rijksmuseum depth).
+- The Met API exposes no provenance prose; Wikidata gives ~1 (sometimes wrong) location.
+- Deterministic extraction is rougher than Claude (which is currently unfunded).
+- Some iconic works (Picasso, Hopper) are in copyright — data is fine, images are not ours to show.
 
-A provenance/exhibition-history explorer backed by a reconciled data layer:
-- **Documented** journey from Wikidata `P276` (with `P580`/`P582` date qualifiers) + museum exhibition-history endpoints (AIC exposes every exhibition since 1879).
-- **Honest coverage**: when history is thin, show a **"Provenance gap — help complete it"** state. Missing data becomes the roadmap and the contribution wedge.
-- **Claude's real job**: reconcile conflicting provenance fragments from multiple sources into one clean timeline and flag the gaps — a task only an LLM does well.
+## 7. If pursued further
+1. Expand the curated set; add tier-A sources (Getty Provenance Index, RKD, Europeana).
+2. Restore Claude reconciliation for conflict-flagging and cleaner custody chains.
+3. Explore a B2B "provenance method" demo for dealers/researchers — never over-claiming coverage.
 
-## 4. Customers & revenue (in order of realism)
-
-| Segment | Pain | What they buy | Sale type |
-|---|---|---|---|
-| **Fine-art insurers / underwriters** | Transit is the *largest* priced risk; they need movement exposure | Provenance/movement **data API** → transit-exposure signal | Slow B2B, high value |
-| **Auction houses / dealers** | Due diligence, looted/disputed-work red flags | Provenance lookup + gap/red-flag report | B2B, recurring |
-| **Museum registrars** | Loan-history tracking across institutions | Registrar SaaS on the same data layer | B2B SaaS |
-| **Curious public / curators** | "Where has this work been?" | The globe; optional passport export | Top-of-funnel, low ARPU |
-
-Market signal: fine-art insurance is large and growing (AXA Art, Chubb, Allianz, Hiscox, Lloyd's, AIG); transit frequency/distance is an explicit pricing input.
-
-## 5. Positioning (neutral, broad-appeal)
-
-A straightforward provenance & movement tracker. No niche angle — serves insurers (transit risk), 
-researchers/dealers (due diligence), curators (exhibition planning), public curiosity (the globe).
-Broad appeal, multiple revenue vectors from the same data layer.
-
-## 6. Moat & sustainability
-
-- Raw Wikidata/Met/AIC data is **not** a moat — anyone can hit the same APIs.
-- The moat is the **reconciled, gap-filled, cross-institution graph** plus user-contributed corrections — a compounding asset.
-- Front-end is swappable; **invest in the data model** so the same core powers the globe, the API, and the registrar SaaS.
-
-## 7. Competitive map
-
-- **Single-collection management:** Artwork Archive, ArtVault Pro, CatalogIt — manage *your own* records, not cross-institution.
-- **Blockchain certificates:** Verisart, Artory, Arcual — authenticity certs, not a movement graph.
-- **Structured provenance tooling:** Art Tracks (Carnegie) — open-source provenance-as-data, museum-internal.
-- **Gap we own:** cross-institution movement graph + map + coverage honesty + insurer-facing API.
-
-## 8. Pivot tree (if the consumer globe stalls)
-
-1. Provenance **data API** for insurers & auction houses.
-2. Due-diligence / **red-flag tool** for looted-or-disputed works (the "alibi" angle).
-3. **Museum registrar SaaS** for cross-institution loan history.
-
-All three reuse the same data layer — build it well once.
-
-## 9. Security & operating notes
-
+## 8. Security & operating notes
 - All external + LLM calls server-side via API routes; keys in `process.env`, never client-side.
-- Per-IP rate limiting on our routes; we proxy free APIs that rate-limit — cache aggressively, pre-warm scripted demo queries.
-- Budget-cap the Anthropic key.
+- Per-IP rate limiting on our routes; cache aggressively (we proxy free APIs).
+- Public-domain image gating + attribution + a visible "Data & rights" note (legal).
