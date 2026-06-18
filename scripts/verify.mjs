@@ -82,7 +82,7 @@ async function main() {
       const p = prov.json
       // contract shape
       const shapeOk =
-        p && p.artwork && Array.isArray(p.locations) &&
+        p && p.artwork && Array.isArray(p.locations) && Array.isArray(p.exhibitions) &&
         Array.isArray(p.gaps) && typeof p.hasGap === 'boolean'
       if (!shapeOk) fail('provenance does NOT match ProvenanceResponse contract')
       else pass('provenance matches ProvenanceResponse contract')
@@ -110,12 +110,22 @@ async function main() {
     fail(`depth probe returned HTTP ${depth.status}`)
   } else {
     const locs = depth.json?.locations ?? []
+    const exhibitions = depth.json?.exhibitions ?? []
     const mapped = locs.filter(l => l.lat != null && l.lng != null)
-    if (mapped.length < 2) fail(`expected ≥2 mapped locations for La Grande Jatte, got ${mapped.length}`)
-    else pass(`La Grande Jatte yields ${mapped.length} mapped locations (real journey)`)
+    if (mapped.length < 2) fail(`expected ≥2 mapped custody locations for La Grande Jatte, got ${mapped.length}`)
+    else pass(`La Grande Jatte yields ${mapped.length} mapped custody locations`)
+    // custody/loan separation: exhibitions must be split out, not folded into the chain
+    if (exhibitions.length < 1) fail('exhibitions[] empty — loans not separated from custody')
+    else pass(`${exhibitions.length} exhibition loans separated from the custody chain`)
+    // the precision fix: loans should NOT be in the custody chain
+    if (locs.some(l => l.source && /exhibition/i.test(l.source))) {
+      fail('an exhibition loan leaked into the custody chain (locations[])')
+    } else {
+      pass('no exhibition loans in the custody chain')
+    }
     // honesty: no entry may invent a year outside a plausible range
-    const badYear = locs.find(l => l.startDate && !/^(1[5-9]\d{2}|20[0-2]\d)$/.test(l.startDate.slice(0,4)))
-    if (badYear) fail(`a location has an implausible/invented date: ${badYear.startDate}`)
+    const badYear = [...locs, ...exhibitions].find(l => l.startDate && !/^(1[5-9]\d{2}|20[0-2]\d)$/.test(l.startDate.slice(0,4)))
+    if (badYear) fail(`an entry has an implausible/invented date: ${badYear.startDate}`)
     else pass('all extracted dates are plausible 4-digit years')
   }
 

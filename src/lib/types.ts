@@ -57,9 +57,12 @@ export interface GapEntry {
 
 export interface ProvenanceResponse {
   artwork: ArtworkMeta
+  /** Chain of CUSTODY only — owners/locations over time. This is the journey (the arcs). */
   locations: LocationEntry[]
+  /** Exhibition LOANS — the work was shown here and returned. NOT custody changes. */
+  exhibitions: LocationEntry[]
   gaps: GapEntry[]
-  /** true when structured coverage is thin (< 2 located entries). */
+  /** true when the custody chain is thin (< 2 mapped locations). */
   hasGap: boolean
 }
 

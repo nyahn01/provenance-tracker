@@ -450,10 +450,11 @@ export default function ProvenanceGlobe() {
           geoLocation: null,
         },
         locations: [],
+        exhibitions: [],
         gaps: [{
           from: null,
           to: null,
-          note: 'No documented movement history found in structured sources (Wikidata P276, Met, AIC). Help complete the record.',
+          note: 'No documented chain of custody found in structured sources (Wikidata P276, Met, AIC). Help complete the record.',
         }],
         hasGap: true,
       })
@@ -914,7 +915,7 @@ export default function ProvenanceGlobe() {
                       marginBottom: 20,
                     }}
                   >
-                    Movement History
+                    Provenance · chain of custody
                   </div>
 
                   {/* Pure gap state (no locations at all) */}
@@ -1017,6 +1018,54 @@ export default function ProvenanceGlobe() {
                     </div>
                   )}
                 </div>
+
+                {/* ── Exhibition history (LOANS — not custody) ───────────────── */}
+                {provenance.exhibitions && provenance.exhibitions.length > 0 && (
+                  <div style={{ padding: '28px 24px 0' }}>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-ui)',
+                        fontSize: '0.65rem',
+                        fontWeight: 600,
+                        letterSpacing: '0.12em',
+                        textTransform: 'uppercase' as const,
+                        color: GAL.textFaint,
+                        marginBottom: 6,
+                      }}
+                    >
+                      Exhibition history
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-ui)',
+                        fontSize: '0.7rem',
+                        color: GAL.textMuted,
+                        marginBottom: 14,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {provenance.exhibitions.length} loans — the work was shown here and returned. Not changes of custody.
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {provenance.exhibitions.map((ex, i) => (
+                        <span
+                          key={i}
+                          style={{
+                            fontFamily: 'var(--font-ui)',
+                            fontSize: '0.7rem',
+                            color: GAL.textMuted,
+                            background: GAL.surface2,
+                            border: `1px solid ${GAL.border}`,
+                            borderRadius: 'var(--radius-sm)',
+                            padding: '3px 8px',
+                          }}
+                        >
+                          {ex.name}{ex.startDate ? ` ${ex.startDate}` : ''}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* ── Sources footer ───────────────────────────────────────── */}
                 <div

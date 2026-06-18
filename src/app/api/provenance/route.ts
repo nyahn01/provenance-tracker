@@ -44,7 +44,9 @@ interface MetObject {
   repository: string
 }
 
-async function fetchMet(id: string): Promise<{ meta: ArtworkMeta; raw: string }> {
+interface Detail { meta: ArtworkMeta; provenance: string; exhibitions: string }
+
+async function fetchMet(id: string): Promise<Detail> {
   const res = await fetch(
     `https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`,
     { next: { revalidate: 0 } },
@@ -62,7 +64,9 @@ async function fetchMet(id: string): Promise<{ meta: ArtworkMeta; raw: string }>
       thumbnail: o.primaryImageSmall || null,
       geoLocation: geo,
     },
-    raw: o.repository || '',
+    // The Met public API exposes no provenance/exhibition prose.
+    provenance: '',
+    exhibitions: '',
   }
 }
 
@@ -77,7 +81,7 @@ interface AicData {
   image_id: string | null
 }
 
-async function fetchAic(id: string): Promise<{ meta: ArtworkMeta; raw: string }> {
+async function fetchAic(id: string): Promise<Detail> {
   const res = await fetch(
     `https://api.artic.edu/api/v1/artworks/${id}` +
       `?fields=id,title,artist_display,date_display,exhibition_history,` +
@@ -98,7 +102,9 @@ async function fetchAic(id: string): Promise<{ meta: ArtworkMeta; raw: string }>
         : null,
       geoLocation: d.place_of_origin || null,
     },
-    raw: [d.provenance_text, d.exhibition_history].filter(Boolean).join('\n\n'),
+    // Kept SEPARATE: provenance = chain of custody (the journey); exhibitions = loans.
+    provenance: d.provenance_text || '',
+    exhibitions: d.exhibition_history || '',
   }
 }
 
@@ -187,31 +193,33 @@ interface ExtractedEntry {
   place: string
   startYear: string | null
   endYear: string | null
-  kind: 'creation' | 'ownership' | 'exhibition' | 'institution'
 }
 
-async function extractProseLocations(
+// Extract a CUSTODY chain (owners/locations over time) from provenance_text.
+// Exhibitions are handled separately — a loan is not a change of custody.
+async function extractOwnershipLocations(
   title: string,
   artist: string,
   prose: string,
+  sourceLabel: string,
 ): Promise<LocationEntry[]> {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey || prose.trim().length < 20) return []
 
   const client = new Anthropic({ apiKey })
-  const prompt = `You extract a movement timeline from museum provenance/exhibition text.
+  const prompt = `You extract the CHAIN OF CUSTODY (successive owners/holders and where they were) from an artwork's provenance text. This is ownership over time — NOT exhibitions or loans.
 ARTWORK: ${title} — ${artist}
 
-TEXT:
+PROVENANCE TEXT:
 ${prose.slice(0, 4000)}
 
-Return ONLY JSON: {"entries":[{"place": string, "startYear": string|null, "endYear": string|null, "kind": "creation"|"ownership"|"exhibition"|"institution"}]}
+Return ONLY JSON: {"entries":[{"place": string, "startYear": string|null, "endYear": string|null}]}
 Rules:
+- One entry per successive owner/holder, in chronological order, with the city they held it in.
 - Extract ONLY places/dates explicitly in the text. NEVER invent a place or a date.
-- "place" should be a city when stated (e.g. "Paris", "Chicago"); include the venue if useful ("Brussels (Musée de l'Art Moderne)").
-- Use 4-digit years only; null if the text gives no year for that move.
-- One entry per documented location/owner/exhibition, in chronological order.
-- If the text documents no location, return {"entries":[]}.`
+- "place" = the city (e.g. "Paris", "Chicago"). Collapse consecutive owners in the same city into one entry.
+- Use 4-digit years only; null if none given.
+- If no custody/location is documented, return {"entries":[]}.`
 
   let raw: string
   try {
@@ -234,13 +242,6 @@ Rules:
     return []
   }
 
-  const kindSource: Record<ExtractedEntry['kind'], string> = {
-    creation: 'AIC provenance',
-    ownership: 'AIC provenance',
-    institution: 'AIC provenance',
-    exhibition: 'AIC exhibition history',
-  }
-
   return (parsed.entries ?? [])
     .filter(e => e && typeof e.place === 'string' && e.place.trim())
     .map(e => {
@@ -251,7 +252,7 @@ Rules:
         lng: pt?.lng ?? null,
         startDate: e.startYear?.match(/\d{4}/)?.[0] ?? null,
         endDate: e.endYear?.match(/\d{4}/)?.[0] ?? null,
-        source: kindSource[e.kind] ?? 'AIC provenance',
+        source: sourceLabel,
       }
     })
 }
@@ -261,7 +262,7 @@ Rules:
 // Lower precision than Claude (it can't resolve "by descent to his mother" to a city),
 // but it's honest: it only emits a location when a KNOWN city literally appears in the
 // clause, and it never invents a coordinate or a date. Claude upgrades this when funded.
-function deterministicExtract(prose: string): LocationEntry[] {
+function deterministicExtract(prose: string, sourceLabel: string): LocationEntry[] {
   if (!prose || prose.trim().length < 20) return []
   const clauses = prose.split(/[;\n]+/).map(c => c.trim()).filter(Boolean)
   const out: LocationEntry[] = []
@@ -269,7 +270,6 @@ function deterministicExtract(prose: string): LocationEntry[] {
   for (const clause of clauses) {
     const city = geocodeNamed(clause)
     if (!city) continue
-    const isExhibition = /exposition|exhibition|salon|biennale|cat\.|mus[eé]e|gallery|museum/i.test(clause)
     const years = clause.match(/\b(1[5-9]\d{2}|20[0-2]\d)\b/g)
     const year = years ? years[years.length - 1] : null
     // Collapse exact city+year duplicates (e.g. two catalogue lines for one show).
@@ -282,7 +282,7 @@ function deterministicExtract(prose: string): LocationEntry[] {
       lng: city.lng,
       startDate: year,
       endDate: null,
-      source: isExhibition ? 'AIC exhibition history' : 'AIC provenance',
+      source: sourceLabel,
     })
   }
   return out
@@ -321,11 +321,13 @@ export async function GET(request: NextRequest) {
 
   // 1. Museum detail (required — if this fails, the artwork itself is unknown)
   let meta: ArtworkMeta
-  let prose = ''
+  let provenanceText = ''
+  let exhibitionText = ''
   try {
     const detail = source === 'met' ? await fetchMet(id) : await fetchAic(id)
     meta = detail.meta
-    prose = detail.raw
+    provenanceText = detail.provenance
+    exhibitionText = detail.exhibitions
   } catch (err) {
     console.error('[provenance/detail]', err)
     return NextResponse.json(
@@ -334,47 +336,51 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  // 2. Pull from sources in parallel: museum prose (tier A, via Claude) + Wikidata (tier B).
-  let [proseLocs, wikiLocs] = await Promise.all([
-    extractProseLocations(meta.title, meta.artist, prose).catch(err => {
-      console.error('[provenance/prose]', err); return [] as LocationEntry[]
+  // 2. CUSTODY chain (the journey) from provenance_text — Claude, else deterministic,
+  //    else Wikidata P276. Exhibitions are handled separately so a LOAN is never shown
+  //    as a change of custody. This is the precision fix.
+  let [ownership, wikiLocs] = await Promise.all([
+    extractOwnershipLocations(meta.title, meta.artist, provenanceText, 'AIC provenance').catch(err => {
+      console.error('[provenance/ownership]', err); return [] as LocationEntry[]
     }),
     fetchWikidataLocations(meta.title, meta.artist).catch(err => {
       console.error('[provenance/wikidata]', err); return [] as LocationEntry[]
     }),
   ])
-  // Fallback: if Claude produced nothing (unavailable / no credits), mine the prose deterministically.
-  if (proseLocs.length === 0) proseLocs = deterministicExtract(prose)
+  if (ownership.length === 0) ownership = deterministicExtract(provenanceText, 'AIC provenance')
+  // Wikidata only fills the custody chain when the prose gave us nothing — prose is
+  // tier-A and avoids the wrong-entity matches Wikidata sometimes returns.
+  if (ownership.length === 0) ownership = wikiLocs
 
-  // 3. Merge: prose journey first (it's the real chain), then any Wikidata location
-  // not already represented. Sort chronologically; undated entries sink to the end.
-  const seen = new Set(proseLocs.map(l => l.name.toLowerCase().slice(0, 12)))
-  const merged = [
-    ...proseLocs,
-    ...wikiLocs.filter(l => !seen.has(l.name.toLowerCase().slice(0, 12))),
-  ]
+  // Exhibitions = loans. Deterministic is fine — exhibition_history is highly structured.
+  const exhibitions = deterministicExtract(exhibitionText, 'AIC exhibition history')
+
   const yr = (l: LocationEntry) => (l.startDate ? parseInt(l.startDate.slice(0, 4), 10) : Number.MAX_SAFE_INTEGER)
-  const locations = merged.sort((a, b) => yr(a) - yr(b))
+  const locations = ownership.sort((a, b) => yr(a) - yr(b))
+  exhibitions.sort((a, b) => yr(a) - yr(b))
 
-  // 4. Honest gap detection — based on what we can actually MAP.
+  // 3. Honest gap detection — based on the CUSTODY chain we can map (not loans).
   const located = locations.filter(l => l.lat != null && l.lng != null)
   const hasGap = located.length < 2
+  const exhibitionNote = exhibitions.length
+    ? ` Exhibition history is available below (${exhibitions.length} loans), but loans are not changes of custody.`
+    : ''
   const gaps: GapEntry[] = hasGap
     ? [
         {
           from: null,
           to: null,
           note:
-            locations.length === 0
-              ? 'No documented movement history found in structured sources or museum records. Provenance gap — help complete it.'
+            (locations.length === 0
+              ? 'No documented chain of custody found in structured sources or museum records. Provenance gap — help complete it.'
               : located.length === 0
-                ? 'Provenance is documented but its locations could not be mapped to coordinates. Provenance gap — help complete it.'
-                : 'Only one mapped location found; the movement chain is incomplete. Provenance gap — help complete it.',
+                ? 'Custody is documented but its locations could not be mapped to coordinates. Provenance gap — help complete it.'
+                : 'Only one mapped owner/location found; the chain of custody is incomplete. Provenance gap — help complete it.') + exhibitionNote,
         },
       ]
     : []
 
-  const response: ProvenanceResponse = { artwork: meta, locations, gaps, hasGap }
+  const response: ProvenanceResponse = { artwork: meta, locations, exhibitions, gaps, hasGap }
   cacheSet(cacheKey, response, PROVENANCE_TTL_MS)
   return NextResponse.json(response)
 }
