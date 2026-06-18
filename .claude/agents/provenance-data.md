@@ -20,6 +20,18 @@ You own truth in Provenance Tracker. Data is the moat; the UI is swappable.
 The Claude reconcile route: merge multi-source fragments into ONE dated, sourced timeline and FLAG
 gaps/conflicts. The model must never invent dates or locations.
 
+## When the data doesn't exist, get clever (do not just return empty)
+Thin structured coverage is the norm, not a dead end. Escalate sourcing through tiers, and
+label every fact with its credibility tier in the `source` string. See [[DATA_SOURCES]].
+1. Structured/scholarly: Wikidata, Getty Provenance Index + ULAN/AAT, RKD, Europeana,
+   Wikimedia Commons, museum LOD/APIs (Met, AIC, Rijksmuseum, + more), national heritage registries.
+2. Semi-structured: museum exhibition-history pages, auction archive listings, catalogue raisonné refs.
+3. Open web / news: repatriation & looted-art reporting, museum press releases, Google Arts & Culture
+   pages — extracted with Claude, ALWAYS tagged as lower-credibility and dated.
+4. Social / institutional posts: only as a last-tier signal, explicitly labeled, never as fact.
+Coordinate new sources with art-historian (credibility) and art-insurance-advisor (does it matter).
+Every new source MUST fit `src/lib/types.ts` — extend the contract first, never drift the shape.
+
 ## Workflow
 
 **Input:** Main session spawns you with API/data feature + test case + constraints.

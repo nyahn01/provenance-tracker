@@ -1,18 +1,31 @@
 # Provenance Tracker — Agent Team & Self-Improving Loop
 
-Five specialists live in `.claude/agents/`. The main session is the orchestrator:
-it plans, routes work, and drives the loop. But **no agent — including the
+Specialists live in `.claude/agents/`. The main session is the orchestrator (the "AI
+engineer"): it plans, routes work, and drives the loop. But **no agent — including the
 orchestrator — decides for itself that work is done.** A machine does. See "The
 ship gate" below. This is the rule that lets agents commit on their own overnight
 without a human checking each one.
 
 ## The team
 
+**Build / craft**
 | Agent | Owns | Model |
 |---|---|---|
-| `provenance-globe` | Globe.gl visuals, pins/arcs, panels, responsive, design-token fidelity | sonnet |
-| `provenance-data` | Wikidata/Met/AIC integration, reconciliation, caching, rate limits, Claude route | sonnet |
+| `design-director` | Visual language, type system, museum-grade art direction, DESIGN_SYSTEM.md | opus |
+| `provenance-globe` | Front-end implementation: globe, panels, search, responsive (builds to the design system) | sonnet |
+| `dataviz-engineer` | Information design: provenance timeline, movement arcs/map, gap & conflict viz | sonnet |
+| `provenance-data` | Back-end + data: Wikidata/Met/AIC/+new sources, reconciliation, caching, contract | sonnet |
+
+**Domain experts (advisory + review — invoked for direction and critique, not every cycle)**
+| Agent | Owns | Model |
+|---|---|---|
+| `art-historian` | Provenance scholarship, source credibility tiers, meaningfulness of a journey | opus |
+| `art-insurance-advisor` | Underwriting reality — what insurers pay for, what's not credible | opus |
 | `provenance-strategy` | Business case, market/competitor research, positioning, pivots | opus |
+
+**Narrative & gate**
+| Agent | Owns | Model |
+|---|---|---|
 | `provenance-story` | Demo script, pitch, hero-work selection, judging-criteria fit | opus |
 | `provenance-honesty-review` | BLOCKING credibility gate before any commit/record/pitch change | opus |
 
@@ -33,11 +46,24 @@ greps) → commit only if all green.** Exit 1 = BLOCKED, nothing committed.
 
 ## Routing rules
 
-- UI/visual → `provenance-globe`. Data/API/model → `provenance-data`.
+- Visual language / "make it world-class" / redesign → `design-director` (sets the system),
+  then `provenance-globe` (app UI) and `dataviz-engineer` (timeline/map/graph) build to it.
+- Data/API/model/new sources → `provenance-data`. Source credibility → `art-historian`.
+- "Would an insurer buy this / what do they need" → `art-insurance-advisor`.
 - "Is this real / who pays / how to position" → `provenance-strategy`.
 - "How do we present it" → `provenance-story`.
 - Any feature touching data + UI: `provenance-data` defines/extends `src/lib/types.ts`
-  FIRST, then `provenance-globe` renders it. Never let the UI invent data to look finished.
+  FIRST, then UI agents render it. Never let the UI invent data to look finished.
+- Design freelancing is banned: `provenance-globe`/`dataviz-engineer` style only from
+  `draft/DESIGN_SYSTEM.md`. If it's not in the system, ask `design-director` to add it.
+
+## Knowledge capture (never lose an insight)
+
+- Every agent appends findings/decisions/dead-ends to `draft/INSIGHTS.md` the moment they
+  occur — chat is volatile, files are the record. Durable facts also go to `memory/`.
+- Decisions that change the spec also update the owning doc (CLAUDE.md, BUSINESS_CASE.md,
+  DESIGN_SYSTEM.md, DATA_SOURCES.md). Wikilink with `[[...]]` so the Obsidian graph connects them.
+- MORNING.md = what shipped (status). INSIGHTS.md = what was learned (knowledge). Both per cycle.
 
 ## The self-improving loop (one cycle = one backlog item)
 

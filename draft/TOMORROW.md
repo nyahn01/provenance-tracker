@@ -4,6 +4,16 @@ The loop picks the top unchecked `[ ]` item, routes it to the owning agent, and 
 agent ships it through `node scripts/ship.mjs --commit "..."`. Never skip a P0 for polish.
 Mark `[x]` when shipped (gate green + committed). One item per cycle.
 
+## P0 — world-class redesign (the demo is currently "hideous")
+- [ ] `design-director`: author `draft/DESIGN_SYSTEM.md` — type system (display serif + UI
+      grotesque), elevated archival palette, spacing grid, motion, component specs. Gallery/museum bar.
+- [ ] `design-director`: produce the redesign direction for the hero + provenance detail view
+      (a visual the user can react to) BEFORE mass implementation.
+- [ ] `provenance-globe`: rebuild the app UI to DESIGN_SYSTEM.md — landing/globe, search,
+      provenance detail. The artwork is the hero; gaps are beautiful, not errors.
+- [ ] `dataviz-engineer`: redesign the provenance timeline + movement arcs to the system,
+      encoding confirmed/uncertain/gap honestly. verify.mjs stays green.
+
 ## P0 — honest core must be bulletproof
 - [ ] Improve artwork→Wikidata matching: exact-label match misses works with em-dashes /
       alt titles (e.g. "A Sunday on La Grande Jatte — 1884"). Add fallback: strip
@@ -28,6 +38,10 @@ Mark `[x]` when shipped (gate green + committed). One item per cycle.
       Owner: provenance-data.
 - [ ] Evaluate adding one more open source behind the SAME contract (Europeana API, key is free /
       instant). Spike only — must fit src/lib/types.ts, no shape drift. Owner: provenance-data.
+- [ ] Integrate Rijksmuseum API (key already in env) for Dutch Golden Age depth. Owner: provenance-data.
+- [ ] Add credibility-tier labeling to every source per draft/DATA_SOURCES.md; surface the tier
+      in the UI on each fact. Owner: provenance-data + dataviz-engineer.
+- [ ] Spike Getty Provenance Index / RKD access (tier A scholarly). Owner: art-historian → provenance-data.
 
 ## P3 — idea / strategy self-check (small budget, every 3rd cycle)
 - [ ] provenance-strategy: re-read BUSINESS_CASE.md against the actual current build and either
