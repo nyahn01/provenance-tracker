@@ -14,6 +14,14 @@ Mark `[x]` when shipped (gate green + committed). One item per cycle.
 - [ ] `dataviz-engineer`: redesign the provenance timeline + movement arcs to the system,
       encoding confirmed/uncertain/gap honestly. verify.mjs stays green.
 
+## P0 — redesign polish (v1.0 shipped; these are the rough edges found in live review)
+- [ ] Globe is a near-empty dark sphere — give it a luminous presence: subtle land masses /
+      graticule / atmospheric glow, slow auto-rotation. Owner: provenance-globe / dataviz-engineer.
+- [ ] Responsive bug: at narrow widths (~520px) the bottom search bar overlaps the detail panel.
+      Make the detail view a proper right-rail on desktop, full-screen sheet on mobile. Owner: provenance-globe.
+- [ ] Verify the warm off-white "gallery" palette is actually applied to the detail panel (it read
+      dark in narrow-viewport capture); enforce the two-palette switch per DESIGN_SYSTEM.md. Owner: provenance-globe.
+
 ## P0 — honest core must be bulletproof
 - [ ] Improve artwork→Wikidata matching: exact-label match misses works with em-dashes /
       alt titles (e.g. "A Sunday on La Grande Jatte — 1884"). Add fallback: strip

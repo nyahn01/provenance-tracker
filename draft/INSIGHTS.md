@@ -20,6 +20,18 @@ written to a file, it's lost when the context window rolls. This file is the saf
 
 <!-- append insights below, newest first -->
 
+- `#design #process` Redesign v1.0 verified live via browser screenshots (orchestrator). VERDICT:
+  landing (Cormorant serif headline, editorial hierarchy) and the search dropdown (thumbnails +
+  gold/sage tier badges) are genuinely museum-grade. Detail view = editorial gallery: artwork hero,
+  serif title, MET tier badge, Movement History timeline, and the honest "Provenance gap" state
+  rendering correctly ("Only one mapped location… help complete it. Sources: Wikidata P276").
+  ROUGH EDGES to fix next: (1) the globe itself is a near-empty dark sphere — undersells the
+  "luminous centerpiece" intent; needs subtle land/graticule/glow. (2) Responsive: at ~520px the
+  bottom search bar overlaps the detail panel content. (3) Confirm the warm off-white "gallery"
+  palette is actually applied to the detail panel (read dark in the narrow-viewport capture).
+  NOTE: the redesign agent died before committing; the gate recovered + verified its uncommitted
+  work (commit bcdfd91) — concrete proof the ship-gate is the safety net, not the agent's word.
+
 - `#design` Hybrid museum-grade redesign shipped (v1.0). Key decisions:
   **Typefaces:** Cormorant Garamond (display serif) + Pretendard (UI grotesque). Cormorant chosen over Fraunces/Spectral for its classical proportions and optical similarity to exhibition wall labels; it reads as "gallery" without being fussy.
   **Two-palette architecture:** Observatory (dark, #0a0908 base) stays for the globe landing; Gallery (warm off-white #f7f4ee) activates for the provenance detail panel. Both palettes share the clay/sage/gold accent family so switching modes feels like moving rooms, not switching apps.
