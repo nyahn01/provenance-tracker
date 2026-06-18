@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import type { SearchResult, ProvenanceResponse, LocationEntry } from '@/lib/types'
+import { FEATURED_WORKS } from '@/lib/featured'
 
 // ─── Design tokens (mirror CSS variables for inline styles) ──────────────────
 const OBS = {
@@ -363,7 +364,7 @@ export default function ProvenanceGlobe() {
     controls.autoRotate = !selectedResult
   }, [selectedResult])
 
-  // ── Update arcs on provenance change ─────────────────────────────────────
+  // ── Update arcs on provenance change + fly to the actual journey ─────────
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const g = (globeRef as any).current
@@ -371,6 +372,24 @@ export default function ProvenanceGlobe() {
     if (!provenance) { g.arcsData(DEFAULT_ARC); return }
     const arcs = buildArcs(provenance.locations)
     g.arcsData(arcs.length ? arcs : [])
+
+    // Auto-frame: center on the mapped locations and zoom to fit their spread, so
+    // the real destinations (and which continents) are always legible. A globe with
+    // arcs you can't place geographically is decoration, not information.
+    const pts = provenance.locations.filter(l => l.lat != null && l.lng != null)
+    if (pts.length > 0 && typeof g.pointOfView === 'function') {
+      const lats = pts.map(p => p.lat as number)
+      const lngs = pts.map(p => p.lng as number)
+      const lat = (Math.min(...lats) + Math.max(...lats)) / 2
+      const lng = (Math.min(...lngs) + Math.max(...lngs)) / 2
+      // Spread in degrees → altitude. One point = close-in; transatlantic = pulled back.
+      const spread = Math.max(
+        Math.max(...lats) - Math.min(...lats),
+        Math.max(...lngs) - Math.min(...lngs),
+      )
+      const altitude = Math.min(2.5, Math.max(0.6, spread / 45))
+      g.pointOfView({ lat, lng, altitude }, 1200)
+    }
   }, [provenance])
 
   // ── Search ────────────────────────────────────────────────────────────────
@@ -442,6 +461,21 @@ export default function ProvenanceGlobe() {
       setIsLoadingProv(false)
     }
   }, [])
+
+  // ── Featured journey: load a curated work straight into the provenance view ──
+  const selectFeatured = useCallback((f: { source: 'aic'; id: string; title: string; artist: string }) => {
+    setQuery('')
+    setResults([])
+    setShowDropdown(false)
+    selectArtwork({
+      id: `${f.source}-${f.id}`,
+      source: f.source,
+      title: f.title,
+      artist: f.artist,
+      date: '',
+      thumbnail: null,
+    })
+  }, [selectArtwork])
 
   // ── Close panel ───────────────────────────────────────────────────────────
   const closePanel = useCallback(() => {
@@ -559,6 +593,54 @@ export default function ProvenanceGlobe() {
             >
               Where great art has been
             </p>
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: 1, background: OBS.border, margin: '0 24px 20px' }} />
+
+          {/* Featured journeys — lead with the art, not the institutions */}
+          <div style={{ padding: '0 12px 20px' }}>
+            <div
+              style={{
+                fontFamily: 'var(--font-ui)',
+                fontSize: '0.65rem',
+                fontWeight: 600,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase' as const,
+                color: OBS.clay,
+                padding: '0 12px',
+                marginBottom: 10,
+              }}
+            >
+              Featured Journeys
+            </div>
+
+            {FEATURED_WORKS.map(f => (
+              <button
+                key={f.id}
+                onClick={() => selectFeatured(f)}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  textAlign: 'left',
+                  padding: '10px 12px',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'transparent',
+                  borderLeft: '2px solid transparent',
+                  cursor: 'pointer',
+                  transition: `background 200ms var(--ease-gentle), border-color 200ms var(--ease-gentle)`,
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = OBS.clayDim }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+              >
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.05rem', color: OBS.text, lineHeight: 1.15 }}>
+                  {f.title}
+                </div>
+                <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: OBS.textMuted, marginTop: 2 }}>
+                  {f.artist}
+                </div>
+              </button>
+            ))}
           </div>
 
           {/* Divider */}
