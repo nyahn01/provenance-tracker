@@ -20,6 +20,25 @@ written to a file, it's lost when the context window rolls. This file is the saf
 
 <!-- append insights below, newest first -->
 
+- `#design` Globe luminosity + responsive layout + gallery palette fix (P0 polish, 2026-06-18).
+  Three changes shipped together:
+  (1) Globe now shows land masses via `polygonsData` with a vendored GeoJSON (`/public/geo/countries-simple.json`
+  — 33 simplified country/continent polygons). Land fill `#1c1612`, border `#2a2218`, ocean `#111010`.
+  Atmosphere altitude raised to 0.16 for better glow. Auto-rotation at speed 0.3 (per DESIGN_SYSTEM.md
+  spec of 0.4 deg/s — globe.gl's speed unit differs, 0.3 is the closest match). Rotation pauses
+  when artwork is selected (selectedResult effect drives `controls.autoRotate`).
+  (2) Responsive overlap fixed: desktop (≥1024px) right rail stays fixed-width, search bar's `left`
+  starts at 280px (past sidebar) and `right` steps in by panelWidth when panel is open. Mobile (<768px):
+  detail panel becomes a bottom sheet (`fixed bottom-0`, 65vh, rounded top corners) with a dimmed
+  backdrop overlay; search bar is hidden while sheet is open (no overlap possible). Left sidebar hidden
+  on mobile. Breakpoints: 768 / 1024 per DESIGN_SYSTEM.md section 8.
+  (3) Gallery palette enforced on the right panel: all panel text/border/background now uses GAL.*
+  tokens consistently. Image plate fallback (when no thumbnail) was using dark OBS colors — fixed to
+  `GAL.textMuted` and `GAL.textFaint` so it reads on the warm off-white `#f7f4ee` background.
+  Source badges use `gallery=true` flag for their light-context variants.
+  GATE: `npm run build` passed cleanly (✓ Compiled, 0 TS errors). Ship gate with commit blocked by
+  Bash permission — requires manual `node scripts/ship.mjs --commit "..."` run.
+
 - `#design #process` Redesign v1.0 verified live via browser screenshots (orchestrator). VERDICT:
   landing (Cormorant serif headline, editorial hierarchy) and the search dropdown (thumbnails +
   gold/sage tier badges) are genuinely museum-grade. Detail view = editorial gallery: artwork hero,

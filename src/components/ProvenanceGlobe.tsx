@@ -22,6 +22,7 @@ const OBS = {
   dropdown:    'rgba(13,12,11,0.97)',
   globeOcean:  '#111010',
   globeLand:   '#1c1612',
+  globeBorder: '#2a2218',
 } as const
 
 const GAL = {
@@ -244,6 +245,20 @@ export default function ProvenanceGlobe() {
   const [provenance,      setProvenance]      = useState<ProvenanceResponse | null>(null)
   const [isLoadingProv,   setIsLoadingProv]   = useState(false)
 
+  // ── Viewport width tracking for responsive layout ────────────────────────
+  // Start with desktop default (1200) — useEffect corrects it on first mount.
+  // This avoids a server/client mismatch since 'use client' still SSRs the shell.
+  const [viewportWidth, setViewportWidth] = useState<number>(1200)
+  useEffect(() => {
+    const update = () => setViewportWidth(window.innerWidth)
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
+
+  const isDesktop = viewportWidth >= 1024
+  const isMobile  = viewportWidth < 768
+
   // ── Globe init ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (!containerRef.current) return
@@ -253,14 +268,44 @@ export default function ProvenanceGlobe() {
       const GlobeGL = (await import('globe.gl')).default
       if (!mounted || !containerRef.current) return
 
+      // Fetch country outlines (vendored in /public)
+      let geoData: { features: unknown[] } = { features: [] }
+      try {
+        const r = await fetch('/geo/countries-simple.json')
+        if (r.ok) geoData = await r.json()
+      } catch {
+        // Graceful degradation — globe still renders without land outlines
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const globe = (GlobeGL as any)()(containerRef.current) as any
       globe
         .globeImageUrl(null)
-        .backgroundColor(OBS.bg)
+        .backgroundColor(OBS.globeOcean)
         .showAtmosphere(true)
         .atmosphereColor(OBS.clay)
-        .atmosphereAltitude(0.14)
+        .atmosphereAltitude(0.16)
+
+      // ── Land mass polygons ──────────────────────────────────────────────
+      if (geoData.features.length > 0) {
+        globe
+          .polygonsData(geoData.features)
+          .polygonCapColor(() => OBS.globeLand)
+          .polygonSideColor(() => 'rgba(0,0,0,0)')
+          .polygonStrokeColor(() => OBS.globeBorder)
+          .polygonAltitude(0.005)
+      }
+
+      // ── Auto-rotation ───────────────────────────────────────────────────
+      // globe.gl exposes controls() after first render tick
+      setTimeout(() => {
+        const controls = globe.controls?.()
+        if (controls) {
+          controls.autoRotate = true
+          controls.autoRotateSpeed = 0.3
+          controls.enableZoom = false
+        }
+      }, 100)
 
       // Museum HTML pins
       const pins = TOP_MUSEUMS.map(m => {
@@ -291,6 +336,16 @@ export default function ProvenanceGlobe() {
 
     return () => { mounted = false }
   }, [])
+
+  // ── Pause / resume auto-rotation when artwork selected ──────────────────
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const g = (globeRef as any).current
+    if (!g) return
+    const controls = g.controls?.()
+    if (!controls) return
+    controls.autoRotate = !selectedResult
+  }, [selectedResult])
 
   // ── Update arcs on provenance change ─────────────────────────────────────
   useEffect(() => {
@@ -372,6 +427,15 @@ export default function ProvenanceGlobe() {
     }
   }, [])
 
+  // ── Close panel ───────────────────────────────────────────────────────────
+  const closePanel = useCallback(() => {
+    setSelectedResult(null)
+    setProvenance(null)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const g = (globeRef as any).current
+    if (g) g.arcsData(DEFAULT_ARC)
+  }, [])
+
   // ── Source footer ─────────────────────────────────────────────────────────
   const uniqueSources = provenance
     ? [...new Set(provenance.locations.map(l => l.source))]
@@ -379,6 +443,18 @@ export default function ProvenanceGlobe() {
   const sourceFooter = uniqueSources.length
     ? `Sources: ${uniqueSources.join(' · ')}`
     : 'Sources: Wikidata · Met · AIC'
+
+  // ── Layout: desktop right-rail vs mobile bottom sheet ────────────────────
+  // Desktop (≥1024px): right panel is a fixed right rail, 380px wide
+  // Mobile (<768px):   right panel is a bottom sheet, ~60vh
+  // Tablet (768–1023px): right panel is 320px wide
+  const panelWidth = isDesktop ? 380 : (isMobile ? undefined : 320)
+  const panelIsMobileSheet = isMobile && !!selectedResult
+
+  // The search bar left offset — always starts past the left sidebar (280px on desktop)
+  // and right end stops at panel left edge on desktop
+  const searchBarLeft  = isDesktop ? 280 : 0
+  const searchBarRight = isDesktop && selectedResult ? (panelWidth ?? 0) : 0
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -415,717 +491,754 @@ export default function ProvenanceGlobe() {
       )}
 
       {/* ── LEFT SIDEBAR — Observatory mode ─────────────────────────────── */}
-      <aside
-        className="absolute left-0 top-0 h-full obs-scroll overflow-y-auto"
-        style={{
-          width: 280,
-          background: OBS.panel,
-          borderRight: `1px solid ${OBS.border}`,
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          zIndex: 10,
-        }}
-        aria-label="World museums"
-      >
-        {/* Wordmark */}
-        <div style={{ padding: '32px 24px 24px' }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-ui)',
-              fontSize: '0.65rem',
-              fontWeight: 600,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase' as const,
-              color: OBS.clay,
-              marginBottom: 8,
-            }}
-          >
-            Provenance
-          </div>
-          <h1
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '2.5rem',
-              fontWeight: 400,
-              lineHeight: 1.0,
-              color: OBS.text,
-              letterSpacing: '-0.02em',
-              marginBottom: 6,
-            }}
-          >
-            Tracker
-          </h1>
-          <p
-            style={{
-              fontFamily: 'var(--font-ui)',
-              fontSize: '0.8rem',
-              color: OBS.textMuted,
-              lineHeight: 1.4,
-            }}
-          >
-            Where great art has been
-          </p>
-        </div>
-
-        {/* Divider */}
-        <div style={{ height: 1, background: OBS.border, margin: '0 24px 20px' }} />
-
-        {/* Museum list */}
-        <div style={{ padding: '0 12px 24px' }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-ui)',
-              fontSize: '0.65rem',
-              fontWeight: 600,
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase' as const,
-              color: OBS.textFaint,
-              padding: '0 12px',
-              marginBottom: 10,
-            }}
-          >
-            10 Leading Museums
-          </div>
-
-          {TOP_MUSEUMS.map(m => {
-            const active = selectedMuseum === m.id
-            return (
-              <button
-                key={m.id}
-                onClick={() => setSelectedMuseum(active ? null : m.id)}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '10px 12px',
-                  borderRadius: 'var(--radius-md)',
-                  background:    active ? OBS.clayDim    : 'transparent',
-                  borderLeft:    active ? `2px solid ${OBS.clay}` : '2px solid transparent',
-                  cursor: 'pointer',
-                  transition: `background 200ms var(--ease-gentle), border-color 200ms var(--ease-gentle)`,
-                }}
-                onMouseEnter={e => {
-                  if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(200,120,85,0.07)'
-                }}
-                onMouseLeave={e => {
-                  if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'
-                }}
-                aria-pressed={active}
-              >
-                <div
-                  style={{
-                    fontFamily: 'var(--font-ui)',
-                    fontWeight: 500,
-                    fontSize: '0.875rem',
-                    color: active ? OBS.clay : OBS.text,
-                    marginBottom: 2,
-                  }}
-                >
-                  {m.name}
-                </div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-ui)',
-                    fontSize: '0.6875rem',
-                    color: OBS.textMuted,
-                  }}
-                >
-                  {m.city}, {m.country}
-                </div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-ui)',
-                    fontSize: '0.6875rem',
-                    color: OBS.textFaint,
-                    marginTop: 2,
-                  }}
-                >
-                  {m.focus}
-                </div>
-              </button>
-            )
-          })}
-        </div>
-      </aside>
-
-      {/* ── RIGHT PANEL — Gallery mode (provenance detail) ───────────────── */}
-      {selectedResult && (
+      {/* Hidden on mobile to avoid crowding; accessible via museum globe pins */}
+      {!isMobile && (
         <aside
-          className="absolute right-0 top-0 h-full gal-scroll overflow-y-auto panel-enter"
+          className="absolute left-0 top-0 h-full obs-scroll overflow-y-auto"
           style={{
-            width: 380,
-            background: GAL.bg,
-            borderLeft: `1px solid ${GAL.border}`,
+            width: 280,
+            background: OBS.panel,
+            borderRight: `1px solid ${OBS.border}`,
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
             zIndex: 10,
           }}
-          aria-label="Artwork provenance detail"
+          aria-label="World museums"
         >
-          {/* Close button */}
-          <button
-            onClick={() => {
-              setSelectedResult(null)
-              setProvenance(null)
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const g = (globeRef as any).current
-              if (g) g.arcsData(DEFAULT_ARC)
-            }}
-            aria-label="Close provenance panel"
+          {/* Wordmark */}
+          <div style={{ padding: '32px 24px 24px' }}>
+            <div
+              style={{
+                fontFamily: 'var(--font-ui)',
+                fontSize: '0.65rem',
+                fontWeight: 600,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase' as const,
+                color: OBS.clay,
+                marginBottom: 8,
+              }}
+            >
+              Provenance
+            </div>
+            <h1
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '2.5rem',
+                fontWeight: 400,
+                lineHeight: 1.0,
+                color: OBS.text,
+                letterSpacing: '-0.02em',
+                marginBottom: 6,
+              }}
+            >
+              Tracker
+            </h1>
+            <p
+              style={{
+                fontFamily: 'var(--font-ui)',
+                fontSize: '0.8rem',
+                color: OBS.textMuted,
+                lineHeight: 1.4,
+              }}
+            >
+              Where great art has been
+            </p>
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: 1, background: OBS.border, margin: '0 24px 20px' }} />
+
+          {/* Museum list */}
+          <div style={{ padding: '0 12px 24px' }}>
+            <div
+              style={{
+                fontFamily: 'var(--font-ui)',
+                fontSize: '0.65rem',
+                fontWeight: 600,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase' as const,
+                color: OBS.textFaint,
+                padding: '0 12px',
+                marginBottom: 10,
+              }}
+            >
+              10 Leading Museums
+            </div>
+
+            {TOP_MUSEUMS.map(m => {
+              const active = selectedMuseum === m.id
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => setSelectedMuseum(active ? null : m.id)}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius-md)',
+                    background:    active ? OBS.clayDim    : 'transparent',
+                    borderLeft:    active ? `2px solid ${OBS.clay}` : '2px solid transparent',
+                    cursor: 'pointer',
+                    transition: `background 200ms var(--ease-gentle), border-color 200ms var(--ease-gentle)`,
+                  }}
+                  onMouseEnter={e => {
+                    if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(200,120,85,0.07)'
+                  }}
+                  onMouseLeave={e => {
+                    if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'
+                  }}
+                  aria-pressed={active}
+                >
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-ui)',
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      color: active ? OBS.clay : OBS.text,
+                      marginBottom: 2,
+                    }}
+                  >
+                    {m.name}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-ui)',
+                      fontSize: '0.6875rem',
+                      color: OBS.textMuted,
+                    }}
+                  >
+                    {m.city}, {m.country}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-ui)',
+                      fontSize: '0.6875rem',
+                      color: OBS.textFaint,
+                      marginTop: 2,
+                    }}
+                  >
+                    {m.focus}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </aside>
+      )}
+
+      {/* ── RIGHT PANEL / MOBILE SHEET — Gallery mode (provenance detail) ── */}
+      {selectedResult && (
+        <>
+          {/* Mobile: backdrop overlay */}
+          {panelIsMobileSheet && (
+            <div
+              onClick={closePanel}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(10,9,8,0.55)',
+                zIndex: 20,
+              }}
+              aria-hidden="true"
+            />
+          )}
+
+          <aside
+            className={`${panelIsMobileSheet ? 'fixed bottom-0 left-0 right-0' : 'absolute right-0 top-0 h-full'} gal-scroll overflow-y-auto panel-enter`}
             style={{
-              position: 'absolute',
-              top: 16,
-              right: 16,
-              zIndex: 20,
-              width: 28,
-              height: 28,
+              // Desktop / tablet: right rail
+              ...(panelIsMobileSheet ? {
+                height: '65vh',
+                borderTopLeftRadius: 'var(--radius-xl)',
+                borderTopRightRadius: 'var(--radius-xl)',
+                borderTop: `1px solid ${GAL.border}`,
+              } : {
+                width: panelWidth,
+                borderLeft: `1px solid ${GAL.border}`,
+              }),
+              background: GAL.bg,
+              zIndex: 25,
+            }}
+            aria-label="Artwork provenance detail"
+          >
+            {/* Close button */}
+            <button
+              onClick={closePanel}
+              aria-label="Close provenance panel"
+              style={{
+                position: 'absolute',
+                top: 16,
+                right: 16,
+                zIndex: 20,
+                width: 28,
+                height: 28,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: GAL.surface2,
+                border: `1px solid ${GAL.border}`,
+                borderRadius: 'var(--radius-sm)',
+                cursor: 'pointer',
+                color: GAL.textMuted,
+                fontFamily: 'var(--font-ui)',
+                fontSize: '0.75rem',
+                transition: 'opacity 200ms',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.6' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'   }}
+            >
+              ✕
+            </button>
+
+            {/* Loading state */}
+            {isLoadingProv && <GalleryShimmer />}
+
+            {/* Provenance content */}
+            {!isLoadingProv && provenance && (
+              <div style={{ paddingBottom: 48 }}>
+
+                {/* ── Artwork hero image ──────────────────────────────────── */}
+                <div
+                  style={{
+                    width: '100%',
+                    height: 220,
+                    background: GAL.surface2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    position: 'relative',
+                  }}
+                >
+                  {provenance.artwork.thumbnail ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={provenance.artwork.thumbnail}
+                      alt={`${provenance.artwork.title} — ${provenance.artwork.artist}`}
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        objectFit: 'contain',
+                        objectPosition: 'center',
+                      }}
+                    />
+                  ) : (
+                    /* Text plate when no image — uses gallery colors, not dark OBS */
+                    <div style={{ textAlign: 'center', padding: '0 24px' }}>
+                      <div
+                        style={{
+                          fontFamily: 'var(--font-display)',
+                          fontSize: '1.1rem',
+                          fontStyle: 'italic',
+                          color: GAL.textMuted,
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {provenance.artwork.title}
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: 'var(--font-ui)',
+                          fontSize: '0.75rem',
+                          color: GAL.textFaint,
+                          marginTop: 6,
+                        }}
+                      >
+                        No image available
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Catalogue header ────────────────────────────────────── */}
+                <div style={{ padding: '24px 24px 0' }}>
+                  {/* Source badge top */}
+                  <div style={{ marginBottom: 10 }}>
+                    <SourceBadge source={provenance.artwork.source} gallery />
+                  </div>
+
+                  {/* Title */}
+                  <h2
+                    style={{
+                      fontFamily: 'var(--font-display)',
+                      fontSize: '1.75rem',
+                      fontWeight: 500,
+                      lineHeight: 1.15,
+                      color: GAL.text,
+                      letterSpacing: '-0.01em',
+                      marginBottom: 8,
+                    }}
+                  >
+                    {provenance.artwork.title}
+                  </h2>
+
+                  {/* Artist */}
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-ui)',
+                      fontSize: '0.875rem',
+                      color: GAL.textMuted,
+                      marginBottom: 4,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {provenance.artwork.artist}
+                  </p>
+
+                  {/* Date */}
+                  {provenance.artwork.date && (
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-ui)',
+                        fontSize: '0.8125rem',
+                        color: GAL.textFaint,
+                      }}
+                    >
+                      {provenance.artwork.date}
+                    </p>
+                  )}
+                </div>
+
+                {/* ── Hairline ────────────────────────────────────────────── */}
+                <div style={{ height: 1, background: GAL.border, margin: '20px 24px' }} />
+
+                {/* ── Timeline ────────────────────────────────────────────── */}
+                <div style={{ padding: '0 24px' }}>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-ui)',
+                      fontSize: '0.65rem',
+                      fontWeight: 600,
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase' as const,
+                      color: GAL.textFaint,
+                      marginBottom: 20,
+                    }}
+                  >
+                    Movement History
+                  </div>
+
+                  {/* Pure gap state (no locations at all) */}
+                  {provenance.hasGap && provenance.locations.length === 0 && (
+                    <GapDisplay
+                      note={provenance.gaps[0]?.note ?? 'No documented movement history found. Help complete the record.'}
+                      gallery
+                    />
+                  )}
+
+                  {/* Location entries */}
+                  {provenance.locations.length > 0 && (
+                    <div style={{ position: 'relative' }}>
+                      {/* Vertical track */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 6,
+                          bottom: 6,
+                          left: 6,
+                          width: 1,
+                          background: GAL.borderMid,
+                        }}
+                      />
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                        {provenance.locations.map((loc, i) => (
+                          <div key={i} style={{ paddingLeft: 28, position: 'relative' }}>
+                            {/* Dot */}
+                            <div
+                              style={{
+                                position: 'absolute',
+                                left: 0,
+                                top: 3,
+                                width: 13,
+                                height: 13,
+                                borderRadius: '50%',
+                                background: GAL.surface,
+                                border: `2px solid ${GAL.clay}`,
+                                boxShadow: `0 0 0 2px ${GAL.bg}`,
+                              }}
+                            />
+
+                            {/* Date range */}
+                            <div
+                              style={{
+                                fontFamily: 'var(--font-ui)',
+                                fontSize: '0.6875rem',
+                                color: GAL.textFaint,
+                                letterSpacing: '0.02em',
+                                marginBottom: 3,
+                              }}
+                            >
+                              {loc.startDate ?? '?'}
+                              {loc.endDate ? ` – ${loc.endDate}` : ''}
+                            </div>
+
+                            {/* Location name */}
+                            <div
+                              style={{
+                                fontFamily: 'var(--font-ui)',
+                                fontWeight: 500,
+                                fontSize: '0.875rem',
+                                color: GAL.text,
+                                lineHeight: 1.3,
+                                marginBottom: 6,
+                              }}
+                            >
+                              {loc.name}
+                            </div>
+
+                            {/* Source badge */}
+                            <SourceBadge source={loc.source} gallery />
+                          </div>
+                        ))}
+
+                        {/* Inline gap entry at end of timeline if hasGap */}
+                        {provenance.hasGap && provenance.locations.length > 0 && (
+                          <div style={{ paddingLeft: 28, position: 'relative' }}>
+                            <div
+                              style={{
+                                position: 'absolute',
+                                left: 0,
+                                top: 3,
+                                width: 13,
+                                height: 13,
+                                borderRadius: '50%',
+                                background: GAL.surface,
+                                border: `2px dashed ${GAL.borderMid}`,
+                                boxShadow: `0 0 0 2px ${GAL.bg}`,
+                              }}
+                            />
+                            <GapDisplay
+                              note={provenance.gaps[0]?.note ?? 'Movement chain incomplete. Help complete the record.'}
+                              gallery
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Sources footer ───────────────────────────────────────── */}
+                <div
+                  style={{
+                    margin: '32px 24px 0',
+                    paddingTop: 16,
+                    borderTop: `1px solid ${GAL.border}`,
+                    fontFamily: 'var(--font-ui)',
+                    fontSize: '0.6875rem',
+                    color: GAL.textFaint,
+                    letterSpacing: '0.02em',
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {sourceFooter}
+                </div>
+              </div>
+            )}
+          </aside>
+        </>
+      )}
+
+      {/* ── BOTTOM BAR + SEARCH ─────────────────────────────────────────────── */}
+      {/* On mobile with panel open, the search bar is hidden to avoid overlap */}
+      {!(panelIsMobileSheet) && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: searchBarLeft,
+            right: searchBarRight,
+            background: OBS.panel,
+            borderTop: `1px solid ${OBS.border}`,
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            zIndex: 10,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: isMobile ? '12px 16px' : '14px 24px',
+            transition: 'left 400ms var(--ease-panel), right 400ms var(--ease-panel)',
+          }}
+        >
+          {/* Left — context label (hidden on very narrow) */}
+          {!isMobile && (
+            <div
+              style={{
+                fontFamily: 'var(--font-ui)',
+                fontSize: '0.75rem',
+                color: OBS.textFaint,
+                letterSpacing: '0.02em',
+              }}
+            >
+              10 museums · documented journeys
+            </div>
+          )}
+
+          {/* Search group */}
+          <div
+            style={{
+              position: 'relative',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              background: GAL.surface2,
-              border: `1px solid ${GAL.border}`,
-              borderRadius: 'var(--radius-sm)',
-              cursor: 'pointer',
-              color: GAL.textMuted,
-              fontFamily: 'var(--font-ui)',
-              fontSize: '0.75rem',
-              transition: 'opacity 200ms',
+              gap: 8,
+              flex: isMobile ? 1 : undefined,
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.6' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'   }}
           >
-            ✕
-          </button>
-
-          {/* Loading state */}
-          {isLoadingProv && <GalleryShimmer />}
-
-          {/* Provenance content */}
-          {!isLoadingProv && provenance && (
-            <div style={{ paddingBottom: 48 }}>
-
-              {/* ── Artwork hero image ──────────────────────────────────── */}
+            {/* Results dropdown (above the input) */}
+            {showDropdown && (
               <div
+                className="float-in"
                 style={{
-                  width: '100%',
-                  height: 220,
-                  background: '#111',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  position: 'absolute',
+                  bottom: '100%',
+                  right: 0,
+                  marginBottom: 8,
+                  width: isMobile ? 'calc(100vw - 32px)' : 400,
+                  maxWidth: 'calc(100vw - 32px)',
+                  background: OBS.dropdown,
+                  border: `1px solid ${OBS.borderMid}`,
+                  borderRadius: 'var(--radius-lg)',
+                  boxShadow: '0 8px 40px rgba(0,0,0,0.6)',
                   overflow: 'hidden',
-                  position: 'relative',
+                  zIndex: 30,
                 }}
               >
-                {provenance.artwork.thumbnail ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={provenance.artwork.thumbnail}
-                    alt={`${provenance.artwork.title} — ${provenance.artwork.artist}`}
+                {isSearching ? (
+                  <div
                     style={{
-                      maxWidth: '100%',
-                      maxHeight: '100%',
-                      objectFit: 'contain',
-                      objectPosition: 'center',
+                      padding: '20px 20px',
+                      fontFamily: 'var(--font-ui)',
+                      fontSize: '0.8125rem',
+                      color: OBS.textMuted,
+                      textAlign: 'center',
                     }}
-                  />
-                ) : (
-                  /* Text plate when no image */
-                  <div style={{ textAlign: 'center', padding: '0 24px' }}>
+                    className="animate-pulse"
+                  >
+                    Searching...
+                  </div>
+                ) : results.length === 0 ? (
+                  /* Empty state — beautiful, not broken */
+                  <div style={{ padding: '20px 20px' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: 4,
+                        marginBottom: 14,
+                      }}
+                    >
+                      {[0,1,2,3,4,5].map(i => (
+                        <div
+                          key={i}
+                          style={{
+                            height: 1.5,
+                            flex: 1,
+                            background: OBS.textFaint,
+                            borderRadius: 1,
+                            opacity: 0.3 + i * 0.07,
+                          }}
+                        />
+                      ))}
+                    </div>
                     <div
                       style={{
                         fontFamily: 'var(--font-display)',
-                        fontSize: '1.1rem',
-                        fontStyle: 'italic',
-                        color: OBS.textMuted,
-                        lineHeight: 1.3,
+                        fontSize: '1rem',
+                        color: OBS.text,
+                        marginBottom: 8,
                       }}
                     >
-                      {provenance.artwork.title}
+                      Record not yet found
                     </div>
                     <div
                       style={{
                         fontFamily: 'var(--font-ui)',
                         fontSize: '0.75rem',
-                        color: OBS.textFaint,
-                        marginTop: 6,
+                        color: OBS.textMuted,
+                        lineHeight: 1.5,
+                        maxWidth: '40ch',
                       }}
                     >
-                      No image available
+                      {query.trim()
+                        ? `No sourced record for "${query.trim()}". Try a different title or artist.`
+                        : 'Enter a title or artist name to trace provenance.'
+                      }{' '}
+                      Coverage is thin by design — only dated, sourced records appear here.
                     </div>
                   </div>
-                )}
-              </div>
-
-              {/* ── Catalogue header ────────────────────────────────────── */}
-              <div style={{ padding: '24px 24px 0' }}>
-                {/* Source badge top */}
-                <div style={{ marginBottom: 10 }}>
-                  <SourceBadge source={provenance.artwork.source} gallery />
-                </div>
-
-                {/* Title */}
-                <h2
-                  style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: '1.75rem',
-                    fontWeight: 500,
-                    lineHeight: 1.15,
-                    color: GAL.text,
-                    letterSpacing: '-0.01em',
-                    marginBottom: 8,
-                  }}
-                >
-                  {provenance.artwork.title}
-                </h2>
-
-                {/* Artist */}
-                <p
-                  style={{
-                    fontFamily: 'var(--font-ui)',
-                    fontSize: '0.875rem',
-                    color: GAL.textMuted,
-                    marginBottom: 4,
-                    lineHeight: 1.4,
-                  }}
-                >
-                  {provenance.artwork.artist}
-                </p>
-
-                {/* Date */}
-                {provenance.artwork.date && (
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-ui)',
-                      fontSize: '0.8125rem',
-                      color: GAL.textFaint,
-                    }}
-                  >
-                    {provenance.artwork.date}
-                  </p>
-                )}
-              </div>
-
-              {/* ── Hairline ────────────────────────────────────────────── */}
-              <div style={{ height: 1, background: GAL.border, margin: '20px 24px' }} />
-
-              {/* ── Timeline ────────────────────────────────────────────── */}
-              <div style={{ padding: '0 24px' }}>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-ui)',
-                    fontSize: '0.65rem',
-                    fontWeight: 600,
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase' as const,
-                    color: GAL.textFaint,
-                    marginBottom: 20,
-                  }}
-                >
-                  Movement History
-                </div>
-
-                {/* Pure gap state (no locations at all) */}
-                {provenance.hasGap && provenance.locations.length === 0 && (
-                  <GapDisplay
-                    note={provenance.gaps[0]?.note ?? 'No documented movement history found. Help complete the record.'}
-                    gallery
-                  />
-                )}
-
-                {/* Location entries */}
-                {provenance.locations.length > 0 && (
-                  <div style={{ position: 'relative' }}>
-                    {/* Vertical track */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: 6,
-                        bottom: 6,
-                        left: 6,
-                        width: 1,
-                        background: GAL.borderMid,
-                      }}
-                    />
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                      {provenance.locations.map((loc, i) => (
-                        <div key={i} style={{ paddingLeft: 28, position: 'relative' }}>
-                          {/* Dot */}
-                          <div
-                            style={{
-                              position: 'absolute',
-                              left: 0,
-                              top: 3,
-                              width: 13,
-                              height: 13,
-                              borderRadius: '50%',
-                              background: GAL.surface,
-                              border: `2px solid ${GAL.clay}`,
-                              boxShadow: `0 0 0 2px ${GAL.bg}`,
-                            }}
-                          />
-
-                          {/* Date range */}
-                          <div
-                            style={{
-                              fontFamily: 'var(--font-ui)',
-                              fontSize: '0.6875rem',
-                              color: GAL.textFaint,
-                              letterSpacing: '0.02em',
-                              marginBottom: 3,
-                            }}
-                          >
-                            {loc.startDate ?? '?'}
-                            {loc.endDate ? ` – ${loc.endDate}` : ''}
-                          </div>
-
-                          {/* Location name */}
-                          <div
-                            style={{
-                              fontFamily: 'var(--font-ui)',
-                              fontWeight: 500,
-                              fontSize: '0.875rem',
-                              color: GAL.text,
-                              lineHeight: 1.3,
-                              marginBottom: 6,
-                            }}
-                          >
-                            {loc.name}
-                          </div>
-
-                          {/* Source badge */}
-                          <SourceBadge source={loc.source} gallery />
-                        </div>
-                      ))}
-
-                      {/* Inline gap entry at end of timeline if hasGap */}
-                      {provenance.hasGap && provenance.locations.length > 0 && (
-                        <div style={{ paddingLeft: 28, position: 'relative' }}>
-                          <div
-                            style={{
-                              position: 'absolute',
-                              left: 0,
-                              top: 3,
-                              width: 13,
-                              height: 13,
-                              borderRadius: '50%',
-                              background: GAL.surface,
-                              border: `2px dashed ${GAL.borderMid}`,
-                              boxShadow: `0 0 0 2px ${GAL.bg}`,
-                            }}
-                          />
-                          <GapDisplay
-                            note={provenance.gaps[0]?.note ?? 'Movement chain incomplete. Help complete the record.'}
-                            gallery
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* ── Sources footer ───────────────────────────────────────── */}
-              <div
-                style={{
-                  margin: '32px 24px 0',
-                  paddingTop: 16,
-                  borderTop: `1px solid ${GAL.border}`,
-                  fontFamily: 'var(--font-ui)',
-                  fontSize: '0.6875rem',
-                  color: GAL.textFaint,
-                  letterSpacing: '0.02em',
-                  lineHeight: 1.6,
-                }}
-              >
-                {sourceFooter}
-              </div>
-            </div>
-          )}
-        </aside>
-      )}
-
-      {/* ── BOTTOM BAR + SEARCH ─────────────────────────────────────────────── */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: selectedResult ? 0 : 0,
-          right: selectedResult ? 380 : 0,
-          background: OBS.panel,
-          borderTop: `1px solid ${OBS.border}`,
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          zIndex: 10,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '14px 24px',
-          transition: 'right 400ms var(--ease-panel)',
-        }}
-      >
-        {/* Left — context label */}
-        <div
-          style={{
-            fontFamily: 'var(--font-ui)',
-            fontSize: '0.75rem',
-            color: OBS.textFaint,
-            letterSpacing: '0.02em',
-          }}
-        >
-          10 museums · documented journeys
-        </div>
-
-        {/* Search group */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Results dropdown (above the input) */}
-          {showDropdown && (
-            <div
-              className="float-in"
-              style={{
-                position: 'absolute',
-                bottom: '100%',
-                right: 0,
-                marginBottom: 8,
-                width: 400,
-                background: OBS.dropdown,
-                border: `1px solid ${OBS.borderMid}`,
-                borderRadius: 'var(--radius-lg)',
-                boxShadow: '0 8px 40px rgba(0,0,0,0.6)',
-                overflow: 'hidden',
-                zIndex: 30,
-              }}
-            >
-              {isSearching ? (
-                <div
-                  style={{
-                    padding: '20px 20px',
-                    fontFamily: 'var(--font-ui)',
-                    fontSize: '0.8125rem',
-                    color: OBS.textMuted,
-                    textAlign: 'center',
-                  }}
-                  className="animate-pulse"
-                >
-                  Searching...
-                </div>
-              ) : results.length === 0 ? (
-                /* Empty state — beautiful, not broken */
-                <div style={{ padding: '20px 20px' }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: 4,
-                      marginBottom: 14,
-                    }}
-                  >
-                    {[0,1,2,3,4,5].map(i => (
-                      <div
-                        key={i}
-                        style={{
-                          height: 1.5,
-                          flex: 1,
-                          background: OBS.textFaint,
-                          borderRadius: 1,
-                          opacity: 0.3 + i * 0.07,
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-display)',
-                      fontSize: '1rem',
-                      color: OBS.text,
-                      marginBottom: 8,
-                    }}
-                  >
-                    Record not yet found
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-ui)',
-                      fontSize: '0.75rem',
-                      color: OBS.textMuted,
-                      lineHeight: 1.5,
-                      maxWidth: '40ch',
-                    }}
-                  >
-                    {query.trim()
-                      ? `No sourced record for "${query.trim()}". Try a different title or artist.`
-                      : 'Enter a title or artist name to trace provenance.'
-                    }{' '}
-                    Coverage is thin by design — only dated, sourced records appear here.
-                  </div>
-                </div>
-              ) : (
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                  {results.slice(0, 5).map((r, i) => (
-                    <li key={r.id}>
-                      <button
-                        onMouseDown={() => selectArtwork(r)}
-                        style={{
-                          width: '100%',
-                          textAlign: 'left',
-                          padding: '12px 16px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 12,
-                          background: 'transparent',
-                          border: 'none',
-                          borderTop: i > 0 ? `1px solid ${OBS.border}` : 'none',
-                          cursor: 'pointer',
-                          transition: 'background 150ms',
-                        }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = OBS.clayDim }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-                      >
-                        {/* Thumbnail */}
-                        <div
+                ) : (
+                  <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                    {results.slice(0, 5).map((r, i) => (
+                      <li key={r.id}>
+                        <button
+                          onMouseDown={() => selectArtwork(r)}
                           style={{
-                            width: 42,
-                            height: 42,
-                            borderRadius: 'var(--radius-sm)',
-                            background: OBS.surface2,
-                            overflow: 'hidden',
-                            flexShrink: 0,
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: '12px 16px',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center',
+                            gap: 12,
+                            background: 'transparent',
+                            border: 'none',
+                            borderTop: i > 0 ? `1px solid ${OBS.border}` : 'none',
+                            cursor: 'pointer',
+                            transition: 'background 150ms',
                           }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = OBS.clayDim }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
                         >
-                          {r.thumbnail ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={r.thumbnail}
-                              alt=""
-                              aria-hidden="true"
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            />
-                          ) : (
+                          {/* Thumbnail */}
+                          <div
+                            style={{
+                              width: 42,
+                              height: 42,
+                              borderRadius: 'var(--radius-sm)',
+                              background: OBS.surface2,
+                              overflow: 'hidden',
+                              flexShrink: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            {r.thumbnail ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={r.thumbnail}
+                                alt=""
+                                aria-hidden="true"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
+                            ) : (
+                              <div
+                                style={{
+                                  fontFamily: 'var(--font-display)',
+                                  fontSize: '1rem',
+                                  color: OBS.textFaint,
+                                  fontStyle: 'italic',
+                                }}
+                              >
+                                {r.title.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Text */}
+                          <div style={{ flex: 1, minWidth: 0 }}>
                             <div
                               style={{
-                                fontFamily: 'var(--font-display)',
-                                fontSize: '1rem',
-                                color: OBS.textFaint,
-                                fontStyle: 'italic',
+                                fontFamily: 'var(--font-ui)',
+                                fontWeight: 500,
+                                fontSize: '0.875rem',
+                                color: OBS.text,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                marginBottom: 2,
                               }}
                             >
-                              {r.title.charAt(0)}
+                              {r.title}
                             </div>
-                          )}
-                        </div>
-
-                        {/* Text */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div
-                            style={{
-                              fontFamily: 'var(--font-ui)',
-                              fontWeight: 500,
-                              fontSize: '0.875rem',
-                              color: OBS.text,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              marginBottom: 2,
-                            }}
-                          >
-                            {r.title}
+                            <div
+                              style={{
+                                fontFamily: 'var(--font-ui)',
+                                fontSize: '0.75rem',
+                                color: OBS.textMuted,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {r.artist}{r.date ? ` · ${r.date}` : ''}
+                            </div>
                           </div>
-                          <div
-                            style={{
-                              fontFamily: 'var(--font-ui)',
-                              fontSize: '0.75rem',
-                              color: OBS.textMuted,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {r.artist}{r.date ? ` · ${r.date}` : ''}
-                          </div>
-                        </div>
 
-                        {/* Badge */}
-                        <SourceBadge source={r.source} />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
+                          {/* Badge */}
+                          <SourceBadge source={r.source} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
 
-          {/* Label */}
-          <span
-            style={{
-              fontFamily: 'var(--font-ui)',
-              fontSize: '0.75rem',
-              color: OBS.textFaint,
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase' as const,
-            }}
-          >
-            Search
-          </span>
+            {/* Label */}
+            <span
+              style={{
+                fontFamily: 'var(--font-ui)',
+                fontSize: '0.75rem',
+                color: OBS.textFaint,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase' as const,
+                whiteSpace: 'nowrap' as const,
+              }}
+            >
+              Search
+            </span>
 
-          {/* Input */}
-          <input
-            type="text"
-            value={query}
-            onChange={e => {
-              setQuery(e.target.value)
-              if (e.target.value.trim().length < 2) {
-                setShowDropdown(false)
-                setResults([])
-              }
-            }}
-            onKeyDown={handleKeyDown}
-            onFocus={() => { if (results.length > 0) setShowDropdown(true) }}
-            onBlur={() => setTimeout(() => setShowDropdown(false), 120)}
-            placeholder="e.g. Starry Night"
-            aria-label="Search artworks by title or artist"
-            style={{
-              background: OBS.surface,
-              border: `1px solid ${OBS.border}`,
-              borderRadius: 'var(--radius-md)',
-              color: OBS.text,
-              fontFamily: 'var(--font-ui)',
-              fontSize: '0.875rem',
-              padding: '8px 14px',
-              width: 220,
-              outline: 'none',
-              transition: 'border-color 200ms var(--ease-gentle)',
-            }}
-            onFocusCapture={e => {
-              (e.currentTarget as HTMLInputElement).style.borderColor = OBS.clay
-            }}
-            onBlurCapture={e => {
-              (e.currentTarget as HTMLInputElement).style.borderColor = OBS.border
-            }}
-          />
+            {/* Input */}
+            <input
+              type="text"
+              value={query}
+              onChange={e => {
+                setQuery(e.target.value)
+                if (e.target.value.trim().length < 2) {
+                  setShowDropdown(false)
+                  setResults([])
+                }
+              }}
+              onKeyDown={handleKeyDown}
+              onFocus={() => { if (results.length > 0) setShowDropdown(true) }}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 120)}
+              placeholder="e.g. Starry Night"
+              aria-label="Search artworks by title or artist"
+              style={{
+                background: OBS.surface,
+                border: `1px solid ${OBS.border}`,
+                borderRadius: 'var(--radius-md)',
+                color: OBS.text,
+                fontFamily: 'var(--font-ui)',
+                fontSize: '0.875rem',
+                padding: '8px 14px',
+                width: isMobile ? '100%' : 220,
+                flex: isMobile ? 1 : undefined,
+                outline: 'none',
+                transition: 'border-color 200ms var(--ease-gentle)',
+              }}
+              onFocusCapture={e => {
+                (e.currentTarget as HTMLInputElement).style.borderColor = OBS.clay
+              }}
+              onBlurCapture={e => {
+                (e.currentTarget as HTMLInputElement).style.borderColor = OBS.border
+              }}
+            />
 
-          {/* Submit */}
-          <button
-            onClick={() => runSearch(query)}
-            aria-label="Submit search"
-            style={{
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              color: OBS.clay,
-              fontFamily: 'var(--font-ui)',
-              fontSize: '1.25rem',
-              lineHeight: 1,
-              padding: '4px 2px',
-              transition: 'opacity 200ms',
-            }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.6' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'   }}
-          >
-            →
-          </button>
+            {/* Submit */}
+            <button
+              onClick={() => runSearch(query)}
+              aria-label="Submit search"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: OBS.clay,
+                fontFamily: 'var(--font-ui)',
+                fontSize: '1.25rem',
+                lineHeight: 1,
+                padding: '4px 2px',
+                transition: 'opacity 200ms',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.6' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'   }}
+            >
+              →
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── Landing headline (shown only before any artwork is selected) ──── */}
       {!selectedResult && (
@@ -1134,8 +1247,10 @@ export default function ProvenanceGlobe() {
           style={{
             position: 'absolute',
             top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
+            // On desktop: center in the globe area (left sidebar is 280px wide)
+            left: isMobile ? 0 : 280,
+            right: 0,
+            transform: 'translateY(-50%)',
             textAlign: 'center',
             pointerEvents: 'none',
             zIndex: 5,
