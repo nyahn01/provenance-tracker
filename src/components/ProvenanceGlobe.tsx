@@ -263,6 +263,7 @@ export default function ProvenanceGlobe() {
   useEffect(() => {
     if (!containerRef.current) return
     let mounted = true
+    let onResize: (() => void) | null = null
 
     ;(async () => {
       const GlobeGL = (await import('globe.gl')).default
@@ -330,11 +331,26 @@ export default function ProvenanceGlobe() {
         .arcDashAnimateTime(4000)
         .arcStroke(1.2)
 
+      // ── Keep the globe filling its container on viewport/orientation change ──
+      // globe.gl sizes to the container at mount and does not reliably re-fit on
+      // resize — without this the canvas stays at its mount-size (undersized).
+      const fit = () => {
+        const el = containerRef.current
+        if (!el) return
+        globe.width(el.clientWidth).height(el.clientHeight)
+      }
+      fit()
+      onResize = fit
+      window.addEventListener('resize', fit)
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(globeRef as any).current = globe
     })()
 
-    return () => { mounted = false }
+    return () => {
+      mounted = false
+      if (onResize) window.removeEventListener('resize', onResize)
+    }
   }, [])
 
   // ── Pause / resume auto-rotation when artwork selected ──────────────────

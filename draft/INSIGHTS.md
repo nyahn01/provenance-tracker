@@ -20,6 +20,14 @@ written to a file, it's lost when the context window rolls. This file is the saf
 
 <!-- append insights below, newest first -->
 
+- `#design #process` Polish pass verified live (orchestrator, screenshots). CONFIRMED good: globe
+  now shows continent outlines + atmospheric glow + glowing pins (luminous, no longer an empty
+  sphere); detail panel confirmed warm off-white gallery palette. FOUND + FIXED a new bug: the
+  globe.gl canvas had no resize handler — it stayed locked at its mount-size (measured 386×330 in
+  a 1280×800 viewport), so any window resize / phone rotation left the globe undersized. Added a
+  `window.resize` → `globe.width()/height()` re-fit in the init effect. (Desktop first-load was
+  likely fine; resize/orientation was broken.) Shipped via gate.
+
 - `#design` Globe luminosity + responsive layout + gallery palette fix (P0 polish, 2026-06-18).
   Three changes shipped together:
   (1) Globe now shows land masses via `polygonsData` with a vendored GeoJSON (`/public/geo/countries-simple.json`
