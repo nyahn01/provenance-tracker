@@ -1,8 +1,10 @@
-# Provenance Tracker — Agent Team & Constant-Improvement Loop
+# Provenance Tracker — Agent Team & Self-Improving Loop
 
-Five specialists live in `.claude/agents/`. You (the main session) are the orchestrator:
-you plan, route work to the right agent, and run the review gate. Spawn agents with the Agent
-tool by `subagent_type`; continue an existing one with SendMessage so it keeps its context.
+Five specialists live in `.claude/agents/`. The main session is the orchestrator:
+it plans, routes work, and drives the loop. But **no agent — including the
+orchestrator — decides for itself that work is done.** A machine does. See "The
+ship gate" below. This is the rule that lets agents commit on their own overnight
+without a human checking each one.
 
 ## The team
 
@@ -14,34 +16,62 @@ tool by `subagent_type`; continue an existing one with SendMessage so it keeps i
 | `provenance-story` | Demo script, pitch, hero-work selection, judging-criteria fit | opus |
 | `provenance-honesty-review` | BLOCKING credibility gate before any commit/record/pitch change | opus |
 
+## The ship gate — the one rule that makes agents trustworthy
+
+`node scripts/ship.mjs --commit "<conventional message>"`
+
+It runs, in order: **build → start server → `verify.mjs` (live contract + honesty
+greps) → commit only if all green.** Exit 1 = BLOCKED, nothing committed.
+
+- Agents **must never `git commit` directly.** Every commit goes through `ship.mjs`,
+  so every commit on the branch is provably build-clean, contract-valid, and honest.
+- An agent's prose report ("I built X") is a **proposal**, not a result. The gate is
+  the result. If `ship.mjs` is red, the work does not exist — the agent fixes and re-runs.
+- The contract lives in `src/lib/types.ts`. Agents import shapes from there and never
+  invent a shape the other side doesn't implement. (This is what broke before:
+  the globe called `?source=&id=` while the route read `?q=` and served fake data.)
+
 ## Routing rules
 
-- UI/visual task → `provenance-globe`. Data/API/model task → `provenance-data`.
+- UI/visual → `provenance-globe`. Data/API/model → `provenance-data`.
 - "Is this real / who pays / how to position" → `provenance-strategy`.
 - "How do we present it" → `provenance-story`.
-- Before ANY commit, demo recording, or pitch edit → `provenance-honesty-review` (it can BLOCK).
-- A feature touching both data and UI: `provenance-data` defines the data shape first, then `provenance-globe`
-  renders it. Never let the UI invent data to look finished.
+- Any feature touching data + UI: `provenance-data` defines/extends `src/lib/types.ts`
+  FIRST, then `provenance-globe` renders it. Never let the UI invent data to look finished.
 
-## The constant-improvement loop (run every working session)
+## The self-improving loop (one cycle = one backlog item)
 
-1. **Read in:** [[CLAUDE.md]] → [[TONIGHT.md]] / [[TOMORROW.md]] → [[MEMORY.md]] → [[BUSINESS_CASE.md]] → [[PROGRESS.md]].
-2. **Plan:** pick the next item from [[TOMORROW.md]] priority order (priority 0 = honest unscripted path).
-3. **Build:** route to the owning agent. One feature at a time.
-4. **Gate:** run `provenance-honesty-review` on the diff + running app. If BLOCK, fix before commit.
-5. **Verify:** `npm run build` clean; exercise the unscripted-search path live.
-6. **Commit & push** per feature (small commits).
-7. **Retro:** append to [[PROGRESS.md]] — what shipped, what broke, what the honesty gate caught,
-   one improvement to the *process or an agent prompt* itself.
-8. **Improve the team:** if the gate caught the same class of issue twice, tighten the relevant
-   agent's prompt in `.claude/agents/`. The team gets sharper over time, not just the app.
+The loop runs unattended (overnight). Each cycle:
+
+1. **Pick** the top unchecked item from `draft/TOMORROW.md` (priority 0 = honest
+   unscripted-search path; never skip a P0 to do polish).
+2. **Build** — route to the owning agent. One item at a time.
+3. **Gate** — agent runs `node scripts/ship.mjs --commit "<msg>"`. Red → fix → re-run.
+   For anything touching claims/data, the honesty grep in `verify.mjs` must pass; for
+   bigger surface changes, also run `provenance-honesty-review` and obey a BLOCK.
+4. **Log** — append a one-line result to `draft/MORNING.md` (see its header for format):
+   what shipped, gate verdict, commit hash, or why it's blocked.
+5. **Improve the idea, not just the code** — every 3rd cycle, `provenance-strategy`
+   spends a SMALL budget (no expensive fan-out research) reflecting on the current
+   build + `BUSINESS_CASE.md` and either (a) sharpens the next priorities in
+   `TOMORROW.md`, or (b) flags a wrong assumption. Direction self-corrects too.
+6. **Improve the team** — if the gate catches the same class of issue twice, tighten
+   the offending agent's prompt in `.claude/agents/` and note it in `MORNING.md`.
+
+## What the human checks in the morning
+
+Open `draft/MORNING.md`. It is the single report. For each cycle it shows the gate
+verdict and commit. Then: `git log --oneline`, `npm run verify`, and spot-check the
+live app. Anything marked **BLOCKED** is where human judgment is needed.
 
 ## Honesty is the product
 
-The only real asset is credibility: "real, sourced, dated data — and honest about gaps." Every agent
-defers to `provenance-honesty-review`. Protecting that is more important than any single demo beat.
+The only real asset is credibility: real, sourced, dated data — honest about gaps.
+Every agent defers to `provenance-honesty-review` and to the honesty grep in the gate.
+Protecting that matters more than any single demo beat or shipped feature.
 
-## Note on /batch
-This repo is now git-initialized, so `/batch` works: it spawns these agents in isolated worktrees
-and opens a PR per task. Good for parallel, independent features (e.g. globe polish + a new data
-source) reviewed separately. Use the honesty gate on each resulting PR.
+## Cost discipline
+
+Token budget goes to **building and verifying**, not open-ended web search. Strategy
+reflection in step 5 is deliberately small. No multi-source research fan-out unless a
+human explicitly asks for it.

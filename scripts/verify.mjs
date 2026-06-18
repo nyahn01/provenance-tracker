@@ -30,11 +30,12 @@ async function getJson(path, init) {
   return { status: res.status, json, text }
 }
 
-async function waitForServer(tries = 20) {
+async function waitForServer(tries = 30) {
+  // Probe a real route and tolerate first-hit compile latency (dev) by retrying.
   for (let i = 0; i < tries; i++) {
     try {
-      const res = await fetch(`${BASE}/`)
-      if (res.ok) return true
+      const res = await fetch(`${BASE}/api/search?q=test`)
+      if (res.status === 200) return true
     } catch { /* not up yet */ }
     await new Promise(r => setTimeout(r, 1500))
   }
