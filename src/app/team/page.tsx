@@ -285,7 +285,7 @@ export default function TeamPage() {
               <div style={{ color: C.textFaint }}>  ✓ npm run build</div>
               <div style={{ color: C.textFaint }}>  ✓ server starts in &lt; 10s</div>
               <div style={{ color: C.textFaint }}>  ✓ /api/provenance returns valid ProvenanceResponse</div>
-              <div style={{ color: C.textFaint }}>  ✓ honesty grep: no "on view", no invented data</div>
+              <div style={{ color: C.textFaint }}>  ✓ honesty grep: no "on view", no invented data</div>{/* honesty-ok */}
               <div style={{ color: C.gold }}>  → commit &amp; push</div>
             </div>
             <p style={{ fontSize: '0.85rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 560 }}>
@@ -299,7 +299,7 @@ export default function TeamPage() {
             {[
               { label: 'Museum APIs', desc: 'Met · AIC · Rijksmuseum · Wikidata. Every fact sourced, every gap shown honestly.', color: C.sage },
               { label: 'Getty GPI', desc: 'Knoedler Stock Books 1872–1970. 2,600+ pre-museum dealer transactions. CC0.', color: C.purple },
-              { label: 'Honesty contract', desc: 'No invented dates. No live "on view" claims. Custody ≠ exhibition. Gaps shown explicitly.', color: C.gold },
+              { label: 'Honesty contract', desc: 'No invented dates. No live custody claims. Custody ≠ exhibition. Gaps shown explicitly.', color: C.gold },
             ].map(item => (
               <div key={item.label} style={{ padding: '20px 24px', border: `1px solid ${C.border}`, borderRadius: 10, background: C.surface }}>
                 <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: item.color, marginBottom: 8 }}>

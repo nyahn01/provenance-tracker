@@ -1,0 +1,37 @@
+name: Honesty Gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  honesty:
+    name: Provenance honesty check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history so merge-base works
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run honesty gate (diff vs main)
+        run: node scripts/honesty-check.mjs
+
+  build:
+    name: Build check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
