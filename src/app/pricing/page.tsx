@@ -223,6 +223,9 @@ export default function PricingPage() {
               Tier rationale: draft/RESEARCH_MEMO.md — restitution clients first
             </div>
             <div style={{ display: 'flex', gap: 20 }}>
+              <Link href="/demo" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                Our story →
+              </Link>
               <Link href="/learn" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
                 Provenance glossary →
               </Link>
