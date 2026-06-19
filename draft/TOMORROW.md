@@ -1,182 +1,156 @@
 # TOMORROW — Batch Priority Queue
 
-Agents pull from this queue daily (6am UTC). Completed features move to PROGRESS.md.
+Agents pull from this queue. Completed features move to PROGRESS.md.
+**Last updated: 2026-06-19** — post-batch-run, post-globe-fix, post-PR-6 merge.
 
 ---
 
-## TONIGHT — Immediate Batch (Max, triggered manually before demo)
+## ⚠️ GLOBE CONTRACT — READ THIS BEFORE TOUCHING StoriesApp.tsx
 
-### T1. Seed Getty GPI — Goupil & Cie dataset
+The globe rendering is locked. Do NOT deviate from this. The agent team has already broken it twice:
+
+```typescript
+// ✅ CORRECT — this is the only approved globe init pattern:
+const oc = document.createElement('canvas'); oc.width = 2; oc.height = 2
+const ox = oc.getContext('2d')!; ox.fillStyle = '#060504'; ox.fillRect(0, 0, 2, 2)
+globe.globeImageUrl(oc.toDataURL()).backgroundColor(OBS.bg).showAtmosphere(false)
+
+// ❌ NEVER DO THESE:
+// globe.showAtmosphere(true)          — any atmosphere makes the globe orange
+// globe.atmosphereColor(...)          — forbidden, see above
+// scene.traverse(...)                 — causes black noise artifacts when zooming
+// material.shininess = ...            — breaks depth buffer
+// enableZoom = false                  — zoom must stay enabled
+```
+
+Design tokens (OBS object) are also locked:
+```
+globeOcean: '#060504'   // near-black — do not darken or lighten
+globeLand:  '#7a5828'   // warm brown — continent silhouettes
+globeBorder:'#a87848'   // polygon stroke
+```
+
+If your task requires touching globe init: re-read this section and do ONLY what's needed. Do not "improve" adjacent settings.
+
+---
+
+## ✅ Completed (do not re-queue)
+
+- **Goupil & Cie seeding** — `scripts/seed-goupil.mjs`, 1,760 records merged with Knoedler (4,388 total)
+- **RKD integration** — `src/lib/rkd.ts`, 4th parallel fetch, teal badge in sidebar
+- **Globe canvas fix** — ocean via data URL, no atmosphere, zoom enabled (on main)
+- **Honesty gate CI** — `scripts/honesty-check.mjs` + `.github/workflows/honesty-gate.yml`
+- **Obsidian research vault** — `vault/` with 13 notes, agent writing instructions
+- **Pricing research memo** — `draft/RESEARCH_MEMO.md` filed (restitution-first positioning, 3 tiers)
+
+## 🔁 In PR — awaiting review + merge
+
+- **PR #8** `feat/globe/team-stage2-active` — Stage 2 pill active, Goupil status line
+- **PR #9** `feat/globe/learn-page-clean` — `/learn` provenance glossary, gap sidebar link
+- **`feat/data/confidence-levels`** — confidence dots (high/medium/low) on timeline events — branch pushed, no PR yet
+
+---
+
+## Tier 1: High-Value Quick Wins
+
+### 1. /pricing page — 3-tier mock
+**Agent:** provenance-globe
+**Why:** Needed for the demo Q&A ("what's the business model?"); static page, fast to ship.
+**What:**
+- `src/app/pricing/page.tsx` — server-rendered, same dark palette as `/learn` and `/team`
+- Three tiers:
+  | Tier | Price | Who |
+  |------|-------|-----|
+  | Explorer | Free | Public, students, art-curious |
+  | Researcher | €99/mo | Art historians, journalists, educators |
+  | Institution | €999/mo | Museums, auction houses, restitution law firms |
+- CTA buttons: "Coming soon" (no Stripe yet)
+- Below tiers: one-line note "Tier rationale from draft/RESEARCH_MEMO.md — restitution clients first"
+- Add `/pricing` to nav (wherever `/team` and `/learn` are linked)
+**Done when:** `/pricing` route renders; `npm run build` passes.
+**Blocks:** None. **Globe contract:** N/A (no globe on this page).
+
+### 2. Globe empty-state — graceful degradation
+**Agent:** provenance-globe
+**Why:** Searching a non-curated work shows a blank sidebar. Needs intentional fallback.
+**What:**
+- In `src/components/StoriesApp.tsx`, when `prov.locations.length < 2 && !prov.hasGap`:
+  - Show a styled "Provenance gap" panel using existing `OBS.gap` color token
+  - Text: "Ownership records for this work are incomplete."
+  - Link: "Learn about provenance gaps →" pointing to `/learn`
+- When `prov.hasGap === true` (gap already flagged by API): same panel, already works — verify it looks right
+**Done when:** search for an uncurated work shows gap panel instead of empty space.
+**GLOBE CONTRACT:** Do not touch globe init. Only modify the sidebar JSX.
+
+### 3. Open PR for confidence-levels branch
+**Agent:** provenance-globe (or provenance-data)
+**Why:** Branch `feat/data/confidence-levels` is pushed but has no PR.
+**What:** Just open the PR — no new code needed. Title: "feat(data): confidence levels on timeline events"
+**Done when:** PR open on GitHub.
+**Blocks:** None.
+
+---
+
+## Tier 2: Feature Expansion
+
+### 4. Museum exhibition-loan extraction from prose
 **Agent:** provenance-data
-**Why:** Degas Yellow Dancers AIC provenance text explicitly names "Goupil et Cie, Paris on July 25, 1891". Seeding this closes the paper trail for our best demo work. CC0, same S3 bucket pattern as Knoedler.
-**Data URL:** `https://jpgt-or-prd-provenance-index-csv.s3.us-west-2.amazonaws.com/goupil/goupil.csv`
+**Why:** Exhibition history is locked in museum prose ("on loan to Louvre, 1992–1995"). Structured extraction adds a whole tier of data.
 **What:**
-- Create `scripts/seed-goupil.mjs` (mirror of seed-getty.mjs, filter same 30-artist list)
-- Output to `public/data/getty-goupil.json`
-- Edit `src/lib/getty.ts`: `searchGetty()` loads+merges both datasets; tag `sourceLabel: "Getty GPI — Goupil & Cie (1846–1919)"`
-**Done when:** `searchGetty('Edgar Degas')` returns records from BOTH datasets; a Goupil record near 1891 appears for Yellow Dancers.
+- Parse `provenance` prose fields from Met/AIC for "on loan" / "loaned" / "borrowed" markers
+- Return typed `ExhibitionLoan` shape (reuse or extend `LocationEntry`)
+- Test with Starry Night @ MoMA
+**Done when:** query returns structured loans with dates; PR passes honesty check.
 **Blocks:** None.
 
-### T2. Globe contrast + city dots
-**Agent:** provenance-globe
-**Why:** User cannot distinguish continents on the globe — ocean (#111010) vs land (#1c1612) contrast too low. Demo-critical visual issue.
+### 5. Cache TTL tuning + invalidation route
+**Agent:** provenance-data
+**Why:** Demo data must be fresh; no 429s during the recording.
 **What:**
-- `src/components/StoriesApp.tsx` globe config: land color → `#2a2218` (warmer, more visible)
-- Globe borders → `#4a3d2e`
-- Add static city dots (altitude 0.3, rgba(246,241,232,0.35)) for: Paris, London, Amsterdam, NYC, Chicago, Florence, Madrid, Vienna, Tokyo, Seoul
-- City data: hardcode lat/lng as `CITY_DOTS` array near globe init
-**Done when:** Screenshot in PR shows continents clearly distinguishable; arcs pop against land.
-**Blocks:** None.
+- Add `/api/cache/invalidate?source=met|aic|wikidata|rkd` route
+- TTL config: Met 7d, AIC 7d, Wikidata 1d, RKD 1d
+- Log cache hits/misses to console (not to UI)
+**Done when:** cache invalidation works; no rate-limit errors in 10 rapid queries.
 
-### T3. Team page: Stage 2 pill active
+### 6. Mobile-responsive globe + sidebar
 **Agent:** provenance-globe
-**Why:** Max subscription is active now. Stage 2 pill still shows as inactive/muted. Demo script says "agents working right now."
+**Why:** Globe is cramped on mobile; sidebar doesn't collapse.
 **What:**
-- `src/app/team/page.tsx`: Stage 2 pill `active: false` → `active: true`
-- Stage 2 text → "Background automation via Max — live now"
-- Add one line below subtitle: "Overnight enrichment running: Goupil & Cie dataset → in progress"
-**Done when:** Stage 2 pill renders gold/active; copy updated.
-**Blocks:** None.
+- Globe: 75% height on tablet, 50% on mobile (Tailwind breakpoints)
+- Sidebar → slide-in drawer on mobile (hamburger button)
+- Test on 390px viewport
+**Done when:** no layout breaks on mobile; animations smooth.
+**GLOBE CONTRACT:** Do not touch globe init. Only CSS/layout changes.
 
 ---
 
-## Tier 1: High-Value Quick Wins (1–2 days per feature)
+## Tier 3: Strategy & Narrative
 
-### 0. /learn page — provenance glossary (NEW)
-**Agent:** art-historian drafts content → provenance-globe builds page
-**Why:** Art & AI book club audience needs this; links from sidebar gap entries ("What is a provenance gap?"); static page, fast to build.
-**What:**
-- `src/app/learn/page.tsx` — server-rendered, static, same dark palette
-- Sections: Chain of custody vs exhibition loan | What a provenance gap means (legal implications) | GPI / Knoedler / Goupil explained | WWII era (1933–1945) | Korean cultural heritage — 직지심체요절 as a case study
-- Link from sidebar gap events: "Learn about provenance gaps →"
-**Done when:** `/learn` route renders; all sections present; `npm run build` passes.
-**Blocks:** None.
-
-### 1. Reconciliation reconciliation: fix the uncertainty display
-**Agent:** provenance-data  
-**Why:** Sparse data points (5.5% Wikidata coverage) should show confidence levels, not gaps.  
-**What:** Add `confidence: "high" | "medium" | "low"` to provenance timeline shape. Wikidata P276 = medium, exhibition catalogs = high, web extraction = low.  
-**Done when:** provenance-timeline returns typed confidence; panel renders a "confidence badge" next to each event.  
-**Blocks:** None.
-
-### 2. Museum exhibition-loan extraction from prose
-**Agent:** provenance-data  
-**Why:** Exhibition history is locked in museum prose ("on loan to Louvre, 1992–1995"). Claude can extract it; deterministic extraction is fallback.  
-**What:** Parse museum collection pages for "on loan" / "loaned" / "borrowed" markers. Return typed `ExhibitionLoan` shape. Test with Starry Night @ MOMA.  
-**Done when:** Query returns structured loans with dates; PR passes honesty checklist.  
-**Blocks:** None (Anthropic key is funded after 6/19).
-
-### 3. Polish globe empty-state (unscripted search, thin data)
-**Agent:** provenance-globe  
-**Why:** When a user searches a non-curated work, the globe shows nothing. Needs graceful degradation.  
-**What:** When data is sparse (< 3 locations), show a "Provenance gap — help improve this record" panel. Link to a form stub (no submission needed yet).  
-**Done when:** Empty search degrades to intentional-looking UI, not broken. Screenshot in PR.  
-**Blocks:** None.
-
-### 4. Refresh Met/AIC API caching (TTL tuning)
-**Agent:** provenance-data  
-**Why:** Current TTL is 24h; museum updates are rare, but demo data should be fresh.  
-**What:** Implement cache-invalidation route (`/api/cache/invalidate?source=met`). Add per-API TTL config (Met: 7d, AIC: 7d, Wikidata: 1d). Document in PR.  
-**Done when:** Cache hits/misses logged; invalidation works; no 429s during demo.  
-**Blocks:** None.
-
-## Tier 2: Feature Expansion (2–3 days per feature)
-
-### 5. RKD (Rijksmuseum Kunsthistorisch Documentatiecentrum) integration
-**Agent:** provenance-data  
-**Why:** RKD has ~75k artworks with documented provenance. Free API; high credibility.  
-**What:** Implement RKD query (https://api.rkd.nl/). Merge results with Met/AIC. Test with a work known to RKD.  
-**Done when:** RKD results show in search; source line says "RKD"; no API key required.  
-**Blocks:** None (requires WebFetch whitelist update for api.rkd.nl).
-
-### 6. Europeana data integration (exhibition-history enrichment)
-**Agent:** provenance-data  
-**Why:** Europeana has 60M items with rich metadata. Free tier; high coverage for non-US works.  
-**What:** Query Europeana API (pro.europeana.eu) for exhibition history and provenance notes. Merge into timeline.  
-**Done when:** Europeana results appear in curated works; source attributed correctly.  
-**Blocks:** None (requires API key in env; already whitelisted for WebFetch).
-
-## Tier 3: Design & UX Polish (1–2 days per feature)
-
-### 7. Team page animation & museum data cards
-**Agent:** provenance-globe  
-**Why:** Team page is static. Each agent card should show the museum/dataset count they're working with.  
-**What:** Add museum-pin icons to agent cards. Animate them on scroll. Show live cache stats (e.g., "Met: 347 in cache, updated 3h ago").  
-**Done when:** Cards animate smoothly; stats refresh; responsive on mobile.  
-**Blocks:** None.
-
-### 8. Mobile-responsive globe + sidebar collapse
-**Agent:** provenance-globe  
-**Why:** Globe is cinematic on desktop, cramped on mobile. Sidebar should collapse into hamburger.  
-**What:** Use Tailwind responsive breakpoints. Globe shrinks to 75% height on tablet, 50% on mobile. Sidebar → slide-in drawer. Test on iPhone 15.  
-**Done when:** Works on mobile; no layout breaks; animations smooth.  
-**Blocks:** None.
-
-## Tier 4: Business & Strategy (parallel, can run anytime)
-
-### 9. Pricing model exploration for B2B
-**Agent:** provenance-strategy  
-**Why:** Need to validate if museums / insurers would pay for provenance API.  
-**What:** Desk research: Smithsonian, Getty, insurance underwriters. What data do they want? What's the TAM (total addressable market)?  
-**Output:** 1-page research memo in draft/RESEARCH_MEMO.md. No code.  
-**Done when:** Memo filed; findings inform positioning.  
-**Blocks:** None.
-
-### 10. Craft elevator pitch (30 sec, 2 min, 5 min versions)
-**Agent:** provenance-story  
-**Why:** Demo script exists; need three versions for different audiences (museum director, tech investor, art-curious person).  
-**What:** Write three versions in draft/PITCH.md. Film 30-sec video if possible (or script it).  
-**Done when:** Three pitches in file; team reviews; 30-sec version passes "would watch to the end" test.  
-**Blocks:** None.
-
----
-
-## Legend
-
-- **Done when:** Clear acceptance criteria. If met, agent opens PR; main session runs honesty gate.
-- **Blocks:** Which agents are upstream (data before UI) or which async work is needed.
-- **Tier 1** agents run **every day** (small, high-impact).
-- **Tier 2–3** run **every 3 days** (bigger features, can batch).
-- **Tier 4** run **weekly** (strategy/narrative, no code merges needed, just files).
+### 7. Elevator pitches (30s / 2min / 5min)
+**Agent:** provenance-story
+**Why:** Demo Q&A needs crisp answers for "what is this?" at different audience levels.
+**What:** Write three versions in `draft/PITCH.md`. Korean versions not needed here (DEMO_SCRIPT_KO.md already exists).
+**Done when:** Three pitches filed; 30s version is under 80 words.
 
 ---
 
 ## How Agents Pick Work
 
-1. Agent wakes up (via scheduled workflow run).
-2. Reads this file (current priority).
-3. Picks the FIRST uncompleted item in their domain.
-4. Reads the acceptance criteria ("Done when").
-5. Branches, codes, tests, opens PR.
+1. Agent reads this file (current priority, tier order).
+2. Reads the GLOBE CONTRACT if touching StoriesApp.tsx.
+3. Branches: `feat/<agent-domain>/<short-slug>`
+4. Codes, runs `npm run build`, runs `npm run honesty`, fixes errors.
+5. Opens PR — does NOT merge.
 6. Main session runs honesty gate, merges or requests changes.
-7. Item moves to PROGRESS.md. Next agent wakes up and picks #2.
+7. Item moves to PROGRESS.md. Next run picks the next item.
 
 ---
 
 ## How to Pause All Agents
 
-```bash
-# In Claude Code, stop the scheduled workflow
-/schedule --list              # See all scheduled jobs
-/schedule --cancel <job-id>   # Cancel the specific batch-agent job
-```
-
-Agents will not spawn until you restart the schedule. To resume:
-```bash
-/schedule --resume <job-id>
-```
+Edit this file — prepend `[PAUSED]` to any priority heading.
+The batch workflow skips `[PAUSED]` items automatically.
 
 ---
 
-## How to Pause One Agent
-
-Edit the agent's entry in this file:
-```markdown
-### [PAUSED] 1. Reconciliation reconciliation: fix the uncertainty display
-```
-
-Next run, agent skips it. When ready to resume, remove `[PAUSED]`.
-
----
-
-See also: draft/PROGRESS.md (completed features), draft/INSIGHTS.md (lessons learned).
+See also: draft/PROGRESS.md (completed), draft/INSIGHTS.md (lessons), draft/RESEARCH_MEMO.md (strategy).
