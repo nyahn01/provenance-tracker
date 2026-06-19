@@ -10,7 +10,7 @@ const OBS = {
   bg: '#0a0908', surface: '#131110', border: '#2a2218', borderMid: '#3d3228',
   text: '#f6f1e8', textMuted: '#9a8f85', textFaint: '#5c5449',
   clay: '#c87855', gold: '#d4a853', sage: '#6f8d7d',
-  globeOcean: '#0e0d0c', globeLand: '#3a2a14', globeBorder: '#5a4830',
+  globeOcean: '#060504', globeLand: '#7a5828', globeBorder: '#a87848',
 } as const
 const GAL = {
   bg: '#f7f4ee', surface: '#ffffff', surface2: '#ede9e2', border: '#d8d2c8', borderMid: '#b8afa3',

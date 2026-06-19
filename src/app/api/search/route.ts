@@ -139,21 +139,23 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ...cached, cached: true })
   }
 
+  // Detect institution-name queries so we don't send "Rijksmuseum" as an artwork
+  // title to Met/AIC (which matches provenance text, not collection source).
+  const qLower = q.toLowerCase().replace(/[^a-z]/g, '')
+  const isRijksQuery = ['rijksmuseum', 'rijks'].includes(qLower)
+  const isMetQuery = ['met', 'metropolitan', 'metropolitanmuseum'].includes(qLower)
+  const isAicQuery = ['aic', 'artinstituteofchicago', 'artinstitute', 'chicago'].includes(qLower)
+
   const [metResult, aicResult, rijksResult] = await Promise.allSettled([
-    searchMet(q),
-    searchAic(q),
-    searchRijks(q),
+    isRijksQuery ? Promise.resolve([]) : searchMet(q),
+    isRijksQuery ? Promise.resolve([]) : searchAic(q),
+    // For Rijksmuseum name queries: browse without a specific title term
+    isRijksQuery ? searchRijks('') : searchRijks(q),
   ])
 
-  if (metResult.status === 'rejected') {
-    console.error('[search/met]', metResult.reason)
-  }
-  if (aicResult.status === 'rejected') {
-    console.error('[search/aic]', aicResult.reason)
-  }
-  if (rijksResult.status === 'rejected') {
-    console.error('[search/rijks]', rijksResult.reason)
-  }
+  if (metResult.status === 'rejected') console.error('[search/met]', metResult.reason)
+  if (aicResult.status === 'rejected') console.error('[search/aic]', aicResult.reason)
+  if (rijksResult.status === 'rejected') console.error('[search/rijks]', rijksResult.reason)
 
   const results: SearchResult[] = [
     ...(metResult.status === 'fulfilled' ? metResult.value : []),
@@ -162,8 +164,8 @@ export async function GET(request: NextRequest) {
   ]
 
   const sources: string[] = []
-  if (metResult.status === 'fulfilled') sources.push('Metropolitan Museum of Art API')
-  if (aicResult.status === 'fulfilled') sources.push('Art Institute of Chicago API')
+  if (!isRijksQuery && metResult.status === 'fulfilled') sources.push('Metropolitan Museum of Art API')
+  if (!isRijksQuery && aicResult.status === 'fulfilled') sources.push('Art Institute of Chicago API')
   if (rijksResult.status === 'fulfilled') sources.push('Rijksmuseum API')
 
   const response: SearchResponse = { results, query: q, sources }
