@@ -482,9 +482,15 @@ export default function StoriesApp() {
               the open APIs of the Metropolitan Museum of Art, the Art Institute of Chicago, the Rijksmuseum, Wikidata,
               and the Getty Research Institute (Knoedler Stock Books, CC0 1.0).
               Images are shown only for public-domain works, credited to their institution. Gaps are shown, never invented.
-              <div style={{ marginTop: 10 }}>
+              <div style={{ marginTop: 10, display: 'flex', gap: 20, flexWrap: 'wrap' }}>
                 <a href="/team" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
                   How this platform works →
+                </a>
+                <a href="/learn" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
+                  Provenance glossary →
+                </a>
+                <a href="/pricing" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
+                  Pricing →
                 </a>
               </div>
             </div>
