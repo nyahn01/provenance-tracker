@@ -1,84 +1,117 @@
-# Batch Agent Orchestration — Setup & Control
+# Agent Orchestration with Max — Setup & Control
 
-Hybrid model: Daily scheduled batch (6am UTC) + Max for urgent hot-fixes. **Fully pauseable.**
+**You have Max.** Continuous 24/7 agent work with instant fallback to daily batch mode.
 
 ---
 
 ## ✅ What You Just Got
 
-- **TOMORROW.md** — Priority queue (10 items across 4 tiers). Agents read this and pick work.
-- **batch-agent-squad.mjs** — The workflow that spawns agents in parallel.
+- **TOMORROW.md** — Unified priority queue (10 items across 4 tiers). Agents read this regardless of mode.
+- **batch-agent-squad.mjs** — The workflow that spawns agents in parallel (works in both Max and batch mode).
 - **PROGRESS.md** — Tracks completed features and lessons learned.
-- **This guide** — How to start, pause, stop, and monitor.
+- **This guide** — How to start Max, pause anytime, or switch to batch mode.
 
 ---
 
-## 🚀 Start Daily Batch Runs
+## 🚀 Launch Max Now
 
-### Option A: Use `/schedule` (Recommended)
+You have Max. Agents work 24/7, respond instantly to TOMORROW.md priorities and GitHub issues.
 
-From Claude Code terminal:
+### Start Max Continuous
 
 ```bash
-/schedule --interval "0 6 * * *" --workflow batch-agent-squad
+/schedule --max true --workflow batch-agent-squad
 ```
 
-This runs the workflow **every day at 6am UTC**. The workflow will:
-1. Read TOMORROW.md
-2. Spawn agents in parallel (one per domain: provenance-data, provenance-globe, etc.)
-3. Each agent picks their top priority and opens a PR
-4. Honesty gate reviews each PR (blocks or approves)
-5. Report results in the main session
+Agents will:
+- Wake every 2 hours and spawn new workers on top TOMORROW.md priorities
+- Respond to GitHub issues/PRs (if webhook configured)
+- Work in background (no Claude Code session needed)
+- Read TOMORROW.md live; priorities can be paused anytime with `[PAUSED]`
 
-### Option B: Manual Test Run (Try It First)
+### Test Run First (Optional)
+
+Before scheduling, try a test run:
 
 ```bash
 /workflow batch-agent-squad
 ```
 
-This runs it **once, right now**. Good for testing before scheduling. The workflow will report what agents spawned and what PRs were opened.
+This runs once **in your session right now**. You'll see what agents spawn and what PRs would open. Good for validation before Max takes over.
 
 ---
 
-## ⏸️ Pause / Stop / Resume
+## ⏸️ Pause Max Anytime
 
-### Pause ALL agents (stop tomorrow's batch)
+### Kill All Max Agents (Complete Stop)
 
 ```bash
 /schedule --list
-# Output: "batch-agent-squad" job ID: wf_abc123
+# Note the Max job ID (e.g., wf_abc123)
 
 /schedule --cancel wf_abc123
 ```
 
-Agents will NOT run tomorrow. To restart:
+All agent work stops immediately. Existing PRs stay open; no more agents spawn until you restart.
 
-```bash
-/schedule --interval "0 6 * * *" --workflow batch-agent-squad
-```
+### Pause One Priority (But Keep Max Running)
 
-### Pause ONE agent (selective)
-
-Edit `draft/TOMORROW.md`. Find the priority and prepend `[PAUSED]`:
+Edit `draft/TOMORROW.md`:
 
 ```markdown
 ### [PAUSED] 1. Reconciliation reconciliation: fix the uncertainty display
 ```
 
-Next batch run, that agent skips this priority and moves to #2. When ready to resume, remove `[PAUSED]`:
+Max will skip this priority next round and work on #2. Remove `[PAUSED]` to resume.
+
+### Pause One Agent Domain (But Keep Others)
+
+Edit the specific priorities for that agent in TOMORROW.md:
 
 ```markdown
-### 1. Reconciliation reconciliation: fix the uncertainty display
+### [PAUSED] 2. Museum exhibition-loan extraction from prose
+**Agent:** provenance-data
 ```
 
-### Emergency stop (kill everything)
+This pauses that specific provenance-data priority; other provenance-data priorities will still run.
+
+---
+
+## 🔄 Fallback to Daily Batch (Anytime)
+
+**If Max is too aggressive, dial it back to daily batch runs:**
 
 ```bash
 /schedule --list
-/schedule --cancel <all job IDs>
+# Note the Max job ID
+
+/schedule --cancel wf_abc123
+
+# Now start daily batch instead
+/schedule --interval "0 6 * * *" --workflow batch-agent-squad
 ```
 
-All batch runs stop immediately. Existing PRs stay open; no merges happen until you restart.
+Agents now run **once per day at 6am UTC** instead of continuously. Easier to monitor and control.
+
+**To go back to Max:**
+
+```bash
+/schedule --cancel <daily-job-id>
+/schedule --max true --workflow batch-agent-squad
+```
+
+---
+
+## 📋 Max vs Batch Comparison
+
+| Feature | Max (Continuous) | Batch (Daily) |
+|---------|---|---|
+| **Frequency** | Every 2 hours + webhooks | Once per day (6am UTC) |
+| **Wall-clock Speed** | Fast (agents always working) | Slower (wait until 6am) |
+| **Cost** | Higher (continuous compute) | Lower (daily bursts) |
+| **Control** | Harder (always running) | Easier (scheduled windows) |
+| **Pause** | `/schedule --cancel` | `/schedule --cancel` |
+| **Switch** | `--cancel` + restart with `--interval` | `--cancel` + restart with `--max` |
 
 ---
 
