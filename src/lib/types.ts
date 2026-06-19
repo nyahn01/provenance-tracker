@@ -57,6 +57,24 @@ export interface GapEntry {
   note: string
 }
 
+export interface GettyRecord {
+  piRecordNo: string | null
+  artist: string | null
+  title: string | null
+  entryDate: string | null
+  saleDate: string | null
+  seller: string | null
+  sellerLocation: string | null
+  buyer: string | null
+  buyerLocation: string | null
+  purchasePrice: string | null
+  salePrice: string | null
+  transaction: string | null
+  notes: string | null
+  sourceUrl: string | null
+  sourceLabel: string
+}
+
 export interface ProvenanceResponse {
   artwork: ArtworkMeta
   /** Chain of CUSTODY only — owners/locations over time. This is the journey (the arcs). */
@@ -68,6 +86,8 @@ export interface ProvenanceResponse {
   hasGap: boolean
   /** Raw institutional provenance prose (AIC tier-A source), shown verbatim as evidence. */
   provenanceText?: string
+  /** Historical art market transactions from Getty Provenance Index — Knoedler Stock Books. */
+  gettyRecords?: GettyRecord[]
 }
 
 // ─── Reconcile (Claude) ──────────────────────────────────────────────────────
