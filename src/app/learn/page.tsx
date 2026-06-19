@@ -354,6 +354,9 @@ export default function LearnPage() {
               Sources: Washington Principles 1998 · Getty Research Institute · Cultural Heritage Administration of Korea · BnF
             </div>
             <div style={{ display: 'flex', gap: 20 }}>
+              <Link href="/pricing" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                Pricing →
+              </Link>
               <Link href="/team" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
                 How the platform works →
               </Link>

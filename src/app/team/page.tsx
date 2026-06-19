@@ -318,9 +318,17 @@ export default function TeamPage() {
             <div style={{ fontSize: '0.72rem', color: C.textFaint }}>
               Built with Claude Sonnet &amp; Opus · Anthropic · 2025
             </div>
-            <Link href="/" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-              Explore the journeys →
-            </Link>
+            <div style={{ display: 'flex', gap: 20 }}>
+              <Link href="/pricing" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                Pricing →
+              </Link>
+              <Link href="/learn" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                Provenance glossary →
+              </Link>
+              <Link href="/" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                Explore journeys →
+              </Link>
+            </div>
           </div>
 
         </div>
