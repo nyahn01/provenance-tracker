@@ -35,15 +35,20 @@ function tierLabel(source: string): string {
   if (s.includes('aic') || s.includes('art institute')) return 'AIC'
   if (s.includes('rijks')) return 'RIJKS'
   if (s.includes('wikidata')) return 'Wikidata'
+  if (s.includes('getty') || s.includes('knoedler') || s.includes('gpi')) return 'GPI'
   return source.toUpperCase().slice(0, 12)
 }
 function SourceBadge({ source }: { source: string }) {
+  const label = tierLabel(source)
+  const isGPI = label === 'GPI'
   return (
     <span style={{
-      background: 'rgba(160,120,48,0.10)', color: GAL.gold, border: '1px solid rgba(160,120,48,0.25)',
+      background: isGPI ? 'rgba(124,92,191,0.12)' : 'rgba(160,120,48,0.10)',
+      color: isGPI ? '#9b7fe0' : GAL.gold,
+      border: isGPI ? '1px solid rgba(124,92,191,0.30)' : '1px solid rgba(160,120,48,0.25)',
       borderRadius: 4, padding: '2px 7px', fontSize: '0.625rem', fontFamily: 'var(--font-ui)',
       fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
-    }}>{tierLabel(source)}</span>
+    }}>{label}</span>
   )
 }
 
@@ -236,8 +241,14 @@ export default function StoriesApp() {
             {/* Footer: data & rights */}
             <div style={{ marginTop: 64, borderTop: `1px solid ${OBS.border}`, paddingTop: 20, fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: OBS.textFaint, lineHeight: 1.6, maxWidth: 720 }}>
               <strong style={{ color: OBS.textMuted, fontWeight: 600 }}>Data &amp; rights.</strong> Provenance and exhibition facts come from
-              the open APIs of the Metropolitan Museum of Art, the Art Institute of Chicago, the Rijksmuseum, and Wikidata.
+              the open APIs of the Metropolitan Museum of Art, the Art Institute of Chicago, the Rijksmuseum, Wikidata,
+              and the Getty Research Institute (Knoedler Stock Books, CC0 1.0).
               Images are shown only for public-domain works, credited to their institution. Gaps are shown, never invented.
+              <div style={{ marginTop: 10 }}>
+                <a href="/team" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
+                  How this platform works →
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -356,6 +367,57 @@ export default function StoriesApp() {
                       {prov.provenanceText}
                     </div>
                   </details>
+                </div>
+              )}
+
+              {/* Getty Provenance Index — historical market transactions */}
+              {prov.gettyRecords && prov.gettyRecords.length > 0 && (
+                <div style={{ padding: '26px 24px 0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: GAL.textFaint }}>Historical market records</div>
+                    <SourceBadge source="Getty GPI" />
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.7rem', color: GAL.textMuted, marginBottom: 14, lineHeight: 1.4 }}>
+                    Knoedler &amp; Co. stock books, 1872–1970 — dealer transactions before museum acquisition.
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {prov.gettyRecords.map((rec, i) => (
+                      <div key={i} style={{ padding: '10px 12px', background: 'rgba(124,92,191,0.05)', border: '1px solid rgba(124,92,191,0.15)', borderRadius: 6 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+                          <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.8rem', color: GAL.text, fontWeight: 500 }}>
+                            {rec.title || '(untitled)'}
+                          </div>
+                          <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: '#9b7fe0', fontWeight: 600, flexShrink: 0, marginLeft: 8 }}>
+                            {rec.saleDate?.slice(0, 4) ?? rec.entryDate?.slice(0, 4) ?? '–'}
+                          </div>
+                        </div>
+                        <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, lineHeight: 1.5 }}>
+                          {rec.seller && <span>{rec.seller}</span>}
+                          {rec.seller && rec.buyer && <span style={{ color: GAL.textFaint }}> → </span>}
+                          {rec.buyer && <span>{rec.buyer}</span>}
+                          {rec.buyerLocation && <span style={{ color: GAL.textFaint }}> · {rec.buyerLocation}</span>}
+                        </div>
+                        {(rec.purchasePrice || rec.salePrice) && (
+                          <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textFaint, marginTop: 3 }}>
+                            {rec.purchasePrice && <span>bought {rec.purchasePrice}</span>}
+                            {rec.purchasePrice && rec.salePrice && <span> · </span>}
+                            {rec.salePrice && <span>sold {rec.salePrice}</span>}
+                            {rec.transaction && rec.transaction !== 'Sold' && <span> · {rec.transaction}</span>}
+                          </div>
+                        )}
+                        {rec.sourceUrl && (
+                          <a href={rec.sourceUrl} target="_blank" rel="noopener noreferrer"
+                            style={{ fontFamily: 'var(--font-ui)', fontSize: '0.62rem', color: 'rgba(124,92,191,0.6)', textDecoration: 'none', marginTop: 4, display: 'inline-block' }}>
+                            Getty record ↗
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.62rem', color: GAL.textFaint, marginTop: 10, lineHeight: 1.5 }}>
+                    Source: Getty Research Institute — Knoedler Stock Books. CC0 1.0 Public Domain.
+                    Showing transactions for this artist; individual work match may be approximate.
+                  </div>
                 </div>
               )}
 
