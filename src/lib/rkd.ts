@@ -20,7 +20,7 @@ export interface RkdRecord {
 }
 
 const RKD_BASE = 'https://api.rkd.nl/api/search/kunstwerken'
-const RKD_UA = 'ProvenanceTracker/0.1 (research demo; contact: provenance@example.com)'
+const RKD_UA = 'ProvenanceTracker/0.1 (research demo; contact: ahn.ny01@gmail.com)'
 
 interface RkdHit {
   priref?: string

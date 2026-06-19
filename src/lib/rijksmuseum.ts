@@ -70,16 +70,26 @@ async function creatorName(obj: any): Promise<string> {
 
 // ── Search ────────────────────────────────────────────────────────────────────
 export async function searchRijks(query: string, limit = 2): Promise<SearchResult[]> {
-  // type=schilderij = paintings only (excludes photo-reproductions). Query the term as
-  // BOTH a creator and a title since we don't know which the user typed; merge + dedupe.
-  const q = encodeURIComponent(query)
+  // type=schilderij = paintings only. When query is empty, browse the collection
+  // (used when user searches for the museum name itself rather than an artwork).
   const base = 'https://data.rijksmuseum.nl/search/collection'
-  const [byCreator, byTitle] = await Promise.all([
-    getJson(`${base}?creator=${q}&type=schilderij`),
-    getJson(`${base}?title=${q}&type=schilderij`),
-  ])
-  const collect = (s: any): string[] => (s?.orderedItems ?? []).map((i: any) => i?.id).filter(Boolean)
-  const uris = [...new Set([...collect(byCreator), ...collect(byTitle)])].slice(0, limit)
+  let uris: string[]
+
+  if (!query.trim()) {
+    // Browse mode — return top paintings without a keyword filter
+    const browse = await getJson(`${base}?type=schilderij`)
+    const collect = (s: any): string[] => (s?.orderedItems ?? []).map((i: any) => i?.id).filter(Boolean)
+    uris = collect(browse).slice(0, limit)
+  } else {
+    // Keyword mode — query as BOTH creator and title, merge + dedupe
+    const q = encodeURIComponent(query)
+    const [byCreator, byTitle] = await Promise.all([
+      getJson(`${base}?creator=${q}&type=schilderij`),
+      getJson(`${base}?title=${q}&type=schilderij`),
+    ])
+    const collect = (s: any): string[] => (s?.orderedItems ?? []).map((i: any) => i?.id).filter(Boolean)
+    uris = [...new Set([...collect(byCreator), ...collect(byTitle)])].slice(0, limit)
+  }
 
   const settled = await Promise.all(
     uris.map(async (uri: string): Promise<SearchResult | null> => {
