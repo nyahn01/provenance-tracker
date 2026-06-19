@@ -41,6 +41,8 @@ export interface ArtworkMeta {
 
 export interface LocationEntry {
   name: string
+  /** Full named entity that held the work: person, gallery, or museum name. */
+  institution?: string
   lat: number | null
   lng: number | null
   startDate: string | null
@@ -64,6 +66,8 @@ export interface ProvenanceResponse {
   gaps: GapEntry[]
   /** true when the custody chain is thin (< 2 mapped locations). */
   hasGap: boolean
+  /** Raw institutional provenance prose (AIC tier-A source), shown verbatim as evidence. */
+  provenanceText?: string
 }
 
 // ─── Reconcile (Claude) ──────────────────────────────────────────────────────

@@ -9,23 +9,23 @@ const OBS = {
   bg: '#0a0908', surface: '#131110', border: '#2a2218', borderMid: '#3d3228',
   text: '#f6f1e8', textMuted: '#9a8f85', textFaint: '#5c5449',
   clay: '#c87855', gold: '#d4a853', sage: '#6f8d7d',
-  globeOcean: '#111010', globeLand: '#1c1612', globeBorder: '#2a2218',
+  globeOcean: '#111010', globeLand: '#2e2318', globeBorder: '#4a3d2e',
 } as const
 const GAL = {
   bg: '#f7f4ee', surface: '#ffffff', surface2: '#ede9e2', border: '#d8d2c8', borderMid: '#b8afa3',
   text: '#1a1714', textMuted: '#6b6460', textFaint: '#9e9790',
-  clay: '#b06840', sage: '#4a6b5e', gold: '#a07830',
+  clay: '#b06840', sage: '#4a7a6a', gold: '#a07830',
 } as const
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-interface GlobeArc { startLat: number; startLng: number; endLat: number; endLng: number; color: string; label: string }
-function buildArcs(locations: LocationEntry[]): GlobeArc[] {
+interface GlobeArc { startLat: number; startLng: number; endLat: number; endLng: number; color: string; altitude: number; label: string }
+function buildArcs(locations: LocationEntry[], color: string, altitude: number): GlobeArc[] {
   const arcs: GlobeArc[] = []
   for (let i = 0; i < locations.length - 1; i++) {
     const a = locations[i], b = locations[i + 1]
     if (a.lat == null || a.lng == null || b.lat == null || b.lng == null) continue
     if (a.lat === b.lat && a.lng === b.lng) continue
-    arcs.push({ startLat: a.lat, startLng: a.lng, endLat: b.lat, endLng: b.lng, color: OBS.clay, label: `${a.name} → ${b.name}` })
+    arcs.push({ startLat: a.lat, startLng: a.lng, endLat: b.lat, endLng: b.lng, color, altitude, label: `${a.name} → ${b.name}` })
   }
   return arcs
 }
@@ -81,8 +81,10 @@ export default function StoriesApp() {
         globe.polygonsData(geo.features).polygonCapColor(() => OBS.globeLand)
           .polygonSideColor(() => 'rgba(0,0,0,0)').polygonStrokeColor(() => OBS.globeBorder).polygonAltitude(0.005)
       }
-      globe.arcsData([]).arcColor((d: any) => d.color ?? OBS.clay).arcAltitude(0.28)
-        .arcDashLength(0.4).arcDashGap(0.25).arcDashAnimateTime(3500).arcStroke(1.1)
+      globe.arcsData([])
+        .arcColor((d: any) => d.color ?? OBS.gold)
+        .arcAltitude((d: any) => d.altitude ?? 0.18)
+        .arcDashLength(0.015).arcDashGap(0.015).arcDashAnimateTime(10000).arcStroke(0.6)
       setTimeout(() => { const c = globe.controls?.(); if (c) { c.autoRotate = true; c.autoRotateSpeed = 0.25; c.enableZoom = false } }, 100)
       const fit = () => { const el = containerRef.current; if (el) globe.width(el.clientWidth).height(el.clientHeight) }
       fit(); onResize = fit; window.addEventListener('resize', fit)
@@ -96,12 +98,16 @@ export default function StoriesApp() {
     const g = globeRef.current
     if (!g) return
     if (!prov) { g.arcsData([]); const c = g.controls?.(); if (c) c.autoRotate = true; return }
-    const arcs = buildArcs(prov.locations)
-    g.arcsData(arcs)
-    const pts = prov.locations.filter(l => l.lat != null && l.lng != null)
-    const c = g.controls?.(); if (c) c.autoRotate = pts.length < 2
-    if (pts.length && typeof g.pointOfView === 'function') {
-      const lats = pts.map(p => p.lat as number), lngs = pts.map(p => p.lng as number)
+    // Custody arcs (gold, low altitude) and exhibition arcs (sage, higher altitude) rendered together.
+    const custodyArcs = buildArcs(prov.locations, OBS.gold, 0.18)
+    const exhibitionArcs = buildArcs(prov.exhibitions, OBS.sage, 0.30)
+    g.arcsData([...custodyArcs, ...exhibitionArcs])
+    const allPts = [...prov.locations, ...prov.exhibitions].filter(l => l.lat != null && l.lng != null)
+    const custodyPts = prov.locations.filter(l => l.lat != null && l.lng != null)
+    const framePts = custodyPts.length >= 2 ? custodyPts : allPts
+    const c = g.controls?.(); if (c) c.autoRotate = framePts.length < 2
+    if (framePts.length && typeof g.pointOfView === 'function') {
+      const lats = framePts.map(p => p.lat as number), lngs = framePts.map(p => p.lng as number)
       const lat = (Math.min(...lats) + Math.max(...lats)) / 2
       const lng = (Math.min(...lngs) + Math.max(...lngs)) / 2
       const spread = Math.max(Math.max(...lats) - Math.min(...lats), Math.max(...lngs) - Math.min(...lngs))
@@ -264,6 +270,20 @@ export default function StoriesApp() {
 
           {prov && !loading && (
             <>
+              {/* Arc legend */}
+              <div style={{ padding: '14px 24px 0', display: 'flex', gap: 16, alignItems: 'center' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textMuted }}>
+                  <span style={{ display: 'inline-block', width: 22, height: 2, background: GAL.gold, borderRadius: 1 }} />
+                  Chain of custody
+                </span>
+                {prov.exhibitions.length > 0 && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textMuted }}>
+                    <span style={{ display: 'inline-block', width: 22, height: 2, background: GAL.sage, borderRadius: 1 }} />
+                    Exhibition loan
+                  </span>
+                )}
+              </div>
+
               {/* Custody timeline */}
               <div style={{ padding: '18px 24px 0' }}>
                 <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: GAL.textFaint, marginBottom: 18 }}>
@@ -280,9 +300,14 @@ export default function StoriesApp() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                       {prov.locations.map((loc, i) => (
                         <div key={i} style={{ paddingLeft: 28, position: 'relative' }}>
-                          <div style={{ position: 'absolute', left: 0, top: 3, width: 13, height: 13, borderRadius: '50%', background: GAL.surface, border: `2px solid ${GAL.clay}`, boxShadow: `0 0 0 2px ${GAL.bg}` }} />
-                          <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.6875rem', color: GAL.textFaint, marginBottom: 3 }}>{loc.startDate ?? '?'}{loc.endDate ? ` – ${loc.endDate}` : ''}</div>
-                          <div style={{ fontFamily: 'var(--font-ui)', fontWeight: 500, fontSize: '0.875rem', color: GAL.text, marginBottom: 6 }}>{loc.name}</div>
+                          <div style={{ position: 'absolute', left: 0, top: 3, width: 13, height: 13, borderRadius: '50%', background: GAL.surface, border: `2px solid ${GAL.gold}`, boxShadow: `0 0 0 2px ${GAL.bg}` }} />
+                          <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.6875rem', color: GAL.textFaint, marginBottom: 2 }}>{loc.startDate ?? '?'}{loc.endDate ? ` – ${loc.endDate}` : ''}</div>
+                          {loc.institution && loc.institution !== loc.name && (
+                            <div style={{ fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: '0.875rem', color: GAL.text, lineHeight: 1.25, marginBottom: 1 }}>{loc.institution}</div>
+                          )}
+                          {(() => { const hasInst = !!(loc.institution && loc.institution !== loc.name); return (
+                            <div style={{ fontFamily: 'var(--font-ui)', fontSize: hasInst ? '0.78rem' : '0.875rem', fontWeight: hasInst ? 400 : 500, color: hasInst ? GAL.textMuted : GAL.text, marginBottom: 6 }}>{loc.name}</div>
+                          ); })()}
                           <SourceBadge source={loc.source} />
                         </div>
                       ))}
@@ -297,20 +322,40 @@ export default function StoriesApp() {
                 )}
               </div>
 
-              {/* Exhibition history (loans — separate) */}
+              {/* Exhibition history (loans — separate, now with dates) */}
               {prov.exhibitions.length > 0 && (
                 <div style={{ padding: '26px 24px 0' }}>
                   <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: GAL.textFaint, marginBottom: 6 }}>Exhibition history</div>
-                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.7rem', color: GAL.textMuted, marginBottom: 12, lineHeight: 1.4 }}>
-                    {prov.exhibitions.length} loans — shown here and returned. Not changes of custody.
+                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.7rem', color: GAL.textMuted, marginBottom: 14, lineHeight: 1.4 }}>
+                    {prov.exhibitions.length} loans — shown and returned. Not changes of custody.
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {prov.exhibitions.map((ex, i) => (
-                      <span key={i} style={{ fontFamily: 'var(--font-ui)', fontSize: '0.7rem', color: GAL.textMuted, background: GAL.surface2, border: `1px solid ${GAL.border}`, borderRadius: 4, padding: '3px 8px' }}>
-                        {ex.name}{ex.startDate ? ` ${ex.startDate}` : ''}
-                      </span>
+                      <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
+                        <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.sage, fontWeight: 600, minWidth: 36, flexShrink: 0 }}>{ex.startDate ?? '–'}</span>
+                        <div>
+                          {ex.institution && ex.institution !== ex.name && (
+                              <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.8rem', color: GAL.text, fontWeight: 500, lineHeight: 1.2 }}>{ex.institution}</div>
+                            )}
+                          <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.75rem', color: GAL.textMuted }}>{ex.name}</div>
+                        </div>
+                      </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Raw provenance source text — collapsible evidence block */}
+              {prov.provenanceText && (
+                <div style={{ padding: '26px 24px 0' }}>
+                  <details style={{ fontFamily: 'var(--font-ui)' }}>
+                    <summary style={{ cursor: 'pointer', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: GAL.textFaint, userSelect: 'none', listStyle: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: '0.6rem' }}>▶</span> Raw provenance record (AIC)
+                    </summary>
+                    <div style={{ marginTop: 10, padding: '12px 14px', background: GAL.surface2, border: `1px solid ${GAL.border}`, borderRadius: 6, fontSize: '0.75rem', color: GAL.textMuted, lineHeight: 1.65, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                      {prov.provenanceText}
+                    </div>
+                  </details>
                 </div>
               )}
 

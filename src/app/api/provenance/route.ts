@@ -191,6 +191,7 @@ SELECT ?locationLabel ?startDate ?endDate ?coord WHERE {
 // Claude is instructed to EXTRACT ONLY what the text states — never to invent.
 
 interface ExtractedEntry {
+  institution: string | null
   place: string
   startYear: string | null
   endYear: string | null
@@ -214,11 +215,12 @@ ARTWORK: ${title} — ${artist}
 PROVENANCE TEXT:
 ${prose.slice(0, 4000)}
 
-Return ONLY JSON: {"entries":[{"place": string, "startYear": string|null, "endYear": string|null}]}
+Return ONLY JSON: {"entries":[{"institution": string|null, "place": string, "startYear": string|null, "endYear": string|null}]}
 Rules:
-- One entry per successive owner/holder, in chronological order, with the city they held it in.
-- Extract ONLY places/dates explicitly in the text. NEVER invent a place or a date.
+- One entry per successive owner/holder, in chronological order.
+- "institution" = the full name of the person, dealer, gallery, or museum that held it (e.g. "Galerie Bernheim-Jeune", "Helen Birch Bartlett", "The Art Institute of Chicago"). null if unidentified.
 - "place" = the city (e.g. "Paris", "Chicago"). Collapse consecutive owners in the same city into one entry.
+- Extract ONLY places/dates/names explicitly in the text. NEVER invent anything.
 - Use 4-digit years only; null if none given.
 - If no custody/location is documented, return {"entries":[]}.`
 
@@ -226,7 +228,7 @@ Rules:
   try {
     const msg = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 700,
+      max_tokens: 800,
       messages: [{ role: 'user', content: prompt }],
     })
     const block = msg.content[0]
@@ -249,6 +251,7 @@ Rules:
       const pt = geocode(e.place)
       return {
         name: e.place.trim(),
+        institution: e.institution?.trim() || undefined,
         lat: pt?.lat ?? null,
         lng: pt?.lng ?? null,
         startDate: e.startYear?.match(/\d{4}/)?.[0] ?? null,
@@ -260,9 +263,7 @@ Rules:
 
 // Deterministic fallback: when Claude is unavailable (no key / no credits / error),
 // still mine the same tier-A prose. Split into clauses, geocode each, take its year.
-// Lower precision than Claude (it can't resolve "by descent to his mother" to a city),
-// but it's honest: it only emits a location when a KNOWN city literally appears in the
-// clause, and it never invents a coordinate or a date. Claude upgrades this when funded.
+// Also extracts a best-effort institution name (the named entity before the city).
 function deterministicExtract(prose: string, sourceLabel: string): LocationEntry[] {
   if (!prose || prose.trim().length < 20) return []
   const clauses = prose.split(/[;\n]+/).map(c => c.trim()).filter(Boolean)
@@ -277,8 +278,15 @@ function deterministicExtract(prose: string, sourceLabel: string): LocationEntry
     const key = `${city.name}:${year ?? ''}`
     if (seen.has(key)) continue
     seen.add(key)
+    // Institution heuristic: first comma-delimited segment of the clause.
+    // Handles "Art Institute of Chicago, dates" correctly (doesn't truncate at city substring).
+    let institution: string | undefined
+    const firstSeg = clause.split(/,\s*/)[0].trim()
+    // Skip bare years, very short strings, and numeric-only prefixes.
+    if (firstSeg.length > 4 && !/^\d{4}$/.test(firstSeg)) institution = firstSeg
     out.push({
       name: city.name,
+      institution: institution || undefined,
       lat: city.lat,
       lng: city.lng,
       startDate: year,
@@ -386,7 +394,10 @@ export async function GET(request: NextRequest) {
       ]
     : []
 
-  const response: ProvenanceResponse = { artwork: meta, locations, exhibitions, gaps, hasGap }
+  const response: ProvenanceResponse = {
+    artwork: meta, locations, exhibitions, gaps, hasGap,
+    provenanceText: provenanceText.trim() || undefined,
+  }
   cacheSet(cacheKey, response, PROVENANCE_TTL_MS)
   return NextResponse.json(response)
 }
