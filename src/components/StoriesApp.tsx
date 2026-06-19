@@ -554,6 +554,8 @@ export default function StoriesApp() {
                 const extraExh = Math.max(0, prov.exhibitions.length - 4)
                 const extraGPI = Math.max(0, (prov.gettyRecords?.length ?? 0) - 4)
                 const hasAnyData = timeline.length > 0 || prov.hasGap
+                // Show gap panel when custody chain is thin regardless of other data
+                const thinCustody = prov.locations.length < 2 && !prov.hasGap
 
                 return (
                   <div style={{ padding: '18px 24px 0' }}>
@@ -562,9 +564,95 @@ export default function StoriesApp() {
                     </div>
 
                     {!hasAnyData ? (
-                      <div style={{ border: `1px dashed ${GAL.borderMid}`, borderRadius: 8, padding: 16, fontFamily: 'var(--font-ui)', fontSize: '0.82rem', color: GAL.textMuted, lineHeight: 1.5 }}>
-                        {prov.gaps[0]?.note ?? 'No documented provenance found for this work.'}
+                      /* ── Provenance gap panel: intentional, not broken ── */
+                      <div style={{
+                        border: `1px dashed ${GAL.borderMid}`,
+                        borderRadius: 8,
+                        padding: '18px 20px',
+                        background: 'rgba(154,143,133,0.04)',
+                        fontFamily: 'var(--font-ui)',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                          <span style={{ fontSize: '1rem', color: EV_STYLES.gap.color, lineHeight: 1 }}>░</span>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: EV_STYLES.gap.color }}>
+                            Provenance gap
+                          </span>
+                        </div>
+                        <p style={{ fontSize: '0.82rem', color: GAL.textMuted, lineHeight: 1.55, margin: '0 0 12px' }}>
+                          Ownership records for this work are incomplete.
+                        </p>
+                        <a
+                          href="/learn#provenance-gap"
+                          style={{
+                            fontSize: '0.75rem',
+                            color: EV_STYLES.gap.color,
+                            textDecoration: 'none',
+                            borderBottom: `1px solid rgba(154,143,133,0.35)`,
+                            paddingBottom: 1,
+                          }}
+                        >
+                          Learn about provenance gaps →
+                        </a>
                       </div>
+                    ) : thinCustody ? (
+                      /* ── Thin custody but partial data: show gap panel first ── */
+                      <>
+                        <div style={{
+                          border: `1px dashed ${GAL.borderMid}`,
+                          borderRadius: 8,
+                          padding: '14px 16px',
+                          background: 'rgba(154,143,133,0.04)',
+                          fontFamily: 'var(--font-ui)',
+                          marginBottom: 12,
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                            <span style={{ fontSize: '1rem', color: EV_STYLES.gap.color, lineHeight: 1 }}>░</span>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: EV_STYLES.gap.color }}>
+                              Provenance gap
+                            </span>
+                          </div>
+                          <p style={{ fontSize: '0.78rem', color: GAL.textMuted, lineHeight: 1.5, margin: '0 0 10px' }}>
+                            Ownership records for this work are incomplete.
+                          </p>
+                          <a
+                            href="/learn#provenance-gap"
+                            style={{
+                              fontSize: '0.72rem',
+                              color: EV_STYLES.gap.color,
+                              textDecoration: 'none',
+                              borderBottom: `1px solid rgba(154,143,133,0.35)`,
+                              paddingBottom: 1,
+                            }}
+                          >
+                            Learn about provenance gaps →
+                          </a>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          {timeline.map((ev, i) => {
+                            const st = EV_STYLES[ev.type]
+                            const isExh = ev.type === 'exhibition'
+                            return (
+                              <div key={i} style={{ display: 'flex', gap: 10, padding: '9px 12px', background: st.bg, borderRadius: 6, borderLeft: `3px solid ${st.border}`, opacity: isExh ? 0.82 : 1 }}>
+                                <span style={{ fontSize: '0.75rem', color: st.color, lineHeight: 1, minWidth: 18 }}>{st.icon}</span>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6, marginBottom: 1 }}>
+                                    <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: st.color, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                                      {ev.type === 'gift' ? 'bequest' : ev.type === 'acquisition' ? 'museum acq.' : ev.type}
+                                    </span>
+                                    <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textFaint, flexShrink: 0 }}>{ev.year}</span>
+                                  </div>
+                                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.82rem', color: GAL.text, fontWeight: 500, lineHeight: 1.3 }}>{ev.who}</div>
+                                  {ev.where && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1 }}>{ev.where}</div>}
+                                  {ev.detail && !isExh && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1, lineHeight: 1.4 }}>{ev.detail}</div>}
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5 }}>
+                                    <SourceBadge source={ev.source} />
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         {timeline.map((ev, i) => {
@@ -610,29 +698,35 @@ export default function StoriesApp() {
                         })}
 
                         {prov.hasGap && (
-                          <div style={{ display: 'flex', gap: 10, padding: '9px 12px', background: 'transparent', borderRadius: 6, borderLeft: `3px dashed ${GAL.borderMid}` }}>
-                            <span style={{ fontSize: '0.75rem', color: GAL.textFaint, minWidth: 18, textAlign: 'center' }}>░</span>
-                            <div>
-                              <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.78rem', color: GAL.textMuted, fontStyle: 'italic', lineHeight: 1.4 }}>
-                                {prov.gaps[0]?.note ?? 'Provenance gap — no records for this period.'}
-                              </div>
-                              <a
-                                href="/learn#provenance-gap"
-                                style={{
-                                  display: 'inline-block',
-                                  marginTop: 5,
-                                  fontFamily: 'var(--font-ui)',
-                                  fontSize: '0.68rem',
-                                  color: EV_STYLES.gap.color,
-                                  textDecoration: 'none',
-                                  borderBottom: `1px solid rgba(154,143,133,0.30)`,
-                                  paddingBottom: 1,
-                                  lineHeight: 1.2,
-                                }}
-                              >
-                                What is a provenance gap? →
-                              </a>
+                          <div style={{
+                            marginTop: 8,
+                            border: `1px dashed ${GAL.borderMid}`,
+                            borderRadius: 8,
+                            padding: '14px 16px',
+                            background: 'rgba(154,143,133,0.04)',
+                            fontFamily: 'var(--font-ui)',
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                              <span style={{ fontSize: '1rem', color: EV_STYLES.gap.color, lineHeight: 1 }}>░</span>
+                              <span style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: EV_STYLES.gap.color }}>
+                                Provenance gap
+                              </span>
                             </div>
+                            <p style={{ fontSize: '0.78rem', color: GAL.textMuted, lineHeight: 1.5, margin: '0 0 10px', fontStyle: 'italic' }}>
+                              {prov.gaps[0]?.note ?? 'Ownership records for this work are incomplete.'}
+                            </p>
+                            <a
+                              href="/learn#provenance-gap"
+                              style={{
+                                fontSize: '0.72rem',
+                                color: EV_STYLES.gap.color,
+                                textDecoration: 'none',
+                                borderBottom: `1px solid rgba(154,143,133,0.35)`,
+                                paddingBottom: 1,
+                              }}
+                            >
+                              Learn about provenance gaps →
+                            </a>
                           </div>
                         )}
 
