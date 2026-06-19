@@ -1,5 +1,5 @@
 /**
- * Getty Provenance Index — Knoedler Stock Books search helper.
+ * Getty Provenance Index search helper — merges Knoedler (1872–1970) and Goupil & Cie (1846–1919).
  * Used by /api/getty (direct REST) and /api/provenance (parallel enrichment).
  * Source: Getty Research Institute, CC0 1.0 Public Domain.
  */
@@ -10,15 +10,22 @@ import type { GettyRecord } from './types'
 
 let _records: GettyRecord[] | null = null
 
+function loadFile(filename: string, warnScript: string): GettyRecord[] {
+  try {
+    const raw = readFileSync(join(process.cwd(), 'public', 'data', filename), 'utf8')
+    return JSON.parse(raw) as GettyRecord[]
+  } catch {
+    console.warn(`[getty] Seed file missing: ${filename} — run: node scripts/${warnScript}`)
+    return []
+  }
+}
+
 function getRecords(): GettyRecord[] {
   if (_records) return _records
-  try {
-    const raw = readFileSync(join(process.cwd(), 'public', 'data', 'getty-knoedler.json'), 'utf8')
-    _records = JSON.parse(raw) as GettyRecord[]
-  } catch {
-    _records = []
-    console.warn('[getty] Seed file missing — run: node scripts/seed-getty.mjs')
-  }
+  const knoedler = loadFile('getty-knoedler.json', 'seed-getty.mjs')
+  const goupil = loadFile('getty-goupil.json', 'seed-goupil.mjs')
+  _records = [...knoedler, ...goupil]
+  console.info(`[getty] Loaded ${knoedler.length} Knoedler + ${goupil.length} Goupil records`)
   return _records
 }
 

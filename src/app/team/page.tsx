@@ -93,15 +93,12 @@ const PIPELINE_STAGES = [
 export default function TeamPage() {
   return (
     <>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        /* Override the globe app's overflow:hidden so this page scrolls */
         html, body { overflow: auto !important; height: auto !important; }
         body { background: ${C.bg}; }
-        .flow-dot {
-          animation: flow-along 2.8s linear infinite;
-        }
+        .flow-dot { animation: flow-along 2.8s linear infinite; }
         .flow-dot-2 { animation-delay: 0.93s; }
         .flow-dot-3 { animation-delay: 1.87s; }
         @keyframes flow-along {
@@ -111,18 +108,18 @@ export default function TeamPage() {
           100% { opacity: 0; }
         }
         @keyframes pulse-gate {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(212, 168, 83, 0.0); }
-          50% { box-shadow: 0 0 12px 3px rgba(212, 168, 83, 0.18); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,83,0); }
+          50%       { box-shadow: 0 0 12px 3px rgba(212,168,83,0.18); }
         }
         .gate-pulse { animation: pulse-gate 3s ease-in-out infinite; }
         @keyframes fade-in {
           from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         .fade-in { animation: fade-in 0.5s ease forwards; }
         .agent-card:hover { border-color: ${C.borderMid} !important; background: ${C.surface2} !important; }
         a { text-decoration: none; }
-      `}</style>
+      ` }} />
 
       <main style={{ minHeight: '100vh', background: C.bg, fontFamily: "'Pretendard Variable', Pretendard, system-ui, sans-serif", color: C.text }}>
 
@@ -144,13 +141,13 @@ export default function TeamPage() {
               Ready when you are.<br />Autonomous by design.
             </h1>
             <p style={{ fontSize: '1rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 560, marginBottom: 16 }}>
-              7 specialized AI agent profiles run this platform. Each owns a domain.
+              7 specialized AI agent profiles run this platform on Max. Each owns a domain.
               Each can block a commit. Every fact you see passed a credibility review.
             </p>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
               {[
                 { stage: 'Stage 1 · Now', desc: 'Invoked per session in Claude Code', active: true },
-                { stage: 'Stage 2 · Max', desc: 'Background automation via GitHub Actions', active: false },
+                { stage: 'Stage 2 · Max', desc: 'Background automation via Max — live now', active: true },
                 { stage: 'Stage 3 · Vision', desc: 'Fully event-driven, autonomous monitoring', active: false },
               ].map(s => (
                 <div key={s.stage} style={{ padding: '8px 14px', border: `1px solid ${s.active ? C.gold : C.border}`, borderRadius: 6, opacity: s.active ? 1 : 0.5 }}>
