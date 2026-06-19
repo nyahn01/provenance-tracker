@@ -620,8 +620,26 @@ export default function StoriesApp() {
                         {prov.hasGap && (
                           <div style={{ display: 'flex', gap: 10, padding: '9px 12px', background: 'transparent', borderRadius: 6, borderLeft: `3px dashed ${GAL.borderMid}` }}>
                             <span style={{ fontSize: '0.75rem', color: GAL.textFaint, minWidth: 18, textAlign: 'center' }}>░</span>
-                            <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.78rem', color: GAL.textMuted, fontStyle: 'italic', lineHeight: 1.4 }}>
-                              {prov.gaps[0]?.note ?? 'Provenance gap — no records for this period.'}
+                            <div>
+                              <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.78rem', color: GAL.textMuted, fontStyle: 'italic', lineHeight: 1.4 }}>
+                                {prov.gaps[0]?.note ?? 'Provenance gap — no records for this period.'}
+                              </div>
+                              <a
+                                href="/learn#provenance-gap"
+                                style={{
+                                  display: 'inline-block',
+                                  marginTop: 5,
+                                  fontFamily: 'var(--font-ui)',
+                                  fontSize: '0.68rem',
+                                  color: EV_STYLES.gap.color,
+                                  textDecoration: 'none',
+                                  borderBottom: `1px solid rgba(154,143,133,0.30)`,
+                                  paddingBottom: 1,
+                                  lineHeight: 1.2,
+                                }}
+                              >
+                                What is a provenance gap? →
+                              </a>
                             </div>
                           </div>
                         )}
