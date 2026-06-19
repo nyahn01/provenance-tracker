@@ -146,8 +146,8 @@ export default function TeamPage() {
             </p>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
               {[
-                { stage: 'Stage 1 · Now', desc: 'Invoked per session in Claude Code', active: true },
-                { stage: 'Stage 2 · Max', desc: 'Background automation via Max — live now', active: true },
+                { stage: 'Stage 1 · Manual', desc: 'Agents invoked per session in Claude Code', active: true },
+                { stage: 'Stage 2 · Automated', desc: 'Background automation running on Max', active: true },
                 { stage: 'Stage 3 · Vision', desc: 'Fully event-driven, autonomous monitoring', active: false },
               ].map(s => (
                 <div key={s.stage} style={{ padding: '8px 14px', border: `1px solid ${s.active ? C.gold : C.border}`, borderRadius: 6, opacity: s.active ? 1 : 0.5 }}>

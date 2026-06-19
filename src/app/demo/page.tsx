@@ -67,7 +67,7 @@ function StatCard({ number, label, detail, delay }: { number: string; label: str
   return (
     <Reveal delay={delay}>
       <div style={{ padding: '24px 28px', border: `1px solid ${C.border}`, borderRadius: 10, background: C.surface, minWidth: 0 }}>
-        <div style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', fontWeight: 400, color: C.gold, lineHeight: 1.1, marginBottom: 8 }}>
+        <div style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', fontWeight: 300, color: C.gold, lineHeight: 1, marginBottom: 8, letterSpacing: '-0.02em' }}>
           {number}
         </div>
         <div style={{ fontSize: '0.82rem', fontWeight: 600, color: C.text, marginBottom: 4, letterSpacing: '0.01em' }}>
