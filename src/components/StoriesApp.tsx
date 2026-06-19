@@ -54,6 +54,33 @@ function buildArcs(locations: LocationEntry[], color: string, altitude: number):
   }
   return arcs
 }
+
+// Dealer arcs: seller → buyer within each GPI record (lower altitude, dimmer, smaller stroke)
+// These represent art market transactions — custody changes through the trade, not institutional records.
+const AMBER_ARC = 'rgba(180,130,60,0.55)'
+const AMBER_DOT = 'rgba(180,130,60,0.70)'
+function buildDealerArcs(records: GettyRecord[]): GlobeArc[] {
+  const arcs: GlobeArc[] = []
+  const seen = new Set<string>()
+  for (const r of records) {
+    const seller = cityCoords(r.sellerLocation)
+    const buyer = cityCoords(r.buyerLocation)
+    if (!seller || !buyer) continue
+    if (seller.lat === buyer.lat && seller.lng === buyer.lng) continue
+    const key = `${seller.lat},${seller.lng}|${buyer.lat},${buyer.lng}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    const sellerCity = (r.sellerLocation ?? '').split(',')[0].trim()
+    const buyerCity = (r.buyerLocation ?? '').split(',')[0].trim()
+    arcs.push({
+      startLat: seller.lat, startLng: seller.lng,
+      endLat: buyer.lat, endLng: buyer.lng,
+      color: AMBER_ARC, altitude: 0.12,
+      label: `Dealer: ${sellerCity} → ${buyerCity}${r.saleDate ? ` (${r.saleDate.slice(0, 4)})` : ''}`,
+    })
+  }
+  return arcs
+}
 function tierLabel(source: string): string {
   const s = source.toLowerCase()
   if (s.includes('met') || s.includes('metropolitan')) return 'MET'
@@ -212,7 +239,10 @@ export default function StoriesApp() {
       globe.arcsData([])
         .arcColor((d: any) => d.color ?? OBS.gold)
         .arcAltitude((d: any) => d.altitude ?? 0.18)
-        .arcDashLength(0.015).arcDashGap(0.015).arcDashAnimateTime(10000).arcStroke(0.6)
+        .arcStroke((d: any) => d.altitude <= 0.12 ? 0.35 : 0.6)
+        .arcDashLength((d: any) => d.altitude <= 0.12 ? 0.02 : 0.015)
+        .arcDashGap((d: any) => d.altitude <= 0.12 ? 0.025 : 0.015)
+        .arcDashAnimateTime(10000)
       // Points set dynamically when a work is selected (see arcs useEffect)
       globe.pointsData([]).pointLat((d: any) => d.lat).pointLng((d: any) => d.lng)
         .pointAltitude(0.006).pointRadius((d: any) => d.r ?? 0.28)
@@ -234,35 +264,40 @@ export default function StoriesApp() {
       const c = g.controls?.(); if (c) c.autoRotate = true
       return
     }
-    // Custody arcs (gold, low altitude) and exhibition arcs (sage, higher altitude) rendered together.
-    const custodyArcs = buildArcs(prov.locations, OBS.gold, 0.18)
-    const exhibitionArcs = buildArcs(prov.exhibitions, OBS.sage, 0.30)
-    g.arcsData([...custodyArcs, ...exhibitionArcs])
-    // City dots — provenance locations + Getty dealer cities
+    // Three arc tiers — rendered together at distinct altitudes so they layer cleanly.
+    const custodyArcs = buildArcs(prov.locations, OBS.gold, 0.18)      // institutional custody
+    const exhibitionArcs = buildArcs(prov.exhibitions, OBS.sage, 0.30) // exhibition loans
+    const dealerArcs = buildDealerArcs(prov.gettyRecords ?? [])        // GPI seller→buyer
+    g.arcsData([...custodyArcs, ...exhibitionArcs, ...dealerArcs])
+
+    // City dots — custody (large gold), exhibition (medium sage), GPI endpoint cities (small amber)
     const custodyDots = prov.locations
       .filter(l => l.lat != null && l.lng != null)
       .map(l => ({ lat: l.lat as number, lng: l.lng as number, r: 0.32, color: 'rgba(212,168,83,0.85)' }))
     const exhibDots = prov.exhibitions
       .filter(l => l.lat != null && l.lng != null)
       .map(l => ({ lat: l.lat as number, lng: l.lng as number, r: 0.22, color: 'rgba(111,141,125,0.75)' }))
-    // Getty dealer city dots — buyer + seller locations from GPI records
-    const seen = new Set<string>()
-    const gettyDots = (prov.gettyRecords ?? []).flatMap(r => {
+    // Dealer endpoint dots — dedupe across all seller+buyer cities
+    const seenDots = new Set<string>()
+    const dealerDots = (prov.gettyRecords ?? []).flatMap(r => {
       const dots: { lat: number; lng: number; r: number; color: string }[] = []
-      for (const loc of [r.buyerLocation, r.sellerLocation]) {
+      for (const loc of [r.sellerLocation, r.buyerLocation]) {
         const coords = cityCoords(loc)
         if (!coords) continue
         const key = `${coords.lat},${coords.lng}`
-        if (seen.has(key)) continue
-        seen.add(key)
-        dots.push({ ...coords, r: 0.18, color: 'rgba(180,130,60,0.55)' })
+        if (seenDots.has(key)) continue
+        seenDots.add(key)
+        dots.push({ ...coords, r: 0.20, color: AMBER_DOT })
       }
       return dots
     })
-    g.pointsData([...custodyDots, ...exhibDots, ...gettyDots])
-    const allPts = [...prov.locations, ...prov.exhibitions].filter(l => l.lat != null && l.lng != null)
+    g.pointsData([...custodyDots, ...exhibDots, ...dealerDots])
+
+    // Auto-frame: use custody points first; fall back to including dealer endpoints
     const custodyPts = prov.locations.filter(l => l.lat != null && l.lng != null)
-    const framePts = custodyPts.length >= 2 ? custodyPts : allPts
+    const dealerPts = [...seenDots].map(k => { const [lat, lng] = k.split(',').map(Number); return { lat, lng } })
+    const allPts = [...custodyPts, ...prov.exhibitions.filter(l => l.lat != null && l.lng != null)]
+    const framePts = custodyPts.length >= 2 ? custodyPts : allPts.length >= 2 ? allPts : [...custodyPts, ...dealerPts]
     const c = g.controls?.(); if (c) c.autoRotate = framePts.length < 2
     if (framePts.length && typeof g.pointOfView === 'function') {
       const lats = framePts.map(p => p.lat as number), lngs = framePts.map(p => p.lng as number)
@@ -448,8 +483,8 @@ export default function StoriesApp() {
                 )}
                 {prov.gettyRecords && prov.gettyRecords.length > 0 && (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textMuted }}>
-                    <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: 'rgba(124,92,191,0.5)' }} />
-                    Dealer · GPI
+                    <span style={{ display: 'inline-block', width: 22, height: 2, background: 'rgba(180,130,60,0.65)', borderRadius: 1 }} />
+                    Dealer trail · GPI
                   </span>
                 )}
               </div>
