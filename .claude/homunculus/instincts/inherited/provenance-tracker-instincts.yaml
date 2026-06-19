@@ -1,0 +1,337 @@
+# Instincts generated from https://github.com/nyahn01/provenance-tracker
+# Generated: 2026-06-19T09:06:11.456Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: provenance-tracker-commit-conventional
+trigger: "when writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: https://github.com/nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Commit Conventional
+
+## Action
+
+Use conventional commit format with prefixes: feat
+
+## Evidence
+
+- 1 commits analyzed
+- Detected conventional commit pattern
+- Examples: feat: merge PRs #8, #9, #10 - Stage 2, /learn page, confidence levels
+
+---
+id: provenance-tracker-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Commit Length
+
+## Action
+
+Write moderate-length commit messages (~69 characters)
+
+## Evidence
+
+- Average commit message length: 69 chars
+- Based on 1 commits
+
+---
+id: provenance-tracker-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: provenance-tracker-import-alias
+trigger: "when importing modules"
+confidence: 0.85
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Import Alias
+
+## Action
+
+Use path aliases (@/, ~/) instead of relative imports
+
+## Evidence
+
+- Import analysis shows alias pattern
+- Example: import { x } from '@/lib/x'
+
+---
+id: provenance-tracker-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Export Style
+
+## Action
+
+Prefer mixed exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: mixed
+
+---
+id: provenance-tracker-arch-type-based
+trigger: "when adding new code"
+confidence: 0.8
+domain: architecture
+source: repo-analysis
+source_repo: https://github.com/nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Arch Type Based
+
+## Action
+
+Place code in the appropriate type folder (components/, services/, utils/, etc.)
+
+## Evidence
+
+- Type-based module organization detected
+- Folders: app, components, lib
+
+---
+id: provenance-tracker-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: provenance-tracker-instinct-file-naming-camelCase
+trigger: "When creating a new file in the codebase"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Instinct File Naming CamelCase
+
+## Action
+
+Name the file using camelCase format
+
+## Evidence
+
+- Pattern in files: src/app, src/components, src/lib
+
+---
+id: provenance-tracker-instinct-function-naming-camelCase
+trigger: "When defining a new function"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Instinct Function Naming CamelCase
+
+## Action
+
+Name the function using camelCase format
+
+## Evidence
+
+- Pattern in files: src/app, src/components
+
+---
+id: provenance-tracker-instinct-class-naming-pascalCase
+trigger: "When defining a new class"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Instinct Class Naming PascalCase
+
+## Action
+
+Name the class using PascalCase format
+
+## Evidence
+
+- Pattern in files: src/lib
+
+---
+id: provenance-tracker-instinct-constant-naming-screamingSnakeCase
+trigger: "When defining a constant"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Instinct Constant Naming ScreamingSnakeCase
+
+## Action
+
+Name the constant using SCREAMING_SNAKE_CASE format
+
+## Evidence
+
+- Pattern in files: src/lib
+
+---
+id: provenance-tracker-instinct-import-alias-style
+trigger: "When importing modules"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Instinct Import Alias Style
+
+## Action
+
+Use alias import style
+
+## Evidence
+
+- Pattern in files: src/app, src/components
+
+---
+id: provenance-tracker-instinct-export-mixed-style
+trigger: "When exporting modules or functions"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Instinct Export Mixed Style
+
+## Action
+
+Use mixed export style (both default and named exports as appropriate)
+
+## Evidence
+
+- Pattern in files: src/app, src/components
+
+---
+id: provenance-tracker-instinct-commit-conventional-feat-prefix
+trigger: "When writing a commit message for a new feature"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Instinct Commit Conventional Feat Prefix
+
+## Action
+
+Prefix the commit message with 'feat:' following Conventional Commits
+
+## Evidence
+
+- Seen in commit: feat: merge PRs #8, #9, #10 - Stage 2, /learn page, confidence levels
+
+---
+id: provenance-tracker-instinct-commit-average-length
+trigger: "When writing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Instinct Commit Average Length
+
+## Action
+
+Keep the commit message concise, aiming for around 69 characters on average
+
+## Evidence
+
+- Pattern: averageLength 69 in commit messages
+
+---
+id: provenance-tracker-instinct-error-handling-try-catch
+trigger: "When handling errors in code"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Instinct Error Handling Try Catch
+
+## Action
+
+Use try-catch blocks for error handling
+
+## Evidence
+
+- Pattern in files: src/app, src/lib
+
+---
+id: provenance-tracker-instinct-test-location-separate
+trigger: "When adding new tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: nyahn01/provenance-tracker
+---
+
+# Provenance Tracker Instinct Test Location Separate
+
+## Action
+
+Place test files in a separate directory from source code
+
+## Evidence
+
+- Pattern: testLocation is separate
+
