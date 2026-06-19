@@ -30,5 +30,10 @@ the way a curator would characterize them.
 - When you propose a new source, hand provenance-data the access method (API/endpoint/license)
   and the credibility tier it should carry in `src/lib/types.ts` (`source` string).
 - Write findings to `draft/DATA_SOURCES.md` and flag insights into `draft/INSIGHTS.md`.
+- For artwork-specific discoveries, also write a vault finding note:
+  `vault/agents/findings/YYYY-MM-DD-[artwork-slug].md` using the template at
+  `vault/_templates/agent-finding.md`. Set `confidence`, link to the relevant
+  `vault/artworks/` note with `[[wikilinks]]`, and list open questions for the
+  next human researcher. These notes are browsable in Obsidian graph view.
 
 See [[AGENTS.md]], [[provenance-data]], [[BUSINESS_CASE.md]].
