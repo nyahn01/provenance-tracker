@@ -316,7 +316,7 @@ export default function TeamPage() {
           {/* Footer */}
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
             <div style={{ fontSize: '0.72rem', color: C.textFaint }}>
-              Built with Claude Sonnet &amp; Opus · Anthropic · 2025
+              Built with Claude Sonnet &amp; Opus · Anthropic · 2026
             </div>
             <div style={{ display: 'flex', gap: 20 }}>
               <Link href="/demo" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>

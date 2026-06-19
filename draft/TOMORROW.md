@@ -1,7 +1,7 @@
 # TOMORROW — Batch Priority Queue
 
 Agents pull from this queue. Completed features move to PROGRESS.md.
-**Last updated: 2026-06-19** — post-batch-run, post-globe-fix, post-PR-6 merge.
+**Last updated: 2026-06-19** — post-demo-polish, all batch items shipped.
 
 ---
 
@@ -42,52 +42,14 @@ If your task requires touching globe init: re-read this section and do ONLY what
 - **Honesty gate CI** — `scripts/honesty-check.mjs` + `.github/workflows/honesty-gate.yml`
 - **Obsidian research vault** — `vault/` with 13 notes, agent writing instructions
 - **Pricing research memo** — `draft/RESEARCH_MEMO.md` filed (restitution-first positioning, 3 tiers)
-
-## 🔁 In PR — awaiting review + merge
-
-- **PR #8** `feat/globe/team-stage2-active` — Stage 2 pill active, Goupil status line
-- **PR #9** `feat/globe/learn-page-clean` — `/learn` provenance glossary, gap sidebar link
-- **`feat/data/confidence-levels`** — confidence dots (high/medium/low) on timeline events — branch pushed, no PR yet
-
----
-
-## Tier 1: High-Value Quick Wins
-
-### 1. /pricing page — 3-tier mock
-**Agent:** provenance-globe
-**Why:** Needed for the demo Q&A ("what's the business model?"); static page, fast to ship.
-**What:**
-- `src/app/pricing/page.tsx` — server-rendered, same dark palette as `/learn` and `/team`
-- Three tiers:
-  | Tier | Price | Who |
-  |------|-------|-----|
-  | Explorer | Free | Public, students, art-curious |
-  | Researcher | €99/mo | Art historians, journalists, educators |
-  | Institution | €999/mo | Museums, auction houses, restitution law firms |
-- CTA buttons: "Coming soon" (no Stripe yet)
-- Below tiers: one-line note "Tier rationale from draft/RESEARCH_MEMO.md — restitution clients first"
-- Add `/pricing` to nav (wherever `/team` and `/learn` are linked)
-**Done when:** `/pricing` route renders; `npm run build` passes.
-**Blocks:** None. **Globe contract:** N/A (no globe on this page).
-
-### 2. Globe empty-state — graceful degradation
-**Agent:** provenance-globe
-**Why:** Searching a non-curated work shows a blank sidebar. Needs intentional fallback.
-**What:**
-- In `src/components/StoriesApp.tsx`, when `prov.locations.length < 2 && !prov.hasGap`:
-  - Show a styled "Provenance gap" panel using existing `OBS.gap` color token
-  - Text: "Ownership records for this work are incomplete."
-  - Link: "Learn about provenance gaps →" pointing to `/learn`
-- When `prov.hasGap === true` (gap already flagged by API): same panel, already works — verify it looks right
-**Done when:** search for an uncurated work shows gap panel instead of empty space.
-**GLOBE CONTRACT:** Do not touch globe init. Only modify the sidebar JSX.
-
-### 3. Open PR for confidence-levels branch
-**Agent:** provenance-globe (or provenance-data)
-**Why:** Branch `feat/data/confidence-levels` is pushed but has no PR.
-**What:** Just open the PR — no new code needed. Title: "feat(data): confidence levels on timeline events"
-**Done when:** PR open on GitHub.
-**Blocks:** None.
+- **Team Stage 2 active** — Stage 2 pill live, Goupil enrichment status line (was PR #8)
+- **`/learn` provenance glossary** — 6-section glossary with gap anchor (was PR #9)
+- **Confidence levels** — `LocationEntry.confidence` + `ConfidenceDot` on timeline events (merged to main)
+- **`/pricing` page** — 3-tier cards (Explorer / Researcher / Institution), nav links sitewide
+- **Sidebar empty-state** — "░ Provenance gap" panel with `/learn` link when records sparse
+- **`/demo` scrollytelling** — 5-section animated origin story, arc legend, data-flow SVG
+- **`/demo/source`** — 12-section NotebookLM source doc with Q&A prep and key quotes
+- **Demo polish** — fact corrections, sourced claims, internal refs removed, PROGRESS.md updated
 
 ---
 

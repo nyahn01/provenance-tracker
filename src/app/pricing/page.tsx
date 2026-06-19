@@ -218,10 +218,7 @@ export default function PricingPage() {
           </div>
 
           {/* Footer nav */}
-          <div style={{ marginTop: 80, borderTop: `1px solid ${C.border}`, paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-            <div style={{ fontSize: '0.72rem', color: C.textFaint }}>
-              Tier rationale: draft/RESEARCH_MEMO.md — restitution clients first
-            </div>
+          <div style={{ marginTop: 80, borderTop: `1px solid ${C.border}`, paddingTop: 24, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
             <div style={{ display: 'flex', gap: 20 }}>
               <Link href="/demo" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
                 Our story →
