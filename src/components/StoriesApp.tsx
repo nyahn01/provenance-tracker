@@ -106,6 +106,31 @@ function SourceBadge({ source }: { source: string }) {
   )
 }
 
+const CONFIDENCE_DOT: Record<'high' | 'medium' | 'low', { color: string; label: string }> = {
+  high:   { color: 'rgba(100,180,100,0.8)', label: 'High confidence' },
+  medium: { color: 'rgba(200,160,60,0.8)',  label: 'Medium confidence' },
+  low:    { color: 'rgba(154,143,133,0.5)', label: 'Low confidence' },
+}
+
+function ConfidenceDot({ confidence }: { confidence: 'high' | 'medium' | 'low' }) {
+  const { color, label } = CONFIDENCE_DOT[confidence]
+  return (
+    <span
+      title={label}
+      aria-label={label}
+      style={{
+        display: 'inline-block',
+        width: 7,
+        height: 7,
+        borderRadius: '50%',
+        background: color,
+        flexShrink: 0,
+        cursor: 'default',
+      }}
+    />
+  )
+}
+
 // ─── Unified timeline ─────────────────────────────────────────────────────────
 interface ProvenanceEvent {
   year: string
@@ -117,6 +142,8 @@ interface ProvenanceEvent {
   price?: string
   source: string
   sourceUrl?: string
+  /** Confidence level for this event, derived from the originating data source. */
+  confidence: 'high' | 'medium' | 'low'
 }
 
 function extractYear(date?: string): number {
@@ -129,6 +156,25 @@ function fmtYear(date?: string): string {
   if (!date) return '?'
   const m = date.match(/(\d{4})/)
   return m ? m[1] : date.slice(0, 10)
+}
+
+/**
+ * Map a source label to a confidence tier.
+ *
+ * high:   AIC/Met direct museum records with explicit dates, or Getty GPI records
+ *         that carry an explicit date + price (the richest structured evidence we have).
+ * medium: Wikidata P276 — location is known but dates are often approximate or absent.
+ * low:    prose extracted without explicit dates (deterministic fallback path) or any
+ *         other source we can't score higher.
+ */
+function sourceConfidence(source: string, hasExplicitDate: boolean): ProvenanceEvent['confidence'] {
+  const s = source.toLowerCase()
+  if (s === 'gpi') return hasExplicitDate ? 'high' : 'medium'
+  if (s.includes('aic') || s.includes('art institute') || s.includes('met') || s.includes('metropolitan') || s.includes('rijks')) {
+    return hasExplicitDate ? 'high' : 'low'
+  }
+  if (s.includes('wikidata')) return 'medium'
+  return 'low'
 }
 
 function buildUnifiedTimeline(
@@ -146,17 +192,20 @@ function buildUnifiedTimeline(
       (combined.includes('bequest') || combined.includes('gift') || combined.includes('donat')) ? 'gift'
       : (combined.includes('museum') || combined.includes('institute') || combined.includes('gallery') || combined.includes('acqui')) ? 'acquisition'
       : 'custody'
+    const label = tierLabel(loc.source)
     events.push({
       year: fmtYear(loc.startDate ?? undefined),
       sortKey: extractYear(loc.startDate ?? undefined),
       type,
       who: (loc.institution && loc.institution !== loc.name) ? loc.institution : loc.name,
       where: (loc.institution && loc.institution !== loc.name) ? loc.name : undefined,
-      source: tierLabel(loc.source),
+      source: label,
+      confidence: loc.confidence ?? sourceConfidence(label, loc.startDate != null),
     })
   }
 
   for (const ex of exhibitions.slice(0, 4)) {
+    const label = tierLabel(ex.source)
     events.push({
       year: fmtYear(ex.startDate ?? undefined),
       sortKey: extractYear(ex.startDate ?? undefined),
@@ -164,7 +213,8 @@ function buildUnifiedTimeline(
       who: (ex.institution && ex.institution !== ex.name) ? ex.institution : ex.name,
       where: (ex.institution && ex.institution !== ex.name) ? ex.name : undefined,
       detail: 'Exhibition loan — not a custody change',
-      source: tierLabel(ex.source),
+      source: label,
+      confidence: ex.confidence ?? sourceConfidence(label, ex.startDate != null),
     })
   }
 
@@ -174,6 +224,8 @@ function buildUnifiedTimeline(
     const buyer = rec.buyer ?? ''
     const via = [seller, buyer].filter(Boolean).join(' → ')
     const price = [rec.purchasePrice, rec.salePrice].filter(Boolean).join(' / ') || undefined
+    const hasDate = dateStr != null
+    const hasPrice = !!(rec.purchasePrice || rec.salePrice)
     events.push({
       year: fmtYear(dateStr),
       sortKey: extractYear(dateStr),
@@ -184,6 +236,7 @@ function buildUnifiedTimeline(
       price,
       source: 'GPI',
       sourceUrl: rec.sourceUrl ?? undefined,
+      confidence: hasDate && hasPrice ? 'high' : hasDate ? 'medium' : 'low',
     })
   }
 
@@ -231,22 +284,14 @@ export default function StoriesApp() {
       try { const r = await fetch('/geo/countries-simple.json'); if (r.ok) geo = await r.json() } catch {}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const globe = (GlobeGL as any)()(containerRef.current) as any
-      // No atmosphere — it was the source of the orange/warm glow wrapping the sphere.
-      // Ocean color is set directly on the Three.js globe mesh material (shininess=0 = matte).
-      globe.globeImageUrl(null).backgroundColor(OBS.bg).showAtmosphere(false)
-      globe.onGlobeReady(() => {
-        const scene = globe.scene?.()
-        if (scene) {
-          scene.traverse((obj: any) => {
-            if (obj.isMesh && obj.geometry?.type === 'SphereGeometry') {
-              obj.material.color?.setStyle('#060504')   // near-black ocean
-              obj.material.emissive?.setStyle('#000000') // no self-glow
-              obj.material.shininess = 0                 // matte, not glossy
-              obj.material.needsUpdate = true
-            }
-          })
-        }
-      })
+      // Solid-color canvas texture for the ocean — avoids touching Three.js internals
+      // (scene.traverse caused z-fighting / black noise artifacts when zooming).
+      const oceanCanvas = document.createElement('canvas')
+      oceanCanvas.width = 2; oceanCanvas.height = 2
+      const octx = oceanCanvas.getContext('2d')!
+      octx.fillStyle = '#060504'
+      octx.fillRect(0, 0, 2, 2)
+      globe.globeImageUrl(oceanCanvas.toDataURL()).backgroundColor(OBS.bg).showAtmosphere(false)
       if (geo.features.length) {
         globe.polygonsData(geo.features).polygonCapColor(() => OBS.globeLand)
           .polygonSideColor(() => 'rgba(0,0,0,0)').polygonStrokeColor(() => OBS.globeBorder).polygonAltitude(0.005)
@@ -558,6 +603,7 @@ export default function StoriesApp() {
                                 {ev.price && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textFaint, marginTop: 2 }}>{ev.price}</div>}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5 }}>
                                   <SourceBadge source={ev.source} />
+                                  <ConfidenceDot confidence={ev.confidence} />
                                   {ev.sourceUrl && (
                                     <a href={ev.sourceUrl} target="_blank" rel="noopener noreferrer"
                                       style={{ fontFamily: 'var(--font-ui)', fontSize: '0.6rem', color: 'rgba(124,92,191,0.55)', textDecoration: 'none' }}>
