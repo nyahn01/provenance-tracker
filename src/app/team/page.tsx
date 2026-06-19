@@ -156,6 +156,9 @@ export default function TeamPage() {
                 </div>
               ))}
             </div>
+            <div style={{ marginTop: 14, fontSize: '0.76rem', color: C.textMuted, lineHeight: 1.6 }}>
+              Overnight enrichment running: Goupil &amp; Cie dataset → seeded (4,388 records)
+            </div>
           </div>
 
           {/* Pipeline */}
