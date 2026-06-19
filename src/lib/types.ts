@@ -49,6 +49,13 @@ export interface LocationEntry {
   endDate: string | null
   /** Provenance of the fact itself, e.g. "Wikidata P276", "Met API", "AIC API". */
   source: string
+  /**
+   * Source-level confidence in this entry:
+   * - high:   explicit date + record from AIC/Met direct records or Getty GPI with price
+   * - medium: location known but date is approximate (e.g. Wikidata P276)
+   * - low:    inferred from prose without explicit dates
+   */
+  confidence?: 'high' | 'medium' | 'low'
 }
 
 export interface GapEntry {
