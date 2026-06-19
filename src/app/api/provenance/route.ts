@@ -25,6 +25,7 @@ import { geocode, geocodeNamed } from '@/lib/geocode'
 import { fetchRijks } from '@/lib/rijksmuseum'
 import { searchGetty } from '@/lib/getty'
 import { searchRkd } from '@/lib/rkd'
+import { fetchEuropeana } from '@/lib/europeana'
 import type {
   ArtworkMeta,
   LocationEntry,
@@ -129,12 +130,23 @@ function parsePoint(wkt: string | undefined): { lat: number | null; lng: number 
 
 const WD_UA = 'ProvenanceTracker/0.1 (research demo; provenance reconciliation)'
 
+// Strip trailing date suffixes and em/en dashes so "A Sunday on La Grande Jatte — 1884"
+// becomes "A Sunday on La Grande Jatte" — dramatically improves Wikidata match rate.
+function normTitle(t: string): string {
+  return t
+    .replace(/\s*[—–]\s*\d{4}\s*$/, '')
+    .replace(/[—–]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 // Find the artwork's Wikidata entity by title (robust to em-dashes / aliases /
 // date suffixes that exact-label matching misses). Prefer a candidate whose
 // description names the artist or calls it a painting/artwork.
 async function findWikidataQid(title: string, artist: string): Promise<string | null> {
   const surname = artist.replace(/\(.*?\)/g, '').trim().split(/\s+/).pop()?.toLowerCase() ?? ''
-  const tries = [title, title.split(/[—–\-:(]/)[0].trim()].filter((v, i, a) => v && a.indexOf(v) === i)
+  const tries = [normTitle(title), title, title.split(/[—–\-:(]/)[0].trim()]
+    .filter((v, i, a) => v.length > 0 && a.indexOf(v) === i)
 
   for (const q of tries) {
     const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(q)}&language=en&type=item&format=json&limit=7&origin=*`
@@ -271,6 +283,7 @@ function deterministicExtract(prose: string, sourceLabel: string): LocationEntry
   const clauses = prose.split(/[;\n]+/).map(c => c.trim()).filter(Boolean)
   const out: LocationEntry[] = []
   const seen = new Set<string>()
+  const isHighTier = /\baic\b|art institute|met(?:ropolitan)?/i.test(sourceLabel)
   for (const clause of clauses) {
     const city = geocodeNamed(clause)
     if (!city) continue
@@ -286,6 +299,7 @@ function deterministicExtract(prose: string, sourceLabel: string): LocationEntry
     const firstSeg = clause.split(/,\s*/)[0].trim()
     // Skip bare years, very short strings, and numeric-only prefixes.
     if (firstSeg.length > 4 && !/^\d{4}$/.test(firstSeg)) institution = firstSeg
+    const confidence: LocationEntry['confidence'] = year ? (isHighTier ? 'high' : 'medium') : 'low'
     out.push({
       name: city.name,
       institution: institution || undefined,
@@ -294,6 +308,53 @@ function deterministicExtract(prose: string, sourceLabel: string): LocationEntry
       startDate: year,
       endDate: null,
       source: sourceLabel,
+      confidence,
+    })
+  }
+  return out
+}
+
+// Loan-aware extraction for exhibition_history prose. Handles year ranges (YYYY–YYYY)
+// and populates endDate — deterministicExtract only sets startDate.
+function extractExhibitionLoans(prose: string, sourceLabel: string): LocationEntry[] {
+  if (!prose || prose.trim().length < 10) return []
+  const clauses = prose.split(/[;\n]+/).map(c => c.trim()).filter(Boolean)
+  const out: LocationEntry[] = []
+  const seen = new Set<string>()
+  const isHighTier = /\baic\b|art institute|met(?:ropolitan)?/i.test(sourceLabel)
+
+  for (const clause of clauses) {
+    const city = geocodeNamed(clause)
+    if (!city) continue
+
+    const rangeM = clause.match(/\b(1[5-9]\d{2}|20[0-2]\d)\s*[–\-]\s*(1[5-9]\d{2}|20[0-2]\d)\b/)
+    const allYears = clause.match(/\b(1[5-9]\d{2}|20[0-2]\d)\b/g)
+    const startYear = rangeM ? rangeM[1] : (allYears?.[0] ?? null)
+    const endYear   = rangeM ? rangeM[2] : (allYears && allYears.length > 1 ? allYears[allYears.length - 1] : null)
+
+    const key = `${city.name}:${startYear ?? ''}:${endYear ?? ''}`
+    if (seen.has(key)) continue
+    seen.add(key)
+
+    let institution: string | undefined
+    const firstSeg = clause.split(/,\s*/)[0].trim()
+    if (firstSeg.length > 4 && !/^\d{4}$/.test(firstSeg)) institution = firstSeg
+
+    const confidence: LocationEntry['confidence'] =
+      rangeM && isHighTier ? 'high'
+      : (startYear && isHighTier) ? 'medium'
+      : startYear ? 'medium'
+      : 'low'
+
+    out.push({
+      name: city.name,
+      institution: institution || undefined,
+      lat: city.lat,
+      lng: city.lng,
+      startDate: startYear,
+      endDate: endYear,
+      source: sourceLabel,
+      confidence,
     })
   }
   return out
@@ -316,9 +377,9 @@ export async function GET(request: NextRequest) {
   const source = request.nextUrl.searchParams.get('source')
   const id = request.nextUrl.searchParams.get('id')
 
-  if (source !== 'met' && source !== 'aic' && source !== 'rijks') {
+  if (source !== 'met' && source !== 'aic' && source !== 'rijks' && source !== 'europeana') {
     return NextResponse.json(
-      { error: 'Query param "source" must be "met", "aic", or "rijks"' },
+      { error: 'Query param "source" must be "met", "aic", "rijks", or "europeana"' },
       { status: 400 },
     )
   }
@@ -338,6 +399,7 @@ export async function GET(request: NextRequest) {
     const detail =
       source === 'met' ? await fetchMet(id)
       : source === 'rijks' ? await fetchRijks(id)
+      : source === 'europeana' ? { ...await fetchEuropeana(id), exhibitions: '' }
       : await fetchAic(id)
     meta = detail.meta
     provenanceText = detail.provenance
@@ -353,7 +415,7 @@ export async function GET(request: NextRequest) {
   // 2. CUSTODY chain (the journey) from provenance_text — Claude, else deterministic,
   //    else Wikidata P276. Exhibitions are handled separately so a LOAN is never shown
   //    as a change of custody. This is the precision fix.
-  const srcName = source === 'met' ? 'Met' : source === 'rijks' ? 'Rijksmuseum' : 'AIC'
+  const srcName = source === 'met' ? 'Met' : source === 'rijks' ? 'Rijksmuseum' : source === 'europeana' ? 'Europeana' : 'AIC'
   const provLabel = `${srcName} provenance`
   let [ownership, wikiLocs, gettyRecords, rkdRecords] = await Promise.all([
     extractOwnershipLocations(meta.title, meta.artist, provenanceText, provLabel).catch(err => {
@@ -372,8 +434,8 @@ export async function GET(request: NextRequest) {
   // tier-A and avoids the wrong-entity matches Wikidata sometimes returns.
   if (ownership.length === 0) ownership = wikiLocs
 
-  // Exhibitions = loans. Deterministic is fine — exhibition_history is highly structured.
-  const exhibitions = deterministicExtract(exhibitionText, `${srcName} exhibition history`)
+  // Exhibitions = loans. Loan-aware extraction handles year ranges and endDate.
+  const exhibitions = extractExhibitionLoans(exhibitionText, `${srcName} exhibition history`)
 
   const yr = (l: LocationEntry) => (l.startDate ? parseInt(l.startDate.slice(0, 4), 10) : Number.MAX_SAFE_INTEGER)
   const locations = ownership.sort((a, b) => yr(a) - yr(b))

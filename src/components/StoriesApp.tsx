@@ -88,6 +88,7 @@ function tierLabel(source: string): string {
   if (s.includes('wikidata')) return 'Wikidata'
   if (s.includes('rkd')) return 'RKD'
   if (s.includes('getty') || s.includes('knoedler') || s.includes('gpi') || s.includes('goupil')) return 'GPI'
+  if (s.includes('europeana')) return 'EUR'
   return source.toUpperCase().slice(0, 12)
 }
 function SourceBadge({ source }: { source: string }) {
@@ -130,6 +131,39 @@ function ConfidenceDot({ confidence }: { confidence: 'high' | 'medium' | 'low' }
   )
 }
 
+// Inline price sparkline from Getty GPI records — shows when ≥2 records have parseable prices.
+function PriceSparkline({ records }: { records: GettyRecord[] }) {
+  type Pt = { yr: number; p: number }
+  const pts: Pt[] = records.flatMap(r => {
+    const yr = parseInt((r.saleDate ?? r.entryDate ?? '').slice(0, 4), 10)
+    const raw = r.salePrice ?? r.purchasePrice
+    const p = raw ? parseFloat(raw.replace(/[^0-9.]/g, '')) : NaN
+    return (yr > 1800 && !isNaN(p) && p > 0) ? [{ yr, p }] : []
+  }).sort((a, b) => a.yr - b.yr)
+  if (pts.length < 2) return null
+  const W = 140, H = 36, PAD = 4
+  const xMin = pts[0].yr, xMax = pts[pts.length - 1].yr
+  const pMin = Math.min(...pts.map(p => p.p)), pMax = Math.max(...pts.map(p => p.p))
+  const px = (yr: number) => PAD + ((yr - xMin) / Math.max(1, xMax - xMin)) * (W - PAD * 2)
+  const py = (p: number) => PAD + (1 - (p - pMin) / Math.max(1, pMax - pMin)) * (H - PAD * 2)
+  const polyPoints = pts.map(p => `${px(p.yr).toFixed(1)},${py(p.p).toFixed(1)}`).join(' ')
+  return (
+    <div style={{ marginTop: 6, marginBottom: 10 }}>
+      <svg width={W} height={H} style={{ display: 'block', overflow: 'visible' }}>
+        <polyline points={polyPoints} fill="none" stroke={GAL.clay} strokeWidth={1.5} strokeLinejoin="round" />
+        {pts.map((p, i) => (
+          <circle key={i} cx={px(p.yr)} cy={py(p.p)} r={2.5} fill={GAL.clay} />
+        ))}
+      </svg>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: GAL.textFaint, width: W }}>
+        <span>{xMin}</span>
+        <span>GPI price trajectory</span>
+        <span>{xMax}</span>
+      </div>
+    </div>
+  )
+}
+
 // ─── Unified timeline ─────────────────────────────────────────────────────────
 interface ProvenanceEvent {
   year: string
@@ -155,6 +189,21 @@ function fmtYear(date?: string): string {
   if (!date) return '?'
   const m = date.match(/(\d{4})/)
   return m ? m[1] : date.slice(0, 10)
+}
+
+// Check if any gap in the custody chain overlaps the WWII risk period (1933–1945).
+// Returns the full gap window (not clamped to the period) for accurate reporting.
+function detectWWIIGap(locations: LocationEntry[]): { gapStart: number; gapEnd: number } | null {
+  if (locations.length < 2) return null
+  const dated = locations
+    .map(l => ({ yr: l.startDate ? parseInt(l.startDate.slice(0, 4), 10) : NaN }))
+    .filter(l => !isNaN(l.yr))
+    .sort((a, b) => a.yr - b.yr)
+  for (let i = 0; i < dated.length - 1; i++) {
+    const gapStart = dated[i].yr, gapEnd = dated[i + 1].yr
+    if (gapEnd - gapStart > 1 && gapStart < 1945 && gapEnd > 1933) return { gapStart, gapEnd }
+  }
+  return null
 }
 
 /**
@@ -457,7 +506,7 @@ export default function StoriesApp() {
               {searched && !searching && results.length === 0 && (
                 <div style={{ color: OBS.textMuted, fontFamily: 'var(--font-ui)', fontSize: '0.85rem', marginTop: 16, lineHeight: 1.5, maxWidth: 520 }}>
                   Nothing in our sources for &quot;{query}&quot;. This demo focuses on a curated set —
-                  search covers only works held by the Met, Art Institute, and Rijksmuseum.
+                  search covers works held by the Met, Art Institute, Rijksmuseum, and Europeana (requires API key).
                 </div>
               )}
               {results.length > 0 && (
@@ -479,8 +528,8 @@ export default function StoriesApp() {
 
             <div style={{ marginTop: 64, borderTop: `1px solid ${OBS.border}`, paddingTop: 20, fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: OBS.textFaint, lineHeight: 1.6, maxWidth: 720 }}>
               <strong style={{ color: OBS.textMuted, fontWeight: 600 }}>Data &amp; rights.</strong> Provenance and exhibition facts come from
-              the open APIs of the Metropolitan Museum of Art, the Art Institute of Chicago, the Rijksmuseum, Wikidata,
-              and the Getty Research Institute (Knoedler Stock Books, CC0 1.0).
+              the open APIs of the Metropolitan Museum of Art, the Art Institute of Chicago, the Rijksmuseum,
+              Europeana, Wikidata, and the Getty Research Institute (Knoedler Stock Books, CC0 1.0).
               Images are shown only for public-domain works, credited to their institution. Gaps are shown, never invented.
               <div style={{ marginTop: 10, display: 'flex', gap: 20, flexWrap: 'wrap' }}>
                 <a href="/team" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
@@ -804,54 +853,86 @@ export default function StoriesApp() {
                     </div>
                     <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: GAL.textFaint }}>→</span>
                   </button>
-                ) : (
-                  <div style={{ padding: '16px 18px', background: 'rgba(212,168,83,0.04)', border: `1px solid rgba(212,168,83,0.20)`, borderRadius: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                      <span style={{ fontSize: '0.9rem', color: GAL.gold }}>✦</span>
-                      <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: GAL.gold }}>Provenance Intelligence</div>
+                ) : (() => {
+                  const wwiiGap = detectWWIIGap(prov.locations)
+                  const riskTier: 'FLAG' | 'REVIEW' | 'CLEAR' =
+                    (wwiiGap || (prov.hasGap && prov.locations.length < 2)) ? 'FLAG'
+                    : (prov.hasGap || prov.locations.length < 3) ? 'REVIEW'
+                    : 'CLEAR'
+                  const RISK = {
+                    FLAG:   { color: GAL.clay, bg: 'rgba(176,104,64,0.10)', border: 'rgba(176,104,64,0.28)', icon: '⚠', label: 'FLAG — Research required' },
+                    REVIEW: { color: GAL.gold, bg: 'rgba(160,120,48,0.08)', border: 'rgba(160,120,48,0.24)', icon: '~', label: 'REVIEW recommended' },
+                    CLEAR:  { color: GAL.sage, bg: 'rgba(74,122,106,0.08)', border: 'rgba(74,122,106,0.24)', icon: '✓', label: 'CLEAR — Chain appears clean' },
+                  }
+                  const rs = RISK[riskTier]
+                  return (
+                    <div style={{ padding: '16px 18px', background: 'rgba(212,168,83,0.04)', border: `1px solid rgba(212,168,83,0.20)`, borderRadius: 8 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                        <span style={{ fontSize: '0.9rem', color: GAL.gold }}>✦</span>
+                        <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: GAL.gold }}>Provenance Intelligence</div>
+                      </div>
+                      {/* Risk tier pill — headline signal before detail */}
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: rs.bg, border: `1px solid ${rs.border}`, borderRadius: 5, padding: '4px 10px', marginBottom: 14 }}>
+                        <span style={{ fontSize: '0.75rem', color: rs.color }}>{rs.icon}</span>
+                        <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: rs.color }}>{rs.label}</span>
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.8rem', color: GAL.text, lineHeight: 1.75 }}>
+                        {prov.locations.length >= 2 ? (
+                          <p style={{ marginBottom: 10 }}>
+                            <strong>Custody chain:</strong> {prov.locations.length} documented location{prov.locations.length !== 1 ? 's' : ''} spanning
+                            {prov.locations[0]?.startDate ? ` from ${prov.locations[0].startDate.slice(0,4)}` : ''}
+                            {prov.locations[prov.locations.length-1]?.startDate ? ` to ${prov.locations[prov.locations.length-1].startDate!.slice(0,4)}` : ''}.
+                            Chain of title {prov.hasGap ? 'has gaps — see below' : 'appears unbroken'}.
+                          </p>
+                        ) : (
+                          <p style={{ marginBottom: 10, color: GAL.textMuted }}>
+                            <strong>Custody chain:</strong> Thin institutional record — {prov.gaps[0]?.note ?? 'provenance gap noted'}.
+                          </p>
+                        )}
+                        {prov.gettyRecords && prov.gettyRecords.length > 0 ? (
+                          <>
+                            <p style={{ marginBottom: 4 }}>
+                              <strong>Market records:</strong> Getty Provenance Index confirms {prov.gettyRecords.length} dealer transaction{prov.gettyRecords.length !== 1 ? 's' : ''} for this artist in the Knoedler stock books.
+                              {prov.gettyRecords[0]?.saleDate ? ` Earliest dated ${prov.gettyRecords[0].saleDate.slice(0,4)}.` : ''}
+                              {' '}These pre-museum records document the commercial layer the museum archive typically omits.
+                            </p>
+                            <PriceSparkline records={prov.gettyRecords} />
+                          </>
+                        ) : (
+                          <p style={{ marginBottom: 10, color: GAL.textMuted }}>
+                            <strong>Market records:</strong> No Knoedler dealer transactions found for this artist. The work may have passed through non-Knoedler channels or predates their New York operation.
+                          </p>
+                        )}
+                        {prov.exhibitions.length > 0 && (
+                          <p style={{ marginBottom: 10 }}>
+                            <strong>Exhibition record:</strong> {prov.exhibitions.length} documented loan{prov.exhibitions.length !== 1 ? 's' : ''}.
+                            Active loan history suggests institutional confidence in the work&apos;s condition and title.
+                          </p>
+                        )}
+                        {wwiiGap ? (
+                          <div style={{ marginTop: 4, marginBottom: 4, padding: '8px 12px', background: 'rgba(200,120,85,0.08)', border: `1px solid rgba(200,120,85,0.28)`, borderRadius: 5 }}>
+                            <p style={{ color: GAL.clay, fontWeight: 600, marginBottom: 4 }}>
+                              ⚠ WWII-era gap detected ({wwiiGap.gapStart}–{wwiiGap.gapEnd})
+                            </p>
+                            <p style={{ color: GAL.textMuted, fontSize: '0.75rem', marginBottom: 0, lineHeight: 1.5 }}>
+                              Ownership between {wwiiGap.gapStart} and {wwiiGap.gapEnd} is undocumented. This period overlaps 1933–1945. Washington Principles (1998) signatories are required to research and resolve such gaps.
+                            </p>
+                          </div>
+                        ) : (
+                          <p style={{ color: prov.hasGap ? GAL.clay : GAL.sage, marginBottom: 0, fontWeight: 500 }}>
+                            {prov.hasGap
+                              ? '⚠ Custody gap detected outside WWII era — flag for further research.'
+                              : '✓ No 1933–1945 custody gap detected. Clean chain in available records.'}
+                          </p>
+                        )}
+                      </div>
+                      <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid rgba(212,168,83,0.12)`, fontFamily: 'var(--font-ui)', fontSize: '0.62rem', color: GAL.textFaint }}>
+                        Derived from institutional records only. Full AI analysis available with Claude API.
+                        Not legal advice. Verify with primary sources before professional use.
+                      </div>
                     </div>
-                    <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.8rem', color: GAL.text, lineHeight: 1.75 }}>
-                      {prov.locations.length >= 2 ? (
-                        <p style={{ marginBottom: 10 }}>
-                          <strong>Custody chain:</strong> {prov.locations.length} documented location{prov.locations.length !== 1 ? 's' : ''} spanning
-                          {prov.locations[0]?.startDate ? ` from ${prov.locations[0].startDate.slice(0,4)}` : ''}
-                          {prov.locations[prov.locations.length-1]?.startDate ? ` to ${prov.locations[prov.locations.length-1].startDate!.slice(0,4)}` : ''}.
-                          Chain of title {prov.hasGap ? 'has gaps — see below' : 'appears unbroken'}.
-                        </p>
-                      ) : (
-                        <p style={{ marginBottom: 10, color: GAL.textMuted }}>
-                          <strong>Custody chain:</strong> Thin institutional record — {prov.gaps[0]?.note ?? 'provenance gap noted'}.
-                        </p>
-                      )}
-                      {prov.gettyRecords && prov.gettyRecords.length > 0 ? (
-                        <p style={{ marginBottom: 10 }}>
-                          <strong>Market records:</strong> Getty Provenance Index confirms {prov.gettyRecords.length} dealer transaction{prov.gettyRecords.length !== 1 ? 's' : ''} for this artist in the Knoedler stock books.
-                          {prov.gettyRecords[0]?.saleDate ? ` Earliest dated ${prov.gettyRecords[0].saleDate.slice(0,4)}.` : ''}
-                          {' '}These pre-museum records document the commercial layer the museum archive typically omits.
-                        </p>
-                      ) : (
-                        <p style={{ marginBottom: 10, color: GAL.textMuted }}>
-                          <strong>Market records:</strong> No Knoedler dealer transactions found for this artist. The work may have passed through non-Knoedler channels or predates their New York operation.
-                        </p>
-                      )}
-                      {prov.exhibitions.length > 0 && (
-                        <p style={{ marginBottom: 10 }}>
-                          <strong>Exhibition record:</strong> {prov.exhibitions.length} documented loan{prov.exhibitions.length !== 1 ? 's' : ''}.
-                          Active loan history suggests institutional confidence in the work&apos;s condition and title.
-                        </p>
-                      )}
-                      <p style={{ color: prov.hasGap ? '#c8855a' : GAL.sage, marginBottom: 0, fontWeight: 500 }}>
-                        {prov.hasGap
-                          ? '⚠ Provenance gap detected — one or more custody periods lack documentation. Flag for further research.'
-                          : '✓ No obvious title risk signals. Clean custody chain in available records.'}
-                      </p>
-                    </div>
-                    <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid rgba(212,168,83,0.12)`, fontFamily: 'var(--font-ui)', fontSize: '0.62rem', color: GAL.textFaint }}>
-                      Derived from institutional records only. Full AI analysis available with Claude API.
-                      Not legal advice. Verify with primary sources before professional use.
-                    </div>
-                  </div>
-                )}
+                  )
+                })()}
               </div>
 
               {/* Sources + rights */}
