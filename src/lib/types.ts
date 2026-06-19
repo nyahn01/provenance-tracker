@@ -86,8 +86,10 @@ export interface ProvenanceResponse {
   hasGap: boolean
   /** Raw institutional provenance prose (AIC tier-A source), shown verbatim as evidence. */
   provenanceText?: string
-  /** Historical art market transactions from Getty Provenance Index — Knoedler Stock Books. */
+  /** Historical art market transactions from Getty Provenance Index (Knoedler + Goupil). */
   gettyRecords?: GettyRecord[]
+  /** Dutch/Flemish provenance records from RKD Netherlands Art Institute. */
+  rkdRecords?: import('./rkd').RkdRecord[]
 }
 
 // ─── Reconcile (Claude) ──────────────────────────────────────────────────────

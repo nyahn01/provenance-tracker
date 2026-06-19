@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import type { SearchResult, ProvenanceResponse, LocationEntry, GettyRecord } from '@/lib/types'
+import type { RkdRecord } from '@/lib/rkd'
 import { FEATURED_WORKS, aicImage, type FeaturedWork } from '@/lib/featured'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
@@ -59,17 +60,19 @@ function tierLabel(source: string): string {
   if (s.includes('aic') || s.includes('art institute')) return 'AIC'
   if (s.includes('rijks')) return 'RIJKS'
   if (s.includes('wikidata')) return 'Wikidata'
-  if (s.includes('getty') || s.includes('knoedler') || s.includes('gpi')) return 'GPI'
+  if (s.includes('rkd')) return 'RKD'
+  if (s.includes('getty') || s.includes('knoedler') || s.includes('gpi') || s.includes('goupil')) return 'GPI'
   return source.toUpperCase().slice(0, 12)
 }
 function SourceBadge({ source }: { source: string }) {
   const label = tierLabel(source)
   const isGPI = label === 'GPI'
+  const isRKD = label === 'RKD'
   return (
     <span style={{
-      background: isGPI ? 'rgba(124,92,191,0.12)' : 'rgba(160,120,48,0.10)',
-      color: isGPI ? '#9b7fe0' : GAL.gold,
-      border: isGPI ? '1px solid rgba(124,92,191,0.30)' : '1px solid rgba(160,120,48,0.25)',
+      background: isGPI ? 'rgba(124,92,191,0.12)' : isRKD ? 'rgba(74,122,106,0.12)' : 'rgba(160,120,48,0.10)',
+      color: isGPI ? '#9b7fe0' : isRKD ? GAL.sage : GAL.gold,
+      border: isGPI ? '1px solid rgba(124,92,191,0.30)' : isRKD ? '1px solid rgba(74,122,106,0.28)' : '1px solid rgba(160,120,48,0.25)',
       borderRadius: 4, padding: '2px 7px', fontSize: '0.625rem', fontFamily: 'var(--font-ui)',
       fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
     }}>{label}</span>
@@ -539,6 +542,41 @@ export default function StoriesApp() {
                   </div>
                 )
               })()}
+
+              {/* RKD Netherlands Art Institute records */}
+              {prov.rkdRecords && prov.rkdRecords.length > 0 && (
+                <div style={{ padding: '18px 24px 0' }}>
+                  <details>
+                    <summary style={{ cursor: 'pointer', fontFamily: 'var(--font-ui)', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: GAL.textFaint, userSelect: 'none', listStyle: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: '0.6rem' }}>▶</span>
+                      RKD — Netherlands Art Institute ({prov.rkdRecords.length} record{prov.rkdRecords.length !== 1 ? 's' : ''})
+                    </summary>
+                    <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {prov.rkdRecords.map((r: RkdRecord) => (
+                        <div key={r.priref} style={{ padding: '10px 12px', background: 'rgba(74,122,106,0.06)', border: '1px solid rgba(74,122,106,0.20)', borderRadius: 6, fontFamily: 'var(--font-ui)', fontSize: '0.76rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: r.provenance ? 6 : 0 }}>
+                            <span style={{ color: GAL.text, fontWeight: 500 }}>{r.title ?? 'Untitled'}</span>
+                            {r.dating && <span style={{ color: GAL.textMuted, whiteSpace: 'nowrap', flexShrink: 0 }}>{r.dating}</span>}
+                          </div>
+                          {r.currentLocation && (
+                            <div style={{ color: GAL.textMuted, fontSize: '0.72rem', marginBottom: r.provenance ? 4 : 0 }}>
+                              Current: {r.currentLocation}
+                            </div>
+                          )}
+                          {r.provenance && (
+                            <div style={{ color: GAL.textMuted, fontSize: '0.72rem', lineHeight: 1.5, borderTop: `1px solid rgba(74,122,106,0.15)`, marginTop: 6, paddingTop: 6 }}>
+                              {r.provenance.slice(0, 200)}{r.provenance.length > 200 ? '…' : ''}
+                            </div>
+                          )}
+                          <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 6, fontSize: '0.65rem', color: GAL.sage, textDecoration: 'none' }}>
+                            RKD #{r.priref} →
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                </div>
+              )}
 
               {/* Raw provenance source text — collapsible */}
               {prov.provenanceText && (
