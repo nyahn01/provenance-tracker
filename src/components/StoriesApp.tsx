@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import type { SearchResult, ProvenanceResponse, LocationEntry, GettyRecord } from '@/lib/types'
+import type { RkdRecord } from '@/lib/rkd'
 import { FEATURED_WORKS, aicImage, type FeaturedWork } from '@/lib/featured'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
@@ -16,6 +17,30 @@ const GAL = {
   text: '#1a1714', textMuted: '#6b6460', textFaint: '#9e9790',
   clay: '#b06840', sage: '#4a7a6a', gold: '#a07830',
 } as const
+
+// ─── City coordinate lookup (for Getty dealer city dots) ─────────────────────
+const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+  'paris': { lat: 48.8566, lng: 2.3522 }, 'london': { lat: 51.5074, lng: -0.1278 },
+  'new york': { lat: 40.7128, lng: -74.006 }, 'chicago': { lat: 41.8781, lng: -87.6298 },
+  'amsterdam': { lat: 52.3676, lng: 4.9041 }, 'brussels': { lat: 50.8503, lng: 4.3517 },
+  'berlin': { lat: 52.52, lng: 13.405 }, 'boston': { lat: 42.3601, lng: -71.0589 },
+  'philadelphia': { lat: 39.9526, lng: -75.1652 }, 'washington': { lat: 38.9072, lng: -77.0369 },
+  'san francisco': { lat: 37.7749, lng: -122.4194 }, 'los angeles': { lat: 34.0522, lng: -118.2437 },
+  'vienna': { lat: 48.2082, lng: 16.3738 }, 'zurich': { lat: 47.3769, lng: 8.5417 },
+  'geneva': { lat: 46.2044, lng: 6.1432 }, 'munich': { lat: 48.1351, lng: 11.582 },
+  'hamburg': { lat: 53.5511, lng: 9.9937 }, 'rome': { lat: 41.9028, lng: 12.4964 },
+  'florence': { lat: 43.7696, lng: 11.2558 }, 'madrid': { lat: 40.4168, lng: -3.7038 },
+  'st. petersburg': { lat: 59.9311, lng: 30.3609 }, 'moscow': { lat: 55.7558, lng: 37.6173 },
+  'pittsburgh': { lat: 40.4406, lng: -79.9959 }, 'minneapolis': { lat: 44.9778, lng: -93.265 },
+  'detroit': { lat: 42.3314, lng: -83.0458 }, 'cleveland': { lat: 41.4993, lng: -81.6944 },
+  'toronto': { lat: 43.6532, lng: -79.3832 }, 'montreal': { lat: 45.5017, lng: -73.5673 },
+  'tokyo': { lat: 35.6762, lng: 139.6503 }, 'seoul': { lat: 37.5665, lng: 126.978 },
+}
+function cityCoords(locationStr: string | null): { lat: number; lng: number } | null {
+  if (!locationStr) return null
+  const key = locationStr.toLowerCase().split(',')[0].trim()
+  return CITY_COORDS[key] ?? null
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 interface GlobeArc { startLat: number; startLng: number; endLat: number; endLng: number; color: string; altitude: number; label: string }
@@ -35,17 +60,19 @@ function tierLabel(source: string): string {
   if (s.includes('aic') || s.includes('art institute')) return 'AIC'
   if (s.includes('rijks')) return 'RIJKS'
   if (s.includes('wikidata')) return 'Wikidata'
-  if (s.includes('getty') || s.includes('knoedler') || s.includes('gpi')) return 'GPI'
+  if (s.includes('rkd')) return 'RKD'
+  if (s.includes('getty') || s.includes('knoedler') || s.includes('gpi') || s.includes('goupil')) return 'GPI'
   return source.toUpperCase().slice(0, 12)
 }
 function SourceBadge({ source }: { source: string }) {
   const label = tierLabel(source)
   const isGPI = label === 'GPI'
+  const isRKD = label === 'RKD'
   return (
     <span style={{
-      background: isGPI ? 'rgba(124,92,191,0.12)' : 'rgba(160,120,48,0.10)',
-      color: isGPI ? '#9b7fe0' : GAL.gold,
-      border: isGPI ? '1px solid rgba(124,92,191,0.30)' : '1px solid rgba(160,120,48,0.25)',
+      background: isGPI ? 'rgba(124,92,191,0.12)' : isRKD ? 'rgba(74,122,106,0.12)' : 'rgba(160,120,48,0.10)',
+      color: isGPI ? '#9b7fe0' : isRKD ? GAL.sage : GAL.gold,
+      border: isGPI ? '1px solid rgba(124,92,191,0.30)' : isRKD ? '1px solid rgba(74,122,106,0.28)' : '1px solid rgba(160,120,48,0.25)',
       borderRadius: 4, padding: '2px 7px', fontSize: '0.625rem', fontFamily: 'var(--font-ui)',
       fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
     }}>{label}</span>
@@ -177,7 +204,7 @@ export default function StoriesApp() {
       try { const r = await fetch('/geo/countries-simple.json'); if (r.ok) geo = await r.json() } catch {}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const globe = (GlobeGL as any)()(containerRef.current) as any
-      globe.globeImageUrl(null).backgroundColor(OBS.bg).showAtmosphere(true).atmosphereColor(OBS.clay).atmosphereAltitude(0.16)
+      globe.globeImageUrl(null).backgroundColor(OBS.bg).showAtmosphere(true).atmosphereColor('#1a1208').atmosphereAltitude(0.12)
       if (geo.features.length) {
         globe.polygonsData(geo.features).polygonCapColor(() => OBS.globeLand)
           .polygonSideColor(() => 'rgba(0,0,0,0)').polygonStrokeColor(() => OBS.globeBorder).polygonAltitude(0.005)
@@ -190,7 +217,7 @@ export default function StoriesApp() {
       globe.pointsData([]).pointLat((d: any) => d.lat).pointLng((d: any) => d.lng)
         .pointAltitude(0.006).pointRadius((d: any) => d.r ?? 0.28)
         .pointColor((d: any) => d.color ?? 'rgba(212,168,83,0.8)')
-      setTimeout(() => { const c = globe.controls?.(); if (c) { c.autoRotate = true; c.autoRotateSpeed = 0.25; c.enableZoom = false } }, 100)
+      setTimeout(() => { const c = globe.controls?.(); if (c) { c.autoRotate = true; c.autoRotateSpeed = 0.25; c.enableZoom = true; c.zoomSpeed = 1.2 } }, 100)
       const fit = () => { const el = containerRef.current; if (el) globe.width(el.clientWidth).height(el.clientHeight) }
       fit(); onResize = fit; window.addEventListener('resize', fit)
       globeRef.current = globe
@@ -211,14 +238,28 @@ export default function StoriesApp() {
     const custodyArcs = buildArcs(prov.locations, OBS.gold, 0.18)
     const exhibitionArcs = buildArcs(prov.exhibitions, OBS.sage, 0.30)
     g.arcsData([...custodyArcs, ...exhibitionArcs])
-    // City dots — only the locations relevant to this work
+    // City dots — provenance locations + Getty dealer cities
     const custodyDots = prov.locations
       .filter(l => l.lat != null && l.lng != null)
       .map(l => ({ lat: l.lat as number, lng: l.lng as number, r: 0.32, color: 'rgba(212,168,83,0.85)' }))
     const exhibDots = prov.exhibitions
       .filter(l => l.lat != null && l.lng != null)
       .map(l => ({ lat: l.lat as number, lng: l.lng as number, r: 0.22, color: 'rgba(111,141,125,0.75)' }))
-    g.pointsData([...custodyDots, ...exhibDots])
+    // Getty dealer city dots — buyer + seller locations from GPI records
+    const seen = new Set<string>()
+    const gettyDots = (prov.gettyRecords ?? []).flatMap(r => {
+      const dots: { lat: number; lng: number; r: number; color: string }[] = []
+      for (const loc of [r.buyerLocation, r.sellerLocation]) {
+        const coords = cityCoords(loc)
+        if (!coords) continue
+        const key = `${coords.lat},${coords.lng}`
+        if (seen.has(key)) continue
+        seen.add(key)
+        dots.push({ ...coords, r: 0.18, color: 'rgba(180,130,60,0.55)' })
+      }
+      return dots
+    })
+    g.pointsData([...custodyDots, ...exhibDots, ...gettyDots])
     const allPts = [...prov.locations, ...prov.exhibitions].filter(l => l.lat != null && l.lng != null)
     const custodyPts = prov.locations.filter(l => l.lat != null && l.lng != null)
     const framePts = custodyPts.length >= 2 ? custodyPts : allPts
@@ -501,6 +542,41 @@ export default function StoriesApp() {
                   </div>
                 )
               })()}
+
+              {/* RKD Netherlands Art Institute records */}
+              {prov.rkdRecords && prov.rkdRecords.length > 0 && (
+                <div style={{ padding: '18px 24px 0' }}>
+                  <details>
+                    <summary style={{ cursor: 'pointer', fontFamily: 'var(--font-ui)', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: GAL.textFaint, userSelect: 'none', listStyle: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: '0.6rem' }}>▶</span>
+                      RKD — Netherlands Art Institute ({prov.rkdRecords.length} record{prov.rkdRecords.length !== 1 ? 's' : ''})
+                    </summary>
+                    <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {prov.rkdRecords.map((r: RkdRecord) => (
+                        <div key={r.priref} style={{ padding: '10px 12px', background: 'rgba(74,122,106,0.06)', border: '1px solid rgba(74,122,106,0.20)', borderRadius: 6, fontFamily: 'var(--font-ui)', fontSize: '0.76rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: r.provenance ? 6 : 0 }}>
+                            <span style={{ color: GAL.text, fontWeight: 500 }}>{r.title ?? 'Untitled'}</span>
+                            {r.dating && <span style={{ color: GAL.textMuted, whiteSpace: 'nowrap', flexShrink: 0 }}>{r.dating}</span>}
+                          </div>
+                          {r.currentLocation && (
+                            <div style={{ color: GAL.textMuted, fontSize: '0.72rem', marginBottom: r.provenance ? 4 : 0 }}>
+                              Current: {r.currentLocation}
+                            </div>
+                          )}
+                          {r.provenance && (
+                            <div style={{ color: GAL.textMuted, fontSize: '0.72rem', lineHeight: 1.5, borderTop: `1px solid rgba(74,122,106,0.15)`, marginTop: 6, paddingTop: 6 }}>
+                              {r.provenance.slice(0, 200)}{r.provenance.length > 200 ? '…' : ''}
+                            </div>
+                          )}
+                          <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 6, fontSize: '0.65rem', color: GAL.sage, textDecoration: 'none' }}>
+                            RKD #{r.priref} →
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                </div>
+              )}
 
               {/* Raw provenance source text — collapsible */}
               {prov.provenanceText && (

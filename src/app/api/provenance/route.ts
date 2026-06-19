@@ -24,6 +24,7 @@ import { cacheGet, cacheSet, checkRateLimit } from '@/lib/cache'
 import { geocode, geocodeNamed } from '@/lib/geocode'
 import { fetchRijks } from '@/lib/rijksmuseum'
 import { searchGetty } from '@/lib/getty'
+import { searchRkd } from '@/lib/rkd'
 import type {
   ArtworkMeta,
   LocationEntry,
@@ -354,7 +355,7 @@ export async function GET(request: NextRequest) {
   //    as a change of custody. This is the precision fix.
   const srcName = source === 'met' ? 'Met' : source === 'rijks' ? 'Rijksmuseum' : 'AIC'
   const provLabel = `${srcName} provenance`
-  let [ownership, wikiLocs, gettyRecords] = await Promise.all([
+  let [ownership, wikiLocs, gettyRecords, rkdRecords] = await Promise.all([
     extractOwnershipLocations(meta.title, meta.artist, provenanceText, provLabel).catch(err => {
       console.error('[provenance/ownership]', err); return [] as LocationEntry[]
     }),
@@ -362,6 +363,9 @@ export async function GET(request: NextRequest) {
       console.error('[provenance/wikidata]', err); return [] as LocationEntry[]
     }),
     Promise.resolve(searchGetty(meta.artist, meta.title, 20)),
+    searchRkd(meta.artist, meta.title, 8).catch(err => {
+      console.warn('[provenance/rkd]', err); return []
+    }),
   ])
   if (ownership.length === 0) ownership = deterministicExtract(provenanceText, provLabel)
   // Wikidata only fills the custody chain when the prose gave us nothing — prose is
@@ -400,6 +404,7 @@ export async function GET(request: NextRequest) {
     artwork: meta, locations, exhibitions, gaps, hasGap,
     provenanceText: provenanceText.trim() || undefined,
     gettyRecords: gettyRecords.length > 0 ? gettyRecords : undefined,
+    rkdRecords: rkdRecords.length > 0 ? rkdRecords : undefined,
   }
   cacheSet(cacheKey, response, PROVENANCE_TTL_MS)
   return NextResponse.json(response)
