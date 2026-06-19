@@ -17,6 +17,30 @@ const GAL = {
   clay: '#b06840', sage: '#4a7a6a', gold: '#a07830',
 } as const
 
+// ─── City coordinate lookup (for Getty dealer city dots) ─────────────────────
+const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+  'paris': { lat: 48.8566, lng: 2.3522 }, 'london': { lat: 51.5074, lng: -0.1278 },
+  'new york': { lat: 40.7128, lng: -74.006 }, 'chicago': { lat: 41.8781, lng: -87.6298 },
+  'amsterdam': { lat: 52.3676, lng: 4.9041 }, 'brussels': { lat: 50.8503, lng: 4.3517 },
+  'berlin': { lat: 52.52, lng: 13.405 }, 'boston': { lat: 42.3601, lng: -71.0589 },
+  'philadelphia': { lat: 39.9526, lng: -75.1652 }, 'washington': { lat: 38.9072, lng: -77.0369 },
+  'san francisco': { lat: 37.7749, lng: -122.4194 }, 'los angeles': { lat: 34.0522, lng: -118.2437 },
+  'vienna': { lat: 48.2082, lng: 16.3738 }, 'zurich': { lat: 47.3769, lng: 8.5417 },
+  'geneva': { lat: 46.2044, lng: 6.1432 }, 'munich': { lat: 48.1351, lng: 11.582 },
+  'hamburg': { lat: 53.5511, lng: 9.9937 }, 'rome': { lat: 41.9028, lng: 12.4964 },
+  'florence': { lat: 43.7696, lng: 11.2558 }, 'madrid': { lat: 40.4168, lng: -3.7038 },
+  'st. petersburg': { lat: 59.9311, lng: 30.3609 }, 'moscow': { lat: 55.7558, lng: 37.6173 },
+  'pittsburgh': { lat: 40.4406, lng: -79.9959 }, 'minneapolis': { lat: 44.9778, lng: -93.265 },
+  'detroit': { lat: 42.3314, lng: -83.0458 }, 'cleveland': { lat: 41.4993, lng: -81.6944 },
+  'toronto': { lat: 43.6532, lng: -79.3832 }, 'montreal': { lat: 45.5017, lng: -73.5673 },
+  'tokyo': { lat: 35.6762, lng: 139.6503 }, 'seoul': { lat: 37.5665, lng: 126.978 },
+}
+function cityCoords(locationStr: string | null): { lat: number; lng: number } | null {
+  if (!locationStr) return null
+  const key = locationStr.toLowerCase().split(',')[0].trim()
+  return CITY_COORDS[key] ?? null
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 interface GlobeArc { startLat: number; startLng: number; endLat: number; endLng: number; color: string; altitude: number; label: string }
 function buildArcs(locations: LocationEntry[], color: string, altitude: number): GlobeArc[] {
@@ -177,7 +201,7 @@ export default function StoriesApp() {
       try { const r = await fetch('/geo/countries-simple.json'); if (r.ok) geo = await r.json() } catch {}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const globe = (GlobeGL as any)()(containerRef.current) as any
-      globe.globeImageUrl(null).backgroundColor(OBS.bg).showAtmosphere(true).atmosphereColor(OBS.clay).atmosphereAltitude(0.16)
+      globe.globeImageUrl(null).backgroundColor(OBS.bg).showAtmosphere(true).atmosphereColor('#1a1208').atmosphereAltitude(0.12)
       if (geo.features.length) {
         globe.polygonsData(geo.features).polygonCapColor(() => OBS.globeLand)
           .polygonSideColor(() => 'rgba(0,0,0,0)').polygonStrokeColor(() => OBS.globeBorder).polygonAltitude(0.005)
@@ -190,7 +214,7 @@ export default function StoriesApp() {
       globe.pointsData([]).pointLat((d: any) => d.lat).pointLng((d: any) => d.lng)
         .pointAltitude(0.006).pointRadius((d: any) => d.r ?? 0.28)
         .pointColor((d: any) => d.color ?? 'rgba(212,168,83,0.8)')
-      setTimeout(() => { const c = globe.controls?.(); if (c) { c.autoRotate = true; c.autoRotateSpeed = 0.25; c.enableZoom = false } }, 100)
+      setTimeout(() => { const c = globe.controls?.(); if (c) { c.autoRotate = true; c.autoRotateSpeed = 0.25; c.enableZoom = true; c.zoomSpeed = 1.2 } }, 100)
       const fit = () => { const el = containerRef.current; if (el) globe.width(el.clientWidth).height(el.clientHeight) }
       fit(); onResize = fit; window.addEventListener('resize', fit)
       globeRef.current = globe
@@ -211,14 +235,28 @@ export default function StoriesApp() {
     const custodyArcs = buildArcs(prov.locations, OBS.gold, 0.18)
     const exhibitionArcs = buildArcs(prov.exhibitions, OBS.sage, 0.30)
     g.arcsData([...custodyArcs, ...exhibitionArcs])
-    // City dots — only the locations relevant to this work
+    // City dots — provenance locations + Getty dealer cities
     const custodyDots = prov.locations
       .filter(l => l.lat != null && l.lng != null)
       .map(l => ({ lat: l.lat as number, lng: l.lng as number, r: 0.32, color: 'rgba(212,168,83,0.85)' }))
     const exhibDots = prov.exhibitions
       .filter(l => l.lat != null && l.lng != null)
       .map(l => ({ lat: l.lat as number, lng: l.lng as number, r: 0.22, color: 'rgba(111,141,125,0.75)' }))
-    g.pointsData([...custodyDots, ...exhibDots])
+    // Getty dealer city dots — buyer + seller locations from GPI records
+    const seen = new Set<string>()
+    const gettyDots = (prov.gettyRecords ?? []).flatMap(r => {
+      const dots: { lat: number; lng: number; r: number; color: string }[] = []
+      for (const loc of [r.buyerLocation, r.sellerLocation]) {
+        const coords = cityCoords(loc)
+        if (!coords) continue
+        const key = `${coords.lat},${coords.lng}`
+        if (seen.has(key)) continue
+        seen.add(key)
+        dots.push({ ...coords, r: 0.18, color: 'rgba(180,130,60,0.55)' })
+      }
+      return dots
+    })
+    g.pointsData([...custodyDots, ...exhibDots, ...gettyDots])
     const allPts = [...prov.locations, ...prov.exhibitions].filter(l => l.lat != null && l.lng != null)
     const custodyPts = prov.locations.filter(l => l.lat != null && l.lng != null)
     const framePts = custodyPts.length >= 2 ? custodyPts : allPts
