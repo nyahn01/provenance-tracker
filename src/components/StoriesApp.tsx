@@ -186,23 +186,10 @@ export default function StoriesApp() {
         .arcColor((d: any) => d.color ?? OBS.gold)
         .arcAltitude((d: any) => d.altitude ?? 0.18)
         .arcDashLength(0.015).arcDashGap(0.015).arcDashAnimateTime(10000).arcStroke(0.6)
-      // Subtle city markers for major art centres — helps orient the globe
-      const ART_CITIES = [
-        { lat: 48.8606, lng: 2.3376, label: 'Paris' },
-        { lat: 51.5089, lng: -0.1283, label: 'London' },
-        { lat: 52.3600, lng: 4.8852, label: 'Amsterdam' },
-        { lat: 40.7794, lng: -73.9632, label: 'New York' },
-        { lat: 41.8796, lng: -87.6237, label: 'Chicago' },
-        { lat: 43.7678, lng: 11.2553, label: 'Florence' },
-        { lat: 40.4138, lng: -3.6922, label: 'Madrid' },
-        { lat: 48.2082, lng: 16.3738, label: 'Vienna' },
-        { lat: 35.6762, lng: 139.6503, label: 'Tokyo' },
-        { lat: 37.5665, lng: 126.9780, label: 'Seoul' },
-        { lat: 55.9398, lng: 37.3146, label: 'St Petersburg' },
-      ]
-      globe.pointsData(ART_CITIES)
-        .pointLat((d: any) => d.lat).pointLng((d: any) => d.lng)
-        .pointAltitude(0.004).pointRadius(0.22).pointColor(() => 'rgba(212,168,83,0.55)')
+      // Points set dynamically when a work is selected (see arcs useEffect)
+      globe.pointsData([]).pointLat((d: any) => d.lat).pointLng((d: any) => d.lng)
+        .pointAltitude(0.006).pointRadius((d: any) => d.r ?? 0.28)
+        .pointColor((d: any) => d.color ?? 'rgba(212,168,83,0.8)')
       setTimeout(() => { const c = globe.controls?.(); if (c) { c.autoRotate = true; c.autoRotateSpeed = 0.25; c.enableZoom = false } }, 100)
       const fit = () => { const el = containerRef.current; if (el) globe.width(el.clientWidth).height(el.clientHeight) }
       fit(); onResize = fit; window.addEventListener('resize', fit)
@@ -211,15 +198,27 @@ export default function StoriesApp() {
     return () => { mounted = false; if (onResize) window.removeEventListener('resize', onResize) }
   }, [])
 
-  // ── Arcs + auto-frame on provenance ────────────────────────────────────────
+  // ── Arcs + dots + auto-frame on provenance ────────────────────────────────
   useEffect(() => {
     const g = globeRef.current
     if (!g) return
-    if (!prov) { g.arcsData([]); const c = g.controls?.(); if (c) c.autoRotate = true; return }
+    if (!prov) {
+      g.arcsData([]).pointsData([])
+      const c = g.controls?.(); if (c) c.autoRotate = true
+      return
+    }
     // Custody arcs (gold, low altitude) and exhibition arcs (sage, higher altitude) rendered together.
     const custodyArcs = buildArcs(prov.locations, OBS.gold, 0.18)
     const exhibitionArcs = buildArcs(prov.exhibitions, OBS.sage, 0.30)
     g.arcsData([...custodyArcs, ...exhibitionArcs])
+    // City dots — only the locations relevant to this work
+    const custodyDots = prov.locations
+      .filter(l => l.lat != null && l.lng != null)
+      .map(l => ({ lat: l.lat as number, lng: l.lng as number, r: 0.32, color: 'rgba(212,168,83,0.85)' }))
+    const exhibDots = prov.exhibitions
+      .filter(l => l.lat != null && l.lng != null)
+      .map(l => ({ lat: l.lat as number, lng: l.lng as number, r: 0.22, color: 'rgba(111,141,125,0.75)' }))
+    g.pointsData([...custodyDots, ...exhibDots])
     const allPts = [...prov.locations, ...prov.exhibitions].filter(l => l.lat != null && l.lng != null)
     const custodyPts = prov.locations.filter(l => l.lat != null && l.lng != null)
     const framePts = custodyPts.length >= 2 ? custodyPts : allPts
