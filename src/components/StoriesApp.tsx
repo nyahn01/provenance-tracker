@@ -231,7 +231,22 @@ export default function StoriesApp() {
       try { const r = await fetch('/geo/countries-simple.json'); if (r.ok) geo = await r.json() } catch {}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const globe = (GlobeGL as any)()(containerRef.current) as any
-      globe.globeImageUrl(null).backgroundColor(OBS.bg).showAtmosphere(true).atmosphereColor('#1a1208').atmosphereAltitude(0.12)
+      // No atmosphere — it was the source of the orange/warm glow wrapping the sphere.
+      // Ocean color is set directly on the Three.js globe mesh material (shininess=0 = matte).
+      globe.globeImageUrl(null).backgroundColor(OBS.bg).showAtmosphere(false)
+      globe.onGlobeReady(() => {
+        const scene = globe.scene?.()
+        if (scene) {
+          scene.traverse((obj: any) => {
+            if (obj.isMesh && obj.geometry?.type === 'SphereGeometry') {
+              obj.material.color?.setStyle('#060504')   // near-black ocean
+              obj.material.emissive?.setStyle('#000000') // no self-glow
+              obj.material.shininess = 0                 // matte, not glossy
+              obj.material.needsUpdate = true
+            }
+          })
+        }
+      })
       if (geo.features.length) {
         globe.polygonsData(geo.features).polygonCapColor(() => OBS.globeLand)
           .polygonSideColor(() => 'rgba(0,0,0,0)').polygonStrokeColor(() => OBS.globeBorder).polygonAltitude(0.005)
