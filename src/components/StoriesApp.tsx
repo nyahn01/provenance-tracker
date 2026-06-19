@@ -9,7 +9,7 @@ const OBS = {
   bg: '#0a0908', surface: '#131110', border: '#2a2218', borderMid: '#3d3228',
   text: '#f6f1e8', textMuted: '#9a8f85', textFaint: '#5c5449',
   clay: '#c87855', gold: '#d4a853', sage: '#6f8d7d',
-  globeOcean: '#111010', globeLand: '#2e2318', globeBorder: '#4a3d2e',
+  globeOcean: '#0e0d0c', globeLand: '#3a2a14', globeBorder: '#5a4830',
 } as const
 const GAL = {
   bg: '#f7f4ee', surface: '#ffffff', surface2: '#ede9e2', border: '#d8d2c8', borderMid: '#b8afa3',
@@ -186,6 +186,23 @@ export default function StoriesApp() {
         .arcColor((d: any) => d.color ?? OBS.gold)
         .arcAltitude((d: any) => d.altitude ?? 0.18)
         .arcDashLength(0.015).arcDashGap(0.015).arcDashAnimateTime(10000).arcStroke(0.6)
+      // Subtle city markers for major art centres — helps orient the globe
+      const ART_CITIES = [
+        { lat: 48.8606, lng: 2.3376, label: 'Paris' },
+        { lat: 51.5089, lng: -0.1283, label: 'London' },
+        { lat: 52.3600, lng: 4.8852, label: 'Amsterdam' },
+        { lat: 40.7794, lng: -73.9632, label: 'New York' },
+        { lat: 41.8796, lng: -87.6237, label: 'Chicago' },
+        { lat: 43.7678, lng: 11.2553, label: 'Florence' },
+        { lat: 40.4138, lng: -3.6922, label: 'Madrid' },
+        { lat: 48.2082, lng: 16.3738, label: 'Vienna' },
+        { lat: 35.6762, lng: 139.6503, label: 'Tokyo' },
+        { lat: 37.5665, lng: 126.9780, label: 'Seoul' },
+        { lat: 55.9398, lng: 37.3146, label: 'St Petersburg' },
+      ]
+      globe.pointsData(ART_CITIES)
+        .pointLat((d: any) => d.lat).pointLng((d: any) => d.lng)
+        .pointAltitude(0.004).pointRadius(0.22).pointColor(() => 'rgba(212,168,83,0.55)')
       setTimeout(() => { const c = globe.controls?.(); if (c) { c.autoRotate = true; c.autoRotateSpeed = 0.25; c.enableZoom = false } }, 100)
       const fit = () => { const el = containerRef.current; if (el) globe.width(el.clientWidth).height(el.clientHeight) }
       fit(); onResize = fit; window.addEventListener('resize', fit)
