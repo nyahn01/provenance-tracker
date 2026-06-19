@@ -63,32 +63,22 @@ greps) → commit only if all green.** Exit 1 = BLOCKED, nothing committed.
   occur — chat is volatile, files are the record. Durable facts also go to `memory/`.
 - Decisions that change the spec also update the owning doc (CLAUDE.md, BUSINESS_CASE.md,
   DESIGN_SYSTEM.md, DATA_SOURCES.md). Wikilink with `[[...]]` so the Obsidian graph connects them.
-- MORNING.md = what shipped (status). INSIGHTS.md = what was learned (knowledge). Both per cycle.
+- `draft/INSIGHTS.md` is the running knowledge log (what was learned/decided/dead-ended).
 
-## The self-improving loop (one cycle = one backlog item)
+## The build loop (one task at a time)
 
-The loop runs unattended (overnight). Each cycle:
+1. **Plan** the next change (the approved plan lives in `.claude/plans/`).
+2. **Build** — route to the owning agent. One coherent change at a time.
+3. **Gate** — ship via `node scripts/ship.mjs --push --commit "<msg>"`. Red → fix → re-run.
+   For anything touching claims/data, the honesty grep in `verify.mjs` must pass; for bigger
+   surface changes, also run `provenance-honesty-review` and obey a BLOCK.
+4. **Log** — append findings/decisions to `draft/INSIGHTS.md`; update the owning spec doc if the
+   change alters it; durable facts → `memory/`.
 
-1. **Pick** the top unchecked item from `draft/TOMORROW.md` (priority 0 = honest
-   unscripted-search path; never skip a P0 to do polish).
-2. **Build** — route to the owning agent. One item at a time.
-3. **Gate** — agent runs `node scripts/ship.mjs --commit "<msg>"`. Red → fix → re-run.
-   For anything touching claims/data, the honesty grep in `verify.mjs` must pass; for
-   bigger surface changes, also run `provenance-honesty-review` and obey a BLOCK.
-4. **Log** — append a one-line result to `draft/MORNING.md` (see its header for format):
-   what shipped, gate verdict, commit hash, or why it's blocked.
-5. **Improve the idea, not just the code** — every 3rd cycle, `provenance-strategy`
-   spends a SMALL budget (no expensive fan-out research) reflecting on the current
-   build + `BUSINESS_CASE.md` and either (a) sharpens the next priorities in
-   `TOMORROW.md`, or (b) flags a wrong assumption. Direction self-corrects too.
-6. **Improve the team** — if the gate catches the same class of issue twice, tighten
-   the offending agent's prompt in `.claude/agents/` and note it in `MORNING.md`.
+## What the human checks
 
-## What the human checks in the morning
-
-Open `draft/MORNING.md`. It is the single report. For each cycle it shows the gate
-verdict and commit. Then: `git log --oneline`, `npm run verify`, and spot-check the
-live app. Anything marked **BLOCKED** is where human judgment is needed.
+`git log --oneline` (every commit is gate-verified), `npm run verify` (live gate), and a
+spot-check of the app. `draft/INSIGHTS.md` is the knowledge trail.
 
 ## Honesty is the product
 

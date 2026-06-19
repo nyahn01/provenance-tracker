@@ -1,101 +1,38 @@
-# Provenance Tracker — 5-Minute Demo Script (honest cut)
+# Provenance Tracker — Demo Script (honest cut)
 
-Format: screen recording + voiceover. No slides. Record at Retina/1440p. Globe must look cinematic.
-
-> Honesty rule: every factual claim on screen must be backed by a visible source line
-> (Wikidata / Met / AIC). No claim of live cross-museum "on view" status — that data
-> does not exist publicly. We show *documented* provenance and flag gaps proudly.
+Format: screen recording + voiceover, ~2–3 min. No slides. Record at 1440p.
+Honesty rule: every on-screen fact carries a visible source; gaps are shown, never faked;
+images appear only for public-domain works. Don't claim coverage we don't have.
 
 ---
 
-## HOOK (0:00 – 0:25)
+## HOOK (0:00–0:20) — the gallery
+[Screen: the landing gallery of masterpieces.]
+> "Every famous painting has a past — owners, cities, border crossings. That history is
+> scattered across museum records and archives. Provenance Tracker pulls it into one place,
+> and shows it honestly."
 
-[Screen: black. Type appears slowly.]
+## BEAT 1 (0:20–1:10) — a journey
+[Click *A Sunday on La Grande Jatte*. The globe flies to the Paris → Chicago arc; the panel opens.]
+> "Seurat's masterpiece: created in Paris, owned there by the artist's family and then the Brû
+> collection, sold across the Atlantic to Chicago in 1924, given to the Art Institute in 1926.
+> Every step is dated and sourced — Art Institute provenance records, Wikidata."
 
-Voiceover:
-"Every great painting has a past — owners, exhibitions, border crossings, disputes.
-That history is scattered across museum sites, Wikidata, and old PDFs.
-No one place lets you *see* it.
-So I built Provenance Tracker."
+## BEAT 2 (1:10–2:00) — why it's trustworthy
+[Scroll the panel: source badges, the separate exhibition list, a gap.]
+> "Two things make this credible. First, we separate ownership from loans — a painting shown in
+> a 2014 exhibition didn't *move* there. Second, when the record is thin, we show the gap instead
+> of inventing a story. The image is shown only because the work is public domain, credited to the museum."
 
-[Globe fades in, slowly rotating. Museum pins glow.]
+## BEAT 3 (2:00–2:35) — scope, honestly
+[Back to gallery; use the 'explore' search; show the honest empty state for a work we don't hold.]
+> "This is curated, not comprehensive. Search spans the Met, the Art Institute, and the
+> Rijksmuseum — and when a work isn't in those sources, we say so rather than fake a result."
 
----
-
-## THE PROBLEM (0:25 – 1:00)
-
-[Globe rotating]
-
-Voiceover:
-"The world's great collections each publish only their own data.
-Provenance — where a work has actually been — lives in fragments.
-Researchers lose the thread. Auction buyers can't see red flags.
-Insurers price transit risk without a movement history.
-Alibi pulls those fragments into one map — and is honest about what's missing."
-
-[Pan to Europe; a few pins brighten.]
-
----
-
-## THE DEMO (1:00 – 3:30)
-
-[Type a HERO work into search — e.g. "Guernica"]
-
-Voiceover:
-"I search Guernica."
-
-[Pins resolve; an animated arc traces its documented journey.]
-
-"Pulled live from Wikidata and museum exhibition records — sources shown right here."
-[Point to the 'Sources: Wikidata · Met · AIC' line.]
-
-"Guernica's documented path: Paris, then years touring abroad, then the Prado in 1981.
-Each move is a dated, cited data point — not a guess."
-
-[Claude panel streams in.]
-
-"Claude reconciles the fragments from each source into one clean timeline —
-and, crucially, flags where the record has gaps."
-
-[Now type an UNSCRIPTED work the judge suggests.]
-
-Voiceover:
-"Type anything. When the record is thin —"
-[Empty/partial state appears: 'Provenance gap — help complete it']
-"Alibi shows exactly that, and invites a contribution.
-The gaps are the roadmap, not a bug."
+## CLOSE (2:35–3:00)
+> "Sourced, dated, honest provenance — for museums, educators, and anyone curious where great art
+> has been. The same reconciliation method could power deeper due-diligence tools next."
 
 ---
-
-## WHY IT MATTERS (3:30 – 4:15)
-
-Voiceover:
-"For insurers, movement is the biggest priced risk — Alibi is the missing movement layer.
-For auction houses and researchers, it's instant due diligence.
-The public globe you're watching is the funnel.
-The product underneath is a provenance data API."
-
-[Optional: show a single honest 'documented international moves: N' figure — only if computed from real dated moves.]
-
----
-
-## CLOSE (4:15 – 5:00)
-
-[Globe back to full world view, all pins glow.]
-
-Voiceover:
-"Provenance Tracker runs on public museum APIs and Wikidata.
-No scraping. No proprietary data. Every fact is sourced and dated.
-Where the record is incomplete, we say so — and let the world help fill it.
-Complete, sourced, honest provenance history — for everyone."
-
-[URL fades in.]
-
----
-
-## Recording tips
-- QuickTime or OBS, native resolution.
-- Do a full take to find rhythm; the arc animation is the hero moment — pause on it.
-- Pre-warm the scripted hero queries before recording (APIs rate-limit; cache them).
-- ALWAYS rehearse the unscripted-query path — judges will type their own.
-- Calm voiceover; let the visual sell.
+Pre-checks: pick works with the richest chains (La Grande Jatte, The Bedroom, Water Lilies);
+confirm images load; confirm a gap example and the honest empty search state both render.

@@ -24,11 +24,12 @@ Method: multi-source reconciliation across Met, Art Institute of Chicago, Rijksm
 Wikidata (Claude-assisted when funded; deterministic prose-mining otherwise).
 
 ## 4. Who it's for (in order of realism)
-| Segment | Why it matters | What they get |
-|---|---|---|
-| **Museums / educators** | Engaging, transparent provenance storytelling; restitution-era credibility | Embeddable, sourced provenance stories |
-| **Art-curious public / press** | "Where has this masterpiece been?" | The public gallery (top of funnel) |
-| **(Later) due-diligence buyers** | Dealers/researchers want sourced ownership trails | Same data layer as a method proof-of-concept — not pitched as insurance |
+| Segment                          | Why it matters                                                             | What they get                                                           |
+| -------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Museums / educators**          | Engaging, transparent provenance storytelling; restitution-era credibility | Embeddable, sourced provenance stories                                  |
+| **Art-curious public / press**   | "Where has this masterpiece been?"                                         | The public gallery (top of funnel)                                      |
+| **(Later) due-diligence buyers** | Dealers/researchers want sourced ownership trails                          | Same data layer as a method proof-of-concept — not pitched as insurance |
+|                                  |                                                                            |                                                                         |
 
 ## 5. Why it's credible (the only real asset)
 Every fact is sourced and dated; gaps are shown, never invented; images appear only for
