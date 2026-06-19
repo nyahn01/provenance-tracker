@@ -8,8 +8,8 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'The Team — Provenance Tracker',
-  description: '9 specialized AI agents run this platform continuously.',
+  title: 'How it\'s built — Provenance Tracker',
+  description: '7 specialized AI agent profiles, a blocking honesty gate, and an automated ship gate. Invoked per session today, autonomous tomorrow.',
 }
 
 // OBS palette
@@ -40,55 +40,43 @@ const AGENTS: Agent[] = [
   {
     name: 'design-director',
     role: 'Visual language & art direction',
-    owns: 'Typography, color, motion, restraint. Sets the design system others implement.',
+    owns: 'Typography, color, motion, restraint. Sets the design system. Others implement to it — never around it.',
     model: 'OPUS',
   },
   {
-    name: 'provenance-globe',
-    role: '3D globe & front-end visuals',
-    owns: 'Globe.gl arcs, pins, animations, sidebar panels, design-token fidelity.',
-    model: 'SONNET',
-  },
-  {
-    name: 'dataviz-engineer',
-    role: 'Information design',
-    owns: 'Timeline layout, arc color coding, custody-vs-loan visual distinction.',
+    name: 'frontend-engineer',
+    role: 'Globe, sidebar & all front-end',
+    owns: 'Globe.gl arcs/pins, sidebar panels, dataviz, responsive layout, strict design-token fidelity.',
     model: 'SONNET',
   },
   {
     name: 'provenance-data',
     role: 'Data integration & APIs',
-    owns: 'Wikidata SPARQL, Met/AIC/Rijks APIs, geocoding, caching, rate limiting.',
+    owns: 'Wikidata SPARQL, Met/AIC/Rijks/Getty APIs, geocoding, caching, rate limiting, data contracts.',
     model: 'SONNET',
   },
   {
     name: 'art-historian',
     role: 'Provenance scholarship',
-    owns: 'Source credibility judgment, what makes a movement history meaningful, gap assessment.',
-    model: 'OPUS',
-  },
-  {
-    name: 'art-insurance-advisor',
-    role: 'Fine-art insurance & underwriting',
-    owns: 'What underwriters price, what data they trust, transit risk, valuation signals.',
+    owns: 'Source credibility ranking, gap characterization, what makes custody evidence trustworthy.',
     model: 'OPUS',
   },
   {
     name: 'provenance-strategy',
-    role: 'Business & market strategy',
-    owns: 'Customer segments, pricing, competitor landscape, business case sharpness.',
+    role: 'Business, market & customer segments',
+    owns: 'Museums, insurers, auction houses, restitution lawyers — what each segment pays for and why.',
     model: 'OPUS',
   },
   {
     name: 'provenance-story',
     role: 'Demo narrative & pitch',
-    owns: 'DEMO_SCRIPT.md, the 5-minute video flow, hero-work selection, judging fit.',
+    owns: 'DEMO_SCRIPT.md, the 5-minute video flow, hero-work selection, judging-criteria fit.',
     model: 'OPUS',
   },
   {
     name: 'provenance-honesty-review',
     role: 'Credibility gate — BLOCKING',
-    owns: 'Audits every diff for over-claiming, missing sources, faked data. Cannot be bypassed.',
+    owns: 'Audits every diff for over-claiming, missing sources, faked data. No commit bypasses this gate.',
     model: 'OPUS',
     isGate: true,
   },
@@ -108,6 +96,8 @@ export default function TeamPage() {
       <style>{`
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        /* Override the globe app's overflow:hidden so this page scrolls */
+        html, body { overflow: auto !important; height: auto !important; }
         body { background: ${C.bg}; }
         .flow-dot {
           animation: flow-along 2.8s linear infinite;
@@ -151,12 +141,24 @@ export default function TeamPage() {
               How it's built
             </div>
             <h1 style={{ fontFamily: "'Pretendard Variable', serif", fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: 300, color: C.text, lineHeight: 1.1, marginBottom: 20 }}>
-              Built by a team<br />that never sleeps.
+              Ready when you are.<br />Autonomous by design.
             </h1>
-            <p style={{ fontSize: '1rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 560 }}>
-              9 specialized AI agents run this platform continuously. Each owns a domain.
+            <p style={{ fontSize: '1rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 560, marginBottom: 16 }}>
+              7 specialized AI agent profiles run this platform. Each owns a domain.
               Each can block a commit. Every fact you see passed a credibility review.
             </p>
+            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+              {[
+                { stage: 'Stage 1 · Now', desc: 'Invoked per session in Claude Code', active: true },
+                { stage: 'Stage 2 · Max', desc: 'Background automation via GitHub Actions', active: false },
+                { stage: 'Stage 3 · Vision', desc: 'Fully event-driven, autonomous monitoring', active: false },
+              ].map(s => (
+                <div key={s.stage} style={{ padding: '8px 14px', border: `1px solid ${s.active ? C.gold : C.border}`, borderRadius: 6, opacity: s.active ? 1 : 0.5 }}>
+                  <div style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: s.active ? C.gold : C.textFaint, marginBottom: 2 }}>{s.stage}</div>
+                  <div style={{ fontSize: '0.72rem', color: C.textMuted }}>{s.desc}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Pipeline */}
