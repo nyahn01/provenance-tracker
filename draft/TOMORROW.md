@@ -2,7 +2,55 @@
 
 Agents pull from this queue daily (6am UTC). Completed features move to PROGRESS.md.
 
+---
+
+## TONIGHT — Immediate Batch (Max, triggered manually before demo)
+
+### T1. Seed Getty GPI — Goupil & Cie dataset
+**Agent:** provenance-data
+**Why:** Degas Yellow Dancers AIC provenance text explicitly names "Goupil et Cie, Paris on July 25, 1891". Seeding this closes the paper trail for our best demo work. CC0, same S3 bucket pattern as Knoedler.
+**Data URL:** `https://jpgt-or-prd-provenance-index-csv.s3.us-west-2.amazonaws.com/goupil/goupil.csv`
+**What:**
+- Create `scripts/seed-goupil.mjs` (mirror of seed-getty.mjs, filter same 30-artist list)
+- Output to `public/data/getty-goupil.json`
+- Edit `src/lib/getty.ts`: `searchGetty()` loads+merges both datasets; tag `sourceLabel: "Getty GPI — Goupil & Cie (1846–1919)"`
+**Done when:** `searchGetty('Edgar Degas')` returns records from BOTH datasets; a Goupil record near 1891 appears for Yellow Dancers.
+**Blocks:** None.
+
+### T2. Globe contrast + city dots
+**Agent:** provenance-globe
+**Why:** User cannot distinguish continents on the globe — ocean (#111010) vs land (#1c1612) contrast too low. Demo-critical visual issue.
+**What:**
+- `src/components/StoriesApp.tsx` globe config: land color → `#2a2218` (warmer, more visible)
+- Globe borders → `#4a3d2e`
+- Add static city dots (altitude 0.3, rgba(246,241,232,0.35)) for: Paris, London, Amsterdam, NYC, Chicago, Florence, Madrid, Vienna, Tokyo, Seoul
+- City data: hardcode lat/lng as `CITY_DOTS` array near globe init
+**Done when:** Screenshot in PR shows continents clearly distinguishable; arcs pop against land.
+**Blocks:** None.
+
+### T3. Team page: Stage 2 pill active
+**Agent:** provenance-globe
+**Why:** Max subscription is active now. Stage 2 pill still shows as inactive/muted. Demo script says "agents working right now."
+**What:**
+- `src/app/team/page.tsx`: Stage 2 pill `active: false` → `active: true`
+- Stage 2 text → "Background automation via Max — live now"
+- Add one line below subtitle: "Overnight enrichment running: Goupil & Cie dataset → in progress"
+**Done when:** Stage 2 pill renders gold/active; copy updated.
+**Blocks:** None.
+
+---
+
 ## Tier 1: High-Value Quick Wins (1–2 days per feature)
+
+### 0. /learn page — provenance glossary (NEW)
+**Agent:** art-historian drafts content → provenance-globe builds page
+**Why:** Art & AI book club audience needs this; links from sidebar gap entries ("What is a provenance gap?"); static page, fast to build.
+**What:**
+- `src/app/learn/page.tsx` — server-rendered, static, same dark palette
+- Sections: Chain of custody vs exhibition loan | What a provenance gap means (legal implications) | GPI / Knoedler / Goupil explained | WWII era (1933–1945) | Korean cultural heritage — 직지심체요절 as a case study
+- Link from sidebar gap events: "Learn about provenance gaps →"
+**Done when:** `/learn` route renders; all sections present; `npm run build` passes.
+**Blocks:** None.
 
 ### 1. Reconciliation reconciliation: fix the uncertainty display
 **Agent:** provenance-data  
