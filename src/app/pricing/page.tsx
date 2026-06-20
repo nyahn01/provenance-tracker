@@ -153,7 +153,7 @@ export default function PricingPage() {
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <a
-                href="https://buymeacoffee.com/nyahn01"
+                href="https://buymeacoffee.com/nyahn"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -278,7 +278,7 @@ export default function PricingPage() {
             <p style={{ fontSize: '0.75rem', color: C.textFaint, marginTop: 16, lineHeight: 1.6 }}>
               In the meantime —{' '}
               <a
-                href="https://buymeacoffee.com/nyahn01"
+                href="https://buymeacoffee.com/nyahn"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ color: C.gold, textDecoration: 'none', borderBottom: ' 1px solid rgba(212,168,83,0.3)' }}

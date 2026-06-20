@@ -53,7 +53,7 @@ export default function RootLayout({
           gap: 14,
         }}>
           <a
-            href="https://buymeacoffee.com/nyahn01"
+            href="https://buymeacoffee.com/nyahn"
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#d4a853', textDecoration: 'none' }}

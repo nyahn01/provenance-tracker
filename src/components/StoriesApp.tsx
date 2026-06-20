@@ -541,7 +541,7 @@ export default function StoriesApp() {
                 <a href="/pricing" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
                   Pricing →
                 </a>
-                <a href="https://buymeacoffee.com/nyahn01" target="_blank" rel="noopener noreferrer" style={{ color: OBS.clay, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
+                <a href="https://buymeacoffee.com/nyahn" target="_blank" rel="noopener noreferrer" style={{ color: OBS.clay, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
                   ☕ Buy me a coffee →
                 </a>
               </div>
