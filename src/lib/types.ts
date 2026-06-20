@@ -58,6 +58,37 @@ export interface LocationEntry {
   confidence?: 'high' | 'medium' | 'low'
 }
 
+/**
+ * A documented exhibition loan extracted from provenance or exhibition prose.
+ * Extends LocationEntry with loan-specific fields.
+ *
+ * Honesty note: a loan is NOT a change of custody. Do not conflate with
+ * the ownership LocationEntry chain. Source must cite the prose field it came from.
+ */
+export interface ExhibitionLoan {
+  /** Canonical city name resolved from prose (geocoder match). */
+  name: string
+  /** Full institution name as it appears in the prose, if identifiable. */
+  institution?: string
+  lat: number | null
+  lng: number | null
+  startDate: string | null
+  endDate: string | null
+  /** Prose field this loan was extracted from, e.g. "AIC exhibition history", "Met provenance prose". */
+  source: string
+  confidence?: 'high' | 'medium' | 'low'
+  /**
+   * The loan trigger keyword found in the prose: "on loan", "loaned", "borrowed".
+   * Null when extracted from dedicated exhibition_history prose (trigger implicit).
+   */
+  loanMarker?: 'on loan' | 'loaned' | 'borrowed' | null
+  /**
+   * Verbatim excerpt from the prose that generated this loan entry.
+   * Kept short (≤120 chars) for evidence display. Never fabricated.
+   */
+  excerpt?: string
+}
+
 export interface GapEntry {
   from: string | null
   to: string | null
@@ -87,7 +118,7 @@ export interface ProvenanceResponse {
   /** Chain of CUSTODY only — owners/locations over time. This is the journey (the arcs). */
   locations: LocationEntry[]
   /** Exhibition LOANS — the work was shown here and returned. NOT custody changes. */
-  exhibitions: LocationEntry[]
+  exhibitions: ExhibitionLoan[]
   gaps: GapEntry[]
   /** true when the custody chain is thin (< 2 mapped locations). */
   hasGap: boolean

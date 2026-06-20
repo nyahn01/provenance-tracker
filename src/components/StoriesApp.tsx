@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import type { SearchResult, ProvenanceResponse, LocationEntry, GettyRecord } from '@/lib/types'
+import type { SearchResult, ProvenanceResponse, LocationEntry, ExhibitionLoan, GettyRecord } from '@/lib/types'
 import type { RkdRecord } from '@/lib/rkd'
 import { FEATURED_WORKS, aicImage, type FeaturedWork } from '@/lib/featured'
 
@@ -227,7 +227,7 @@ function sourceConfidence(source: string, hasExplicitDate: boolean): ProvenanceE
 
 function buildUnifiedTimeline(
   locations: LocationEntry[],
-  exhibitions: LocationEntry[],
+  exhibitions: ExhibitionLoan[],
   gettyRecords: GettyRecord[],
 ): ProvenanceEvent[] {
   const events: ProvenanceEvent[] = []
@@ -302,6 +302,22 @@ const EV_STYLES: Record<ProvenanceEvent['type'], { icon: string; color: string; 
   gap:         { icon: '░', color: '#9a8f85', bg: 'transparent',            border: 'rgba(154,143,133,0.20)' },
 }
 
+// ─── Responsive breakpoints ───────────────────────────────────────────────────
+const BP_TABLET = 1024  // px — sidebar collapses to drawer below this
+const BP_MOBILE = 768   // px — globe height reduced below this
+
+function useViewport() {
+  const [width, setWidth] = useState<number>(() =>
+    typeof window !== 'undefined' ? window.innerWidth : 1280
+  )
+  useEffect(() => {
+    const handler = () => setWidth(window.innerWidth)
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
+  return width
+}
+
 export default function StoriesApp() {
   const containerRef = useRef<HTMLDivElement>(null)
   const globeRef = useRef<any>(null)
@@ -317,6 +333,12 @@ export default function StoriesApp() {
   const [prov, setProv] = useState<ProvenanceResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [showInsight, setShowInsight] = useState(false)
+
+  // ── Mobile drawer state ───────────────────────────────────────────────────
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const viewportWidth = useViewport()
+  const isMobile = viewportWidth < BP_MOBILE
+  const isTablet = viewportWidth < BP_TABLET
 
   const inStory = !!selected
 
@@ -415,7 +437,7 @@ export default function StoriesApp() {
 
   // ── Data actions ───────────────────────────────────────────────────────────
   const openWork = useCallback(async (r: SearchResult, heroUrl: string | null, creditLine: string | null) => {
-    setSelected(r); setHero(heroUrl); setCredit(creditLine); setProv(null); setLoading(true); setShowInsight(false)
+    setSelected(r); setHero(heroUrl); setCredit(creditLine); setProv(null); setLoading(true); setShowInsight(false); setDrawerOpen(true)
     const rawId = r.id.includes('-') ? r.id.slice(r.id.indexOf('-') + 1) : r.id
     try {
       const res = await fetch(`/api/provenance?source=${r.source}&id=${rawId}`)
@@ -437,7 +459,7 @@ export default function StoriesApp() {
 
   const selectResult = (r: SearchResult) => openWork(r, null, null)
 
-  const close = () => { setSelected(null); setProv(null); setHero(null); setCredit(null) }
+  const close = () => { setSelected(null); setProv(null); setHero(null); setCredit(null); setDrawerOpen(false) }
 
   const runSearch = useCallback(async (q: string) => {
     const t = q.trim(); if (t.length < 2) return
@@ -451,16 +473,34 @@ export default function StoriesApp() {
 
   const sources = prov ? [...new Set(prov.locations.map(l => l.source))] : []
 
+  // ── Globe height: 50% on mobile, 75% on tablet, 100% on desktop ──────────
+  const globeHeightPct = isMobile ? '50%' : isTablet ? '75%' : '100%'
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: OBS.bg }}>
-      <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
+      {/* Globe container — height is responsive; only CSS/layout, not globe init */}
+      <div ref={containerRef} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: globeHeightPct }} />
 
-      {!inStory && <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,9,8,0.72)' }} />}
+      {/* Overlay only covers the globe area */}
+      {!inStory && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: globeHeightPct, background: 'rgba(10,9,8,0.72)' }} />
+      )}
 
       {/* ── LANDING: curated gallery ─────────────────────────────────────────── */}
       {!inStory && (
         <div style={{ position: 'absolute', inset: 0, overflowY: 'auto' }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '56px 28px 80px' }}>
+          {/* On mobile/tablet: push content below the (shorter) globe with a spacer */}
+          {isTablet && (
+            <div style={{ height: globeHeightPct, pointerEvents: 'none' }} />
+          )}
+          <div style={{
+            maxWidth: 1100,
+            margin: '0 auto',
+            // On desktop the globe is full-height behind content; on mobile/tablet content starts below globe
+            padding: isTablet ? '28px 20px 80px' : '56px 28px 80px',
+            // On mobile/tablet add a background so text is readable against content below globe
+            background: isTablet ? OBS.bg : 'transparent',
+          }}>
             <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: OBS.clay, marginBottom: 14 }}>
               Provenance Tracker
             </div>
@@ -550,9 +590,62 @@ export default function StoriesApp() {
         </div>
       )}
 
+      {/* ── Hamburger button — visible on mobile/tablet when story is open ──── */}
+      {inStory && isTablet && (
+        <button
+          onClick={() => setDrawerOpen(o => !o)}
+          aria-label={drawerOpen ? 'Close provenance panel' : 'Open provenance panel'}
+          style={{
+            position: 'fixed', top: 14, right: 14, zIndex: 200,
+            width: 44, height: 44, borderRadius: 10,
+            background: drawerOpen ? GAL.bg : OBS.surface,
+            border: `1px solid ${drawerOpen ? GAL.borderMid : OBS.border}`,
+            cursor: 'pointer', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 5,
+            boxShadow: '0 2px 16px rgba(0,0,0,0.45)',
+          }}
+        >
+          {drawerOpen ? (
+            /* X icon */
+            <span style={{ fontSize: '1.1rem', lineHeight: 1, color: GAL.textMuted, fontFamily: 'var(--font-ui)' }}>✕</span>
+          ) : (
+            /* Hamburger lines */
+            <>
+              <span style={{ width: 20, height: 2, background: OBS.text, borderRadius: 1, display: 'block' }} />
+              <span style={{ width: 20, height: 2, background: OBS.text, borderRadius: 1, display: 'block' }} />
+              <span style={{ width: 14, height: 2, background: OBS.text, borderRadius: 1, display: 'block', alignSelf: 'flex-start', marginLeft: 12 }} />
+            </>
+          )}
+        </button>
+      )}
+
+      {/* ── Backdrop overlay for drawer on mobile/tablet ──────────────────── */}
+      {inStory && isTablet && drawerOpen && (
+        <div
+          onClick={() => setDrawerOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 149,
+            background: 'rgba(6,5,4,0.55)',
+            backdropFilter: 'blur(2px)',
+          }}
+        />
+      )}
+
       {/* ── STORY: provenance detail (warm gallery panel) ────────────────────── */}
       {inStory && (
-        <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 'min(460px, 100%)', background: GAL.bg, borderLeft: `1px solid ${GAL.borderMid}`, overflowY: 'auto', boxShadow: '-20px 0 60px rgba(0,0,0,0.4)' }}>
+        <div style={{
+          position: 'fixed', top: 0, right: 0, bottom: 0,
+          // Desktop: always-visible side panel. Tablet/mobile: slide-in drawer.
+          width: isTablet ? 'min(400px, 92vw)' : 'min(460px, 100%)',
+          background: GAL.bg,
+          borderLeft: `1px solid ${GAL.borderMid}`,
+          overflowY: 'auto',
+          boxShadow: '-20px 0 60px rgba(0,0,0,0.4)',
+          zIndex: 150,
+          // Slide transform: on tablet, translate off-screen when closed
+          transform: isTablet && !drawerOpen ? 'translateX(100%)' : 'translateX(0)',
+          transition: isTablet ? 'transform 300ms cubic-bezier(0.25,0.1,0,1)' : 'none',
+        }}>
           <button onClick={close}
             style={{ position: 'sticky', top: 0, zIndex: 2, width: '100%', textAlign: 'left', background: GAL.bg, border: 'none', borderBottom: `1px solid ${GAL.border}`, padding: '14px 24px', color: GAL.textMuted, fontFamily: 'var(--font-ui)', fontSize: '0.8rem', cursor: 'pointer' }}>
             ← All journeys
