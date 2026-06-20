@@ -1,224 +1,202 @@
 export const meta = {
   name: "batch-agent-squad",
-  description: "Daily 6am batch: read TOMORROW.md, spawn agents in parallel by domain, route PRs to honesty gate",
+  description: "Batch run: read TOMORROW.md live, spawn agents in parallel by domain, route PRs to honesty gate",
   phases: [
-    { title: "Plan", detail: "parse TOMORROW.md, group by agent" },
+    { title: "Plan", detail: "read TOMORROW.md, extract active priorities by agent" },
     { title: "Build", detail: "spawn agents in parallel per domain" },
     { title: "Verify", detail: "run honesty-gate on each PR" },
   ],
 };
 
-// Parse TOMORROW.md in memory (no FS available in workflows)
-// For now, manually define the priority queue from TOMORROW.md
-const PRIORITY_QUEUE = [
-  {
-    id: "1",
-    title: "Reconciliation reconciliation: fix the uncertainty display",
-    agent: "provenance-data",
-    task: `Priority #1 from TOMORROW.md:
-
-Title: Reconciliation reconciliation: fix the uncertainty display
-
-What: Add \`confidence: "high" | "medium" | "low"\` to provenance timeline shape. Wikidata P276 = medium, exhibition catalogs = high, web extraction = low.
-
-Done when: provenance-timeline returns typed confidence; panel renders a "confidence badge" next to each event.
-
-Branch: feat/provenance-data/confidence-levels
-Test: Query Starry Night, verify confidence shows in timeline.
-PR checklist: confidence shape in types.ts, integration test passes, demo script updated.`,
-  },
-  {
-    id: "2",
-    title: "Museum exhibition-loan extraction from prose",
-    agent: "provenance-data",
-    task: `Priority #2 from TOMORROW.md:
-
-Title: Museum exhibition-loan extraction from prose
-
-What: Parse museum collection pages for "on loan" / "loaned" / "borrowed" markers. Return typed \`ExhibitionLoan\` shape. Test with Starry Night @ MOMA.
-
-Done when: Query returns structured loans with dates; PR passes honesty checklist.
-
-Branch: feat/provenance-data/exhibition-loans
-Test: Starry Night should show loans at MOMA, Louvre, etc. with dates.
-PR checklist: ExhibitionLoan type defined, parsing logic added, test case passes.`,
-  },
-  {
-    id: "3",
-    title: "Polish globe empty-state (unscripted search, thin data)",
-    agent: "provenance-globe",
-    task: `Priority #3 from TOMORROW.md:
-
-Title: Polish globe empty-state (unscripted search, thin data)
-
-What: When data is sparse (< 3 locations), show a "Provenance gap — help improve this record" panel. Link to a form stub (no submission needed yet).
-
-Done when: Empty search degrades to intentional-looking UI, not broken. Screenshot in PR.
-
-Branch: feat/provenance-globe/empty-state-ux
-Test: Search for a non-curated painting, verify graceful degradation.
-PR checklist: Empty state UI rendered, design tokens matched, responsive on mobile.`,
-  },
-  {
-    id: "4",
-    title: "Refresh Met/AIC API caching (TTL tuning)",
-    agent: "provenance-data",
-    task: `Priority #4 from TOMORROW.md:
-
-Title: Refresh Met/AIC API caching (TTL tuning)
-
-What: Implement cache-invalidation route (\`/api/cache/invalidate?source=met\`). Add per-API TTL config (Met: 7d, AIC: 7d, Wikidata: 1d). Document in PR.
-
-Done when: Cache hits/misses logged; invalidation works; no 429s during demo.
-
-Branch: feat/provenance-data/cache-tuning
-Test: Query Met 5 times, verify second+ hits cache; invalidate, verify refresh.
-PR checklist: Cache config added, logging works, no rate-limit errors.`,
-  },
-];
-
+// ─── Phase: Plan ─────────────────────────────────────────────────────────────
 phase("Plan");
-log(`📅 Batch orchestration: ${new Date().toISOString()}`);
-log(`📋 TOMORROW.md priorities: ${PRIORITY_QUEUE.length} active`);
 
-// Group by agent
+// Read TOMORROW.md as source of truth (not a hardcoded queue)
+const tomorrowRaw = await agent(
+  `Read the file draft/TOMORROW.md in the provenance-tracker project at C:\\Users\\Windows11\\Downloads\\provenance-tracker and return its full text contents. Return ONLY the raw file contents, nothing else.`,
+  { label: "read:TOMORROW.md", phase: "Plan" }
+);
+
+if (!tomorrowRaw) {
+  log("❌ Could not read TOMORROW.md — aborting.");
+  return { error: "Could not read TOMORROW.md" };
+}
+
+// Parse priorities from the raw markdown
+// Extract: ### N. Title, **Agent:** name, **Done when:** ..., full block up to next ###
+const PRIORITY_QUEUE = [];
+const lines = tomorrowRaw.split("\n");
+
+let current = null;
+for (let i = 0; i < lines.length; i++) {
+  const line = lines[i];
+
+  // Match active priority headings (skip [PAUSED])
+  const headingMatch = line.match(/^### (?!\[PAUSED\])(\d+)\. (.+)/);
+  if (headingMatch) {
+    if (current) PRIORITY_QUEUE.push(current);
+    current = {
+      id: headingMatch[1],
+      title: headingMatch[2].trim(),
+      agent: null,
+      fullBlock: line + "\n",
+    };
+    continue;
+  }
+
+  // Match **Agent:** line
+  if (current) {
+    const agentMatch = line.match(/^\*\*Agent:\*\*\s+(.+)/);
+    if (agentMatch) {
+      current.agent = agentMatch[1].trim();
+    }
+    // Stop at next section heading or horizontal rule
+    if (line.startsWith("## ") || line.startsWith("---")) {
+      if (current) { PRIORITY_QUEUE.push(current); current = null; }
+    } else {
+      current.fullBlock += line + "\n";
+    }
+  }
+}
+if (current) PRIORITY_QUEUE.push(current);
+
+// Filter out entries without an agent (malformed or section headers)
+const valid = PRIORITY_QUEUE.filter(p => p.agent);
+
+if (valid.length === 0) {
+  log("✅ No active priorities in TOMORROW.md — nothing to do.");
+  return { priorities: 0 };
+}
+
+log(`📋 Active priorities: ${valid.length}`);
+for (const p of valid) {
+  log(`   #${p.id} [${p.agent}]: ${p.title}`);
+}
+
+// Group by agent — each agent gets their top priority this run
 const byAgent = {};
-for (const p of PRIORITY_QUEUE) {
+for (const p of valid) {
   if (!byAgent[p.agent]) byAgent[p.agent] = [];
   byAgent[p.agent].push(p);
 }
 
-const agentKeys = Object.keys(byAgent);
-log(
-  `👥 Agent domains: ${agentKeys.join(", ")}`
-);
+const agentDomains = Object.keys(byAgent);
+log(`👥 Domains this run: ${agentDomains.join(", ")}`);
 
+// ─── Phase: Build ─────────────────────────────────────────────────────────────
 phase("Build");
 
-// Spawn agents in parallel (one per domain, working on their top priority)
 const agentRuns = await parallel(
-  agentKeys.map((agentName) => async () => {
+  agentDomains.map((agentName) => async () => {
     const topPriority = byAgent[agentName][0];
 
     const result = await agent(
-      `You are the **${agentName}** specialist.
+      `You are the **${agentName}** specialist for the provenance-tracker project.
+
+Working directory: C:\\Users\\Windows11\\Downloads\\provenance-tracker
 
 ## Priority #${topPriority.id}: ${topPriority.title}
 
-${topPriority.task}
+${topPriority.fullBlock}
+
+## Hard constraints (read before starting)
+
+1. **GLOBE CONTRACT** — If your task touches StoriesApp.tsx, re-read the GLOBE CONTRACT section in draft/TOMORROW.md first. The globe init pattern is locked. Do not deviate.
+2. **Types first** — Any new data shape MUST be added to src/lib/types.ts before any other file changes.
+3. **Honesty** — Never invent dates, coordinates, or sources. Sparse data shown as a gap, not faked.
+4. **Design tokens** — Use ONLY colors/fonts from draft/CLAUDE.md. No deviations.
 
 ## Workflow
 
-1. **Read** the priority details above.
-2. **Branch:** \`git checkout -b feat/${agentName.toLowerCase().replace(/\\s+/g, "-")}/priority-${topPriority.id}\`
-3. **Code:** Implement the feature. Run \`npm run verify\` to check types and tests.
-4. **Commit:** Semantic messages, one feature per commit.
-5. **Push:** \`git push --set-upstream origin\`
-6. **Open PR** with:
+1. Read draft/TOMORROW.md priority #${topPriority.id} in full (especially "Done when" criteria).
+2. Check if the feature already exists — if it does, close this task with "already shipped" and stop.
+3. Branch: \`git checkout -b feat/${agentName.toLowerCase().replace(/\s+/g, "-")}/priority-${topPriority.id}\`
+4. Implement. Run \`npm run build\` — fix ALL TypeScript errors before continuing.
+5. Run \`npm run honesty\` — fix any honesty violations.
+6. Commit with semantic messages. Push: \`git push --set-upstream origin HEAD\`
+7. Open a GitHub PR:
    - Title: \`feat: ${topPriority.title}\`
-   - Description: Link to TOMORROW.md priority #${topPriority.id}
-   - Checklist: Mark off "Done when" criteria
-   - Self-check: Run \`npm run verify\` (types + tests must pass)
+   - Body: Link to TOMORROW.md priority #${topPriority.id} + "Done when" checklist ticked
+8. Report back: PR URL + one-sentence summary of what was built.
+9. Do NOT merge. Main session runs honesty gate before merge.
 
-7. **Do NOT merge.** Main session runs honesty-gate before merge.
+## Blockers
 
-## If you hit a blocker
-
-Comment in the PR with details. Do NOT force-push or give up. Examples of blockers:
-- API rate limit? Ask main: cache more? stub test data?
-- Unsure about design? Attach screenshot, let main session decide.
-- Data conflict (multi-source)? Flag it with \`[HONESTY]\` label for review.
-
-## Success metrics
-
-- PR opens with correct branch name and description
-- \`npm run verify\` passes (no TS errors, tests green)
-- Self-check honesty items ticked
-- If data-heavy: test with live API (not mocks)
-
-Start now. Report when PR is open.`,
+If you hit a blocker, comment in the PR:
+\`\`\`
+## Blocker
+[reason]
+@main-session: [decision needed]
+\`\`\`
+Then stop. Do NOT guess or force past it.`,
       {
         label: `${agentName}:priority-${topPriority.id}`,
         phase: "Build",
       }
     );
 
-    return {
-      agent: agentName,
-      priority: topPriority.id,
-      result: result,
-    };
+    return { agent: agentName, priority: topPriority.id, title: topPriority.title, result };
   })
 );
 
-log(`✅ Agent runs complete. ${agentRuns.filter(Boolean).length}/${agentKeys.length} agents spawned PRs.`);
+const ran = agentRuns.filter(Boolean);
+log(`✅ Build complete: ${ran.length}/${agentDomains.length} agents reported.`);
 
+// ─── Phase: Verify ─────────────────────────────────────────────────────────────
 phase("Verify");
 
-// Collect PR links and run honesty gate on each
-const prResults = agentRuns.filter(Boolean);
-if (prResults.length > 0) {
-  log(`🚨 Running honesty-gate on ${prResults.length} PR(s)...`);
-
-  const honestyReviews = await parallel(
-    prResults.map((run) => async () => {
-      const review = await agent(
-        `You are the **provenance-honesty-review** gate.
-
-Agent **${run.agent}** just opened a PR for priority #${run.priority}.
-
-Their PR report:
-${run.result}
-
-## Your job
-
-BLOCK or APPROVE based on:
-1. **Over-claiming?** Do the facts match the sources shown? (Especially for Wikidata/Met/AIC data)
-2. **Missing source lines?** Every on-screen fact needs attribution.
-3. **Faked data?** Are they inventing dates/locations to fill gaps? (Never!)
-4. **Custody vs loans?** Are ownership and exhibitions kept separate?
-5. **Data shape?** Does the PR extend src/lib/types.ts BEFORE changing behavior?
-
-## Decision
-
-Reply with:
-- **BLOCK** if any rule is violated. List specific issues. Agent fixes and pushes again.
-- **APPROVE** if clean. Indicate: "Ready to merge." Main session will git merge and tag.
-
-(Note: You're reviewing the AGENT'S report, not reading git directly. Work with what they tell you.)`,
-        {
-          label: `honesty-gate:${run.agent}:priority-${run.priority}`,
-          phase: "Verify",
-        }
-      );
-
-      return {
-        agent: run.agent,
-        priority: run.priority,
-        verdict: review,
-      };
-    })
-  );
-
-  const approved = honestyReviews.filter(
-    (r) => r && r.verdict && r.verdict.includes("APPROVE")
-  ).length;
-  const blocked = honestyReviews.filter(
-    (r) => r && r.verdict && r.verdict.includes("BLOCK")
-  ).length;
-
-  log(
-    `📊 Honesty gate: ${approved} approved, ${blocked} blocked. (Blocked features go back to agent for fixes.)`
-  );
+if (ran.length === 0) {
+  log("No PRs to review.");
+  return { agents: agentDomains, priorities: valid.length };
 }
 
-log(
-  `\n🎉 Batch complete. Approved PRs ready to merge. Blocked PRs back to agents for fixes.`
+log(`🚨 Running honesty gate on ${ran.length} PR(s)...`);
+
+const honestyReviews = await parallel(
+  ran.map((run) => async () => {
+    const review = await agent(
+      `You are the **provenance-honesty-review** gate for provenance-tracker.
+
+Agent **${run.agent}** just worked on priority #${run.priority}: "${run.title}".
+
+Their report:
+${run.result}
+
+## Your job: BLOCK or APPROVE
+
+Check for:
+1. **Over-claiming?** Any fact shown without a visible source? (Every fact needs "Source: Wikidata / Met / AIC / RKD")
+2. **Faked data?** Invented dates, coordinates, or gap-filling? (Never allowed)
+3. **Custody vs loans?** Ownership and exhibition loans conflated? (Must be separate)
+4. **Globe contract violated?** If StoriesApp.tsx was touched, does the PR confirm the locked init pattern was preserved?
+5. **Types first?** If a new data shape was added, was src/lib/types.ts updated first?
+6. **Build passing?** Did they confirm \`npm run build\` and \`npm run honesty\` passed?
+
+Reply with:
+- **BLOCK: [reason]** if any rule was violated. Be specific — agent will fix and re-push.
+- **APPROVE** if clean. Main session will merge.`,
+      {
+        label: `honesty-gate:${run.agent}:priority-${run.priority}`,
+        phase: "Verify",
+      }
+    );
+
+    const verdict = review && review.includes("APPROVE") ? "APPROVED" : "BLOCKED";
+    log(`  ${verdict}: ${run.agent} #${run.priority} — ${run.title}`);
+    return { agent: run.agent, priority: run.priority, verdict, review };
+  })
 );
-log(`📅 Next run: tomorrow at 6am UTC`);
+
+const approved = honestyReviews.filter(r => r && r.verdict === "APPROVED").length;
+const blocked = honestyReviews.filter(r => r && r.verdict === "BLOCKED").length;
+
+log(`\n📊 Results: ${approved} approved, ${blocked} blocked.`);
+if (blocked > 0) log(`   Blocked PRs stay open — agents re-push after fixing.`);
+log(`\n🎉 Batch complete. Check GitHub for open PRs.`);
 
 return {
-  agents: agentKeys,
-  priorities: PRIORITY_QUEUE.length,
-  timestamp: new Date().toISOString(),
+  agents: agentDomains,
+  priorities: valid.length,
+  approved,
+  blocked,
 };
