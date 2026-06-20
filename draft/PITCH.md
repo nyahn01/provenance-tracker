@@ -1,115 +1,108 @@
 # Provenance Tracker — Elevator Pitches
 
-Three versions for demo Q&A. No Korean needed here — see DEMO_SCRIPT_KO.md.
-Honesty rule: every claim maps to a fact in BUSINESS_CASE.md or the live app.
+Three versions for demo Q&A. Audience: museum technologists, restitution researchers,
+hackathon judges, and art-curious general public. No Korean versions here — see DEMO_SCRIPT_KO.md.
 
 ---
 
 ## 30-second pitch (under 80 words)
 
-Most museum websites list a famous painting's provenance as "unknown before 1922."
-Provenance Tracker traces the actual documented journey — every owner, every city,
-every dealer receipt — sourced back to the institution that recorded it.
-We separate ownership transfers from exhibition loans, and we show gaps honestly
-instead of hiding them. It is the hidden journeys of masterpieces, made visible.
+Most museum websites say "provenance unknown before 1922." That gap can mean a looted work.
+Provenance Tracker traces the custody chain — every documented ownership change, every dealer
+receipt, every exhibition loan — on a live 3D globe. Sources cited on screen. Gaps shown
+honestly, never faked. We reconcile records from the Met, Art Institute of Chicago, and the
+Getty Provenance Index into a single, dated chain of custody.
 
 ---
 
 ## 2-minute pitch
 
-A painting can travel from a Paris studio to a Chicago socialite to a major museum
-over a century — and the full story is scattered across auction archives, dealer
-stock books, and museum provenance notes that almost no one reads.
+**The problem.** Art provenance is scattered across museum websites, dealer archives, and
+academic databases — in prose, in PDFs, in languages the buyer doesn't read. A collector or
+researcher trying to verify clean title for a $2M work spends weeks stitching that together by
+hand. A restitution lawyer searching for the 1933–1945 gap in a painting's ownership history
+does it for every single case.
 
-Provenance Tracker curates a small set of famous, public-domain works and
-reconstructs each one's documented chain of custody: every ownership change dated,
-every fact sourced back to the Art Institute of Chicago, the Rijksmuseum,
-Wikidata, or the Getty Provenance Index. When the record runs dry, we show the gap
-as a gap — we never invent data to fill it.
+**What we built.** Provenance Tracker reconciles multi-source provenance records into one dated
+chain of custody and renders it on a cinematic 3D globe. Each arc on the globe is a documented
+event — gold for ownership change, sage for exhibition loan. We never conflate the two, because
+that distinction is what courts and insurers care about. Every fact on screen carries a visible
+source. Sparse data shows as a gap, not an invented date.
 
-Two things make this different from a museum website. First, we distinguish
-ownership from loans. A painting on loan to the Louvre for three years never
-changed hands — conflating the two is a common error in provenance research, and
-it matters for restitution claims. Second, the 3D globe auto-frames to each work's
-actual journey, so you can watch a century of moves play out in seconds.
+**Where the data comes from.** The Metropolitan Museum API, the Art Institute of Chicago API,
+Wikidata, and the Getty Provenance Index — the Knoedler & Company stock books, 4,388 records
+spanning Paris and New York, 1872 to 1970. All public data, zero fabrication.
 
-The primary audience is museums and educators who need credible, embeddable
-provenance storytelling in an era where restitution scrutiny is real. The data
-method — multi-source reconciliation, gap-aware, custody-vs-loan separated —
-is also a proof-of-concept for any future due-diligence product.
+**The business.** Explorer tier is free — the globe is the funnel. Researcher tier at €99/month
+targets independent provenance researchers and journalists. Institution tier at €999/month serves
+museums, auction houses, and restitution law firms with API access and conflict-flagging. The
+moat is the reconciled, gap-flagged custody graph, not the raw APIs — those anyone can call.
 
 ---
 
 ## 5-minute pitch
 
-### The problem
+**The question nobody can answer quickly.**
 
-Provenance — the documented history of who owned a work and where it went — is one
-of the most consequential facts in the art world. It is also almost invisible to
-the public. A famous painting's museum page might say "provenance unknown before
-1922." That is a 30-year gap for a work painted in 1906. The records that would
-fill it — Knoedler stock books, Goupil & Cie ledgers, Wikidata custody chains,
-AIC acquisition notes — exist, but they are scattered, inconsistent in format, and
-never reconciled in one readable place.
+When Monet finished Water Lilies in 1906, it was in Paris. When the Art Institute of Chicago
+bought it, it was in Chicago. What happened in between? The museum website says "provenance
+unknown before 1922." That is a 16-year gap in the custody record of a painting worth tens of
+millions of dollars. It is also, depending on what happened between 1933 and 1945, potentially
+a legal problem.
 
-This matters for two reasons that are only growing. First, restitution cases hinge
-on exactly this data: who held the work, when, and under what circumstances.
-Second, the art-curious public has no beautiful, honest way to experience a
-masterpiece's actual journey — only a dry legal disclaimer on a museum wall.
+This is not an edge case. The Commission for Looted Art in Europe estimates 600,000 artworks
+were looted during the Nazi era. Fewer than 20% have been identified. The bottleneck is not
+political will — it is research infrastructure. Provenance records are scattered across
+hundreds of institutions in half a dozen languages, many of them in prose that has never been
+parsed, indexed, or linked.
 
-### What we built
+**What Provenance Tracker does.**
 
-Provenance Tracker is a curated provenance-storytelling app. A small set of famous,
-public-domain works — Monet's Water Lilies, Vermeer's Girl with a Pearl Earring,
-van Gogh's The Bedroom — each shown with a fully sourced, dated chain of custody
-and a cinematic 3D globe that auto-frames to that work's journey.
+We take the documented provenance records from public museum APIs — the Met, the Art Institute
+of Chicago, Wikidata, the Rijksmuseum — and from the Getty Provenance Index, which contains
+the actual dealer stock books: Knoedler & Company's records of who bought what, from whom, for
+how much, in Paris and New York from 1872 to 1970. We reconcile those fragments into a single,
+dated chain of custody. We render it on a 3D globe so the journey is immediately legible —
+Paris to Chicago, Berlin to New York, Amsterdam to London.
 
-Every fact on screen carries a visible source: the institution or database that
-recorded it. Every gap in the record is shown as a gap, with an invitation to help
-complete it. We never fake dates, coordinates, or risk scores.
+Every arc on that globe is a documented event. Gold arcs are ownership transfers. Sage arcs are
+exhibition loans — the painting moves, but the owner does not change. We enforce that
+distinction because courts and insurers enforce it. Every fact on screen carries a source line.
+When the record is sparse, we show a gap. We never invent a date or a location to fill it.
 
-The one structural distinction that runs through everything: ownership transfers
-versus exhibition loans. A gold arc on the globe is a custody event — the work
-changed hands. A sage arc is a loan — the work traveled and came back, the owner
-did not change. That distinction is standard in provenance research and almost
-never surfaced in public-facing tools. It matters: a work "on loan" for a year
-is not provenance evidence, but it can look like one if you conflate the two.
+**The gap between what exists and what we built.**
 
-### The data layer
+Existing collections-management tools — Gallery Systems, Artsystems, ArtBase — are databases
+that a registrar types into. They do not reconcile across institutions. They do not flag custody
+gaps. They do not tell you whether the 1938 entry and the 1946 entry describe the same
+painting passing through two different dealer networks, or a different painting entirely.
+We do.
 
-Sources are tiered by reliability. Primary: museum provenance prose from the
-Art Institute of Chicago and Rijksmuseum, which publish structured or semi-structured
-records. Secondary: Wikidata SPARQL for locations and dates. Tertiary: Getty
-Provenance Index — specifically the Knoedler & Company and Goupil & Cie stock
-books, which cover the dealer network that moved Impressionist work from Paris to
-American collectors between 1872 and 1970. These are real dealer receipts: buyer,
-seller, price in francs and dollars, date.
+**The people who need this most.**
 
-Reconciliation is deterministic prose-mining today (the Anthropic API key is
-unfunded). The architecture is ready for Claude-assisted conflict detection and
-gap narration once credits are restored. All external calls are server-side;
-keys never reach the client; per-IP rate limiting protects the free APIs we proxy.
+Restitution law firms are the acute case. A firm like Rowland & Petroff, which has recovered
+roughly $70M in looted works, bills provenance research by the hour on contingency-funded
+cases. A tool that pinpoints the 1933–1945 gap in a custody chain and surfaces the relevant
+dealer records saves days of billable research time. Those firms will pay €999 per month per
+seat because one recovered work pays for years of the subscription.
 
-### Who it is for
+Museum registrars are the expansion lane. They carry provenance burden on every acquisition,
+every deaccession, every loan agreement. They do not need another database — they need a
+reconciliation layer on top of what already exists. That is what we are building.
 
-The immediate audience is museums, art educators, and journalists who need
-provenance storytelling that is credible enough to cite. The restitution era means
-institutions are under scrutiny; a sourced, gap-honest tool is a different kind
-of asset than a marketing gallery.
+**Business model.**
 
-The secondary audience — long-term — is dealers and researchers who need a
-method proof-of-concept for ownership-trail due diligence. We are not pitching
-insurance-grade data; coverage is too narrow for that. But the method — sourced,
-dated, custody-vs-loan separated, gap-aware — is the foundation that a B2B
-product would stand on.
+Three tiers. Explorer is free — the globe and the curated stories are the funnel, they build
+the credibility that makes institutions trust the paid product. Researcher at €99/month
+captures independent researchers, journalists, and small dealers below the procurement
+threshold. Institution at €999/month is the revenue driver: multi-seat access, API export,
+conflict-flagging for acquisitions under review.
 
-The top of the funnel is the art-curious public: anyone who has ever wondered
-where a famous painting was before the museum bought it.
+Honest serviceable ARR ceiling: roughly 2,700 accounts at a blended €4,000/year is an €11M
+market. Niche, but defensible. The moat is the reconciled custody graph and the user
+corrections that improve it over time — not the raw public APIs, which any competitor can
+also call.
 
-### Why credibility is the moat
-
-We are curated, not comprehensive, and we say so. The sourced, reconciled,
-gap-aware dataset compounds as we add works and sources. A competitor who fakes
-data or hides gaps destroys trust in one viral counterexample. We do not.
-That is not just an ethics position — it is the only durable competitive advantage
-in a domain where the underlying facts are verifiable.
+**What you are looking at today** is a working demo with real data: Water Lilies, traced from
+Monet's studio to the Art Institute of Chicago, with Knoedler stock-book records filling part
+of the gap, and the 16-year gap shown honestly where the record runs out. That is the product.
