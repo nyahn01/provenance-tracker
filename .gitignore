@@ -5,6 +5,7 @@ out/
 .env
 .env.local
 *.log
+*.err
 .vercel
 
 # macOS

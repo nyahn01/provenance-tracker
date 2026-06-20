@@ -37,6 +37,32 @@ export default function RootLayout({
         }}
       >
         {children}
+        {/* Visible on marketing pages (their style tag sets body overflow:auto).
+            Clipped by body overflow-hidden on the full-screen globe — handled there separately. */}
+        <footer style={{
+          textAlign: 'center',
+          padding: '10px 16px',
+          fontFamily: 'var(--font-ui)',
+          fontSize: '0.65rem',
+          color: '#6b5f54',
+          background: '#0a0908',
+          borderTop: '1px solid #1e1a16',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 14,
+        }}>
+          <a
+            href="https://buymeacoffee.com/nyahn01"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#d4a853', textDecoration: 'none' }}
+          >
+            ☕ Buy me a coffee
+          </a>
+          <span style={{ color: '#2a2218' }}>·</span>
+          <span>© 2026 Nayoung Ahn · All rights reserved</span>
+        </footer>
       </body>
     </html>
   )
