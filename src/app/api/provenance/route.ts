@@ -26,9 +26,11 @@ import { fetchRijks } from '@/lib/rijksmuseum'
 import { searchGetty } from '@/lib/getty'
 import { searchRkd } from '@/lib/rkd'
 import { fetchEuropeana } from '@/lib/europeana'
+import { extractExhibitionHistoryLoans, extractProvenanceLoans, mergeLoans } from '@/lib/exhibition-loans'
 import type {
   ArtworkMeta,
   LocationEntry,
+  ExhibitionLoan,
   GapEntry,
   ProvenanceResponse,
 } from '@/lib/types'
@@ -314,52 +316,6 @@ function deterministicExtract(prose: string, sourceLabel: string): LocationEntry
   return out
 }
 
-// Loan-aware extraction for exhibition_history prose. Handles year ranges (YYYY–YYYY)
-// and populates endDate — deterministicExtract only sets startDate.
-function extractExhibitionLoans(prose: string, sourceLabel: string): LocationEntry[] {
-  if (!prose || prose.trim().length < 10) return []
-  const clauses = prose.split(/[;\n]+/).map(c => c.trim()).filter(Boolean)
-  const out: LocationEntry[] = []
-  const seen = new Set<string>()
-  const isHighTier = /\baic\b|art institute|met(?:ropolitan)?/i.test(sourceLabel)
-
-  for (const clause of clauses) {
-    const city = geocodeNamed(clause)
-    if (!city) continue
-
-    const rangeM = clause.match(/\b(1[5-9]\d{2}|20[0-2]\d)\s*[–\-]\s*(1[5-9]\d{2}|20[0-2]\d)\b/)
-    const allYears = clause.match(/\b(1[5-9]\d{2}|20[0-2]\d)\b/g)
-    const startYear = rangeM ? rangeM[1] : (allYears?.[0] ?? null)
-    const endYear   = rangeM ? rangeM[2] : (allYears && allYears.length > 1 ? allYears[allYears.length - 1] : null)
-
-    const key = `${city.name}:${startYear ?? ''}:${endYear ?? ''}`
-    if (seen.has(key)) continue
-    seen.add(key)
-
-    let institution: string | undefined
-    const firstSeg = clause.split(/,\s*/)[0].trim()
-    if (firstSeg.length > 4 && !/^\d{4}$/.test(firstSeg)) institution = firstSeg
-
-    const confidence: LocationEntry['confidence'] =
-      rangeM && isHighTier ? 'high'
-      : (startYear && isHighTier) ? 'medium'
-      : startYear ? 'medium'
-      : 'low'
-
-    out.push({
-      name: city.name,
-      institution: institution || undefined,
-      lat: city.lat,
-      lng: city.lng,
-      startDate: startYear,
-      endDate: endYear,
-      source: sourceLabel,
-      confidence,
-    })
-  }
-  return out
-}
-
 // ─── Route handler ───────────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
@@ -434,10 +390,23 @@ export async function GET(request: NextRequest) {
   // tier-A and avoids the wrong-entity matches Wikidata sometimes returns.
   if (ownership.length === 0) ownership = wikiLocs
 
-  // Exhibitions = loans. Loan-aware extraction handles year ranges and endDate.
-  const exhibitions = extractExhibitionLoans(exhibitionText, `${srcName} exhibition history`)
+  // Exhibitions = loans (typed ExhibitionLoan[]).
+  // Two sources merged:
+  //   1. Dedicated exhibition_history field (AIC tier-A) — no keyword required.
+  //   2. Provenance prose — scanned for "on loan to" / "loaned to" / "borrowed by" markers.
+  // A loan is never a change of custody; it is separate from the ownership chain.
+  const exhibitionHistoryLoans = extractExhibitionHistoryLoans(
+    exhibitionText,
+    `${srcName} exhibition history`,
+  )
+  const provenanceLoanMarkers = extractProvenanceLoans(
+    provenanceText,
+    `${srcName} provenance prose`,
+  )
+  const exhibitions: ExhibitionLoan[] = mergeLoans(exhibitionHistoryLoans, provenanceLoanMarkers)
 
-  const yr = (l: LocationEntry) => (l.startDate ? parseInt(l.startDate.slice(0, 4), 10) : Number.MAX_SAFE_INTEGER)
+  const yr = (l: { startDate: string | null }) =>
+    l.startDate ? parseInt(l.startDate.slice(0, 4), 10) : Number.MAX_SAFE_INTEGER
   const locations = ownership.sort((a, b) => yr(a) - yr(b))
   exhibitions.sort((a, b) => yr(a) - yr(b))
 
