@@ -1,0 +1,32 @@
+name: Feedback
+description: Share feedback, report a bug, suggest a feature, or flag a data correction.
+title: "[feedback] "
+labels: ["feedback"]
+body:
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - general
+        - bug
+        - data-correction
+        - feature
+        - ux
+    validations:
+      required: true
+  - type: textarea
+    id: message
+    attributes:
+      label: Your feedback
+      description: What's working, what's broken, what's missing, or a correction to the data.
+      placeholder: Be as specific as you can — link a work or page if relevant.
+    validations:
+      required: true
+  - type: input
+    id: contact
+    attributes:
+      label: Contact (optional)
+      description: Leave an email if you'd like a follow-up.
+    validations:
+      required: false

@@ -51,7 +51,8 @@ function getDiffFiles() {
     const base = execSync('git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main', { encoding: 'utf8' }).trim()
     const diff = execSync(`git diff --name-only ${base} HEAD`, { encoding: 'utf8' })
     return diff.trim().split('\n').filter(f =>
-      f && (f.endsWith('.ts') || f.endsWith('.tsx') || f.endsWith('.mjs') || f.endsWith('.json'))
+      f && !f.startsWith('feedback/') &&
+      (f.endsWith('.ts') || f.endsWith('.tsx') || f.endsWith('.mjs') || f.endsWith('.json'))
     )
   } catch {
     // Fallback: all staged files

@@ -173,8 +173,8 @@ export default function PricingPage() {
               >
                 ☕ Support on Buy Me a Coffee
               </a>
-              <a
-                href="mailto:ahn.ny01@gmail.com?subject=Provenance%20Tracker%20feedback"
+              <Link
+                href="/feedback"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -191,7 +191,7 @@ export default function PricingPage() {
                 }}
               >
                 ✉ Leave feedback
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -286,12 +286,12 @@ export default function PricingPage() {
                 support the work on Buy Me a Coffee
               </a>
               {' '}and{' '}
-              <a
-                href="mailto:ahn.ny01@gmail.com?subject=Provenance%20Tracker%20feedback"
+              <Link
+                href="/feedback"
                 style={{ color: C.textMuted, textDecoration: 'none', borderBottom: `1px solid ${C.border}` }}
               >
                 send feedback
-              </a>
+              </Link>
               .
             </p>
           </div>

@@ -18,6 +18,7 @@ npm run dev
 |----------|----------|--------|
 | `ANTHROPIC_API_KEY` | Optional | [console.anthropic.com](https://console.anthropic.com) — enables Claude prose extraction; deterministic fallback is active when absent |
 | `EUROPEANA_API_KEY` | Optional | [apis.europeana.eu/api/apikey](https://apis.europeana.eu/api/apikey) — free, instant; enables Europeana search across 50M+ objects |
+| `GITHUB_TOKEN` | Optional | Fine-grained PAT (Issues: Read & write) — powers the in-app feedback form; absent → form falls back to email |
 
 All sources except Anthropic and Europeana are keyless public APIs. The app runs fully without any keys (with deterministic provenance extraction and no Europeana results).
 
@@ -34,6 +35,20 @@ Every fact on screen carries visible source attribution. Sources are ranked by c
 | A | RKD Netherlands Art Institute | Dutch/Flemish specialist records |
 | B | Wikidata P276 | Structured location statements with P580/P582 dates |
 | B | Europeana | 50M+ European objects from 3,000+ institutions |
+
+## Feedback
+
+Visitors submit feedback through the in-app form at `/feedback`, which files a
+labeled GitHub issue via `/api/feedback` (no GitHub account needed; email fallback
+when the service is offline). The `feedback-triage` agent is then run on demand to
+review open `feedback`-labeled issues, write the useful ones to `feedback/` as
+structured files, and open a PR for review. See [feedback/README.md](feedback/README.md).
+
+One-time setup to enable the form:
+
+1. Create a fine-grained PAT scoped to this repo with **Issues: Read & write**; set it
+   as `GITHUB_TOKEN` locally and in the deployment env.
+2. Create the label once: `gh label create feedback --color FFDD00 --description "User feedback via in-app form"`.
 
 ## Honesty Rules
 
