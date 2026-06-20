@@ -135,6 +135,66 @@ export default function PricingPage() {
             </p>
           </div>
 
+          {/* Public beta banner */}
+          <div style={{
+            background: 'rgba(212,168,83,0.04)',
+            border: '1px solid rgba(212,168,83,0.18)',
+            borderRadius: 10,
+            padding: '24px 28px',
+            marginBottom: 48,
+          }}>
+            <div style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 12 }}>
+              Early Access · Public Beta
+            </div>
+            <p style={{ fontSize: '0.88rem', color: C.textMuted, lineHeight: 1.7, marginBottom: 20, maxWidth: 580 }}>
+              Provenance Tracker is being built in the open. Paid tiers are the roadmap —
+              they represent the research depth we&apos;re actively adding source by source.
+              For now the platform is entirely free. If it&apos;s useful, support the work or leave feedback below.
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <a
+                href="https://buymeacoffee.com/nyahn01"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '9px 18px',
+                  background: 'rgba(212,168,83,0.08)',
+                  border: '1px solid rgba(212,168,83,0.3)',
+                  borderRadius: 7,
+                  color: C.gold,
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  letterSpacing: '0.03em',
+                  textDecoration: 'none',
+                }}
+              >
+                ☕ Support on Buy Me a Coffee
+              </a>
+              <a
+                href="mailto:ahn.ny01@gmail.com?subject=Provenance%20Tracker%20feedback"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '9px 18px',
+                  background: 'transparent',
+                  border: `1px solid ${C.border}`,
+                  borderRadius: 7,
+                  color: C.textMuted,
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  letterSpacing: '0.03em',
+                  textDecoration: 'none',
+                }}
+              >
+                ✉ Leave feedback
+              </a>
+            </div>
+          </div>
+
           {/* Pricing cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, marginBottom: 56 }}>
             {TIERS.map(tier => (
@@ -214,6 +274,25 @@ export default function PricingPage() {
             <p style={{ fontSize: '0.75rem', color: C.textFaint, marginTop: 8, lineHeight: 1.6 }}>
               Pricing reflects the value of documented custody chains in legal restitution proceedings.
               Museum and law firm access is priced at institutional license rates.
+            </p>
+            <p style={{ fontSize: '0.75rem', color: C.textFaint, marginTop: 16, lineHeight: 1.6 }}>
+              In the meantime —{' '}
+              <a
+                href="https://buymeacoffee.com/nyahn01"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: C.gold, textDecoration: 'none', borderBottom: ' 1px solid rgba(212,168,83,0.3)' }}
+              >
+                support the work on Buy Me a Coffee
+              </a>
+              {' '}and{' '}
+              <a
+                href="mailto:ahn.ny01@gmail.com?subject=Provenance%20Tracker%20feedback"
+                style={{ color: C.textMuted, textDecoration: 'none', borderBottom: `1px solid ${C.border}` }}
+              >
+                send feedback
+              </a>
+              .
             </p>
           </div>
 

@@ -51,3 +51,49 @@ gap-aware, custody-vs-loan dataset compounds as we add works and sources.
 - All external + LLM calls server-side via API routes; keys in `process.env`, never client-side.
 - Per-IP rate limiting on our routes; cache aggressively (we proxy free APIs).
 - Public-domain image gating + attribution + a visible "Data & rights" note (legal).
+
+## 9. Monetization milestones — when to flip BMC → Stripe paid plans
+We start with Buy Me a Coffee (BMC), not Stripe billing, on purpose. BMC acts as merchant of
+record, so it handles EU VAT on donations automatically — no VAT registration is needed while we
+sit below the EU OSS threshold, and we carry zero compliance burden for collecting from across
+the EU. It is also zero engineering overhead, which is the right trade for an early-stage,
+credibility-first product where the dataset and trust are the assets, not the payment plumbing.
+The "a human is building this, support it if it's useful" signal also fits a museum / restitution
+audience that values honesty over a hard paywall. Critically, BMC is not a stopgap that gets torn
+out: when Stripe eventually activates, BMC stays on as a tip jar alongside paid tiers.
+
+Activating Stripe billing is a deliberate gate, not a default. **All** of the following must be
+true before we turn it on.
+
+### Data quality gate
+- ☐ Claude API funded and active — real extraction, not the deterministic fallback
+- ☐ At least 3 new Tier-1 data sources live: Smithsonian Open Access, National Gallery London, and an expanded GPI (Durand-Ruel / Wildenstein dealer archives)
+- ☐ AAMD Object Registry integrated, so WWII-era gap detection has real institutional backing
+
+### User validation gate
+- ☐ 10+ recurring monthly active users — unprompted return visits, not one-off referrals
+- ☐ At least 1 museum professional, art historian, or restitution lawyer has said, unprompted, "I would pay for this"
+- ☐ At least 1 documented, publicly-credited real-world provenance use case lives on the platform
+
+### Product completeness gate
+- ☐ JSON export working end-to-end for the Researcher-tier feature set
+- ☐ Public API route stable with basic documentation
+- ☐ At least 25 curated works in the collection (current: ~10)
+
+### Operational gate
+- ☐ Error monitoring in place (Sentry or equivalent)
+- ☐ Terms of service + privacy policy pages live at /legal
+- ☐ Stripe Tax configured for EU VAT compliance (digital services sold B2C across the EU)
+
+### Timeline
+Realistically 6–9 months at roughly 10h/week, and that estimate is contingent on the Claude API
+being funded. The deterministic fallback is functional and keeps the product demoable, but it
+limits the richness of the custody chains we can surface — which directly caps the data-quality
+gate above. No launch date is committed here; the gates, not the calendar, decide the flip.
+
+### Why the switch is also financial, not just a milestone
+Once at volume, Stripe is cheaper than BMC. BMC layers a ~5% platform fee on top of Stripe's
+underlying processing rates, whereas going direct on Stripe for European cards is about
+1.5% + €0.25 per transaction. Below scale the difference is rounding error and not worth the
+engineering, but once recurring volume justifies the build, the move pays for itself — so the
+gate is both a credibility checkpoint and an economic one.
