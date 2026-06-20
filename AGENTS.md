@@ -86,7 +86,10 @@ Anthropic key with credits.
 
 ## The build loop (one task at a time)
 
-1. **Plan** the next change (the approved plan lives in `.claude/plans/`).
+1. **Plan** the next change — write the approved plan to `.claude/plans/YYYY-MM-DD-<slug>.md`
+   (see `.claude/plans/README.md` for frontmatter format) **before** implementation starts.
+   The plan file is the shared contract; if implementation drifts, update the plan and
+   re-confirm with the human first.
 2. **Build** — route to the owning agent. One coherent change at a time.
 3. **Gate** — ship via `node scripts/ship.mjs --push --commit "<msg>"`. Red → fix → re-run.
    For anything touching claims/data, the honesty grep in `verify.mjs` must pass; for bigger
