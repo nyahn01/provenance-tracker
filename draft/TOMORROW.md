@@ -1,7 +1,7 @@
 # TOMORROW — Batch Priority Queue
 
 Agents pull from this queue. Completed features move to PROGRESS.md.
-**Last updated: 2026-06-19** — post-demo-polish, all batch items shipped.
+**Last updated: 2026-06-21** — #4 exhibition-loans + #7 pitches merged; #6 mobile still in progress.
 
 ---
 
@@ -50,20 +50,12 @@ If your task requires touching globe init: re-read this section and do ONLY what
 - **`/demo` scrollytelling** — 5-section animated origin story, arc legend, data-flow SVG
 - **`/demo/source`** — 12-section NotebookLM source doc with Q&A prep and key quotes
 - **Demo polish** — fact corrections, sourced claims, internal refs removed, PROGRESS.md updated
+- **Exhibition-loan extraction** — `src/lib/exhibition-loans.ts`, typed `ExhibitionLoan`, prose parser for Met + AIC (merged)
+- **Elevator pitches** — `draft/PITCH.md`, three versions 30s/2min/5min, 30s = 75 words (merged)
 
 ---
 
 ## Tier 2: Feature Expansion
-
-### 4. Museum exhibition-loan extraction from prose
-**Agent:** provenance-data
-**Why:** Exhibition history is locked in museum prose ("on loan to Louvre, 1992–1995"). Structured extraction adds a whole tier of data.
-**What:**
-- Parse `provenance` prose fields from Met/AIC for "on loan" / "loaned" / "borrowed" markers
-- Return typed `ExhibitionLoan` shape (reuse or extend `LocationEntry`)
-- Test with Starry Night @ MoMA
-**Done when:** query returns structured loans with dates; PR passes honesty check.
-**Blocks:** None.
 
 ### 5. Cache TTL tuning + invalidation route
 **Agent:** provenance-data
@@ -87,12 +79,6 @@ If your task requires touching globe init: re-read this section and do ONLY what
 ---
 
 ## Tier 3: Strategy & Narrative
-
-### 7. Elevator pitches (30s / 2min / 5min)
-**Agent:** provenance-story
-**Why:** Demo Q&A needs crisp answers for "what is this?" at different audience levels.
-**What:** Write three versions in `draft/PITCH.md`. Korean versions not needed here (DEMO_SCRIPT_KO.md already exists).
-**Done when:** Three pitches filed; 30s version is under 80 words.
 
 ---
 
