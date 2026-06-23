@@ -6,25 +6,12 @@
 
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { MARKETING as C } from '@/lib/design-tokens'
 
 export const metadata: Metadata = {
   title: 'Source Document — Provenance Tracker',
   description:
     'Structured source document for NotebookLM. 12 sections: project overview, origin story, data sources and engineering, agent team, business model, Jikji, honesty principles, Q&A prep, and key quotes.',
-}
-
-const C = {
-  bg:        '#0a0908',
-  surface:   '#111010',
-  surface2:  '#161413',
-  border:    '#2a2218',
-  borderMid: '#3a3028',
-  text:      '#f6f1e8',
-  textMuted: '#9a8f85',
-  textFaint: '#5a5248',
-  gold:      '#d4a853',
-  sage:      '#6f8d7d',
-  clay:      '#c87855',
 }
 
 interface ContentSection {

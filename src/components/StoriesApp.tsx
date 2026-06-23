@@ -4,19 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import type { SearchResult, ProvenanceResponse, LocationEntry, ExhibitionLoan, GettyRecord } from '@/lib/types'
 import type { RkdRecord } from '@/lib/rkd'
 import { FEATURED_WORKS, aicImage, type FeaturedWork } from '@/lib/featured'
-
-// ─── Design tokens ────────────────────────────────────────────────────────────
-const OBS = {
-  bg: '#0a0908', surface: '#131110', border: '#2a2218', borderMid: '#3d3228',
-  text: '#f6f1e8', textMuted: '#9a8f85', textFaint: '#5c5449',
-  clay: '#c87855', gold: '#d4a853', sage: '#6f8d7d',
-  globeOcean: '#060504', globeLand: '#7a5828', globeBorder: '#a87848',
-} as const
-const GAL = {
-  bg: '#f7f4ee', surface: '#ffffff', surface2: '#ede9e2', border: '#d8d2c8', borderMid: '#b8afa3',
-  text: '#1a1714', textMuted: '#6b6460', textFaint: '#9e9790',
-  clay: '#b06840', sage: '#4a7a6a', gold: '#a07830',
-} as const
+import { OBS, GAL } from '@/lib/design-tokens'
 
 // ─── City coordinate lookup (for Getty dealer city dots) ─────────────────────
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {

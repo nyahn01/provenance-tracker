@@ -8,20 +8,12 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import FeedbackForm from '@/components/FeedbackForm'
+import { MARKETING as C } from '@/lib/design-tokens'
 
 export const metadata: Metadata = {
   title: 'Feedback — Provenance Tracker',
   description:
     'Share feedback, report a bug, suggest a feature, or flag a data correction. Provenance Tracker is in public beta — your input shapes what gets built next.',
-}
-
-const C = {
-  bg: '#0a0908',
-  border: '#2a2218',
-  text: '#f6f1e8',
-  textMuted: '#9a8f85',
-  textFaint: '#5a5248',
-  gold: '#d4a853',
 }
 
 export default function FeedbackPage() {
