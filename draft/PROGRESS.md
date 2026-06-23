@@ -32,6 +32,16 @@ Batch agents move priorities here when merged.
 
 ---
 
+## Shipped to main (2026-06-22)
+
+### Globe & front end
+- **Mobile-responsive globe + sidebar** (was TOMORROW #6, PR #19) — globe height breakpoints (smaller on tablet/mobile); sidebar becomes a slide-in drawer with a hamburger toggle on narrow viewports. CSS/layout only — globe init (canvas-data-URL ocean, `showAtmosphere(false)`, zoom enabled) left untouched per the GLOBE CONTRACT.
+
+### In review (not yet on main)
+- **Cache TTL tuning + invalidation route** (TOMORROW #5, PR #20 — open, all checks green) — `/api/cache/invalidate?source=met|aic|wikidata|rkd`; TTL config Met/AIC 7d, Wikidata/RKD 1d; console hit/miss logging. Awaiting human merge.
+
+---
+
 ## Lessons learned
 
 - **Globe contract** — agents broke globe init twice (atmosphere + scene.traverse). Fix: canvas data URL + `showAtmosphere(false)`. Locked in TOMORROW.md with explicit prohibition list.

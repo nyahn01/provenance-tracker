@@ -1,7 +1,7 @@
 # TOMORROW — Batch Priority Queue
 
 Agents pull from this queue. Completed features move to PROGRESS.md.
-**Last updated: 2026-06-21** — #4 exhibition-loans + #7 pitches merged; #6 mobile still in progress.
+**Last updated: 2026-06-22** — #6 mobile-responsive merged (PR #19). #5 cache TTL built & green, awaiting human merge (PR #20). Parseable queue now empty — needs replenishment (see "Queue empty" note below).
 
 ---
 
@@ -52,33 +52,38 @@ If your task requires touching globe init: re-read this section and do ONLY what
 - **Demo polish** — fact corrections, sourced claims, internal refs removed, PROGRESS.md updated
 - **Exhibition-loan extraction** — `src/lib/exhibition-loans.ts`, typed `ExhibitionLoan`, prose parser for Met + AIC (merged)
 - **Elevator pitches** — `draft/PITCH.md`, three versions 30s/2min/5min, 30s = 75 words (merged)
+- **Mobile-responsive globe + sidebar** (was #6) — globe height breakpoints + slide-in sidebar drawer, CSS/layout only, globe init untouched (merged, PR #19)
+
+---
+
+## In review (PR open — awaiting human merge; do NOT re-queue)
+
+- **#5 Cache TTL tuning + invalidation route** (provenance-data) — `/api/cache/invalidate?source=…` route + TTL config (Met/AIC 7d, Wikidata/RKD 1d) + console hit/miss logging. Built on `feat/provenance-data/priority-5`, **PR #20 open**, honesty + build + Vercel checks all green. Human merges, then move to Completed above.
 
 ---
 
 ## Tier 2: Feature Expansion
 
-### 5. Cache TTL tuning + invalidation route
-**Agent:** provenance-data
-**Why:** Demo data must be fresh; no 429s during the recording.
-**What:**
-- Add `/api/cache/invalidate?source=met|aic|wikidata|rkd` route
-- TTL config: Met 7d, AIC 7d, Wikidata 1d, RKD 1d
-- Log cache hits/misses to console (not to UI)
-**Done when:** cache invalidation works; no rate-limit errors in 10 rapid queries.
-
-### 6. Mobile-responsive globe + sidebar
-**Agent:** provenance-globe
-**Why:** Globe is cramped on mobile; sidebar doesn't collapse.
-**What:**
-- Globe: 75% height on tablet, 50% on mobile (Tailwind breakpoints)
-- Sidebar → slide-in drawer on mobile (hamburger button)
-- Test on 390px viewport
-**Done when:** no layout breaks on mobile; animations smooth.
-**GLOBE CONTRACT:** Do not touch globe init. Only CSS/layout changes.
+_(empty — replenish)_
 
 ---
 
 ## Tier 3: Strategy & Narrative
+
+_(empty — replenish)_
+
+---
+
+## ⚠️ Queue empty — needs replenishment
+
+As of 2026-06-22 there are no un-started `### N.` priorities. The batch-agent-squad
+workflow only picks `### N.` headings, so it now correctly finds nothing to build.
+Before the next batch run does useful work, add new priorities under Tier 2/3 in the
+`### N. Title` + `**Agent:** <domain>` + `**Done when:** …` format. Candidates worth
+considering (NOT yet committed as priorities — human to confirm scope):
+- Restitution case-study deep-dive page (art-historian + provenance-data)
+- Per-IP rate limiting on API proxy routes (provenance-data) — noted in draft/CLAUDE.md as a coding rule, not yet verified implemented
+- Source-citation hover cards on timeline events (dataviz-engineer)
 
 ---
 
