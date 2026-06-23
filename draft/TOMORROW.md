@@ -1,7 +1,7 @@
 # TOMORROW — Batch Priority Queue
 
 Agents pull from this queue. Completed features move to PROGRESS.md.
-**Last updated: 2026-06-21** — #4 exhibition-loans + #7 pitches merged; #6 mobile still in progress.
+**Last updated: 2026-06-23** — #6 mobile merged (#19); #5 cache TTL built + verified on branch, awaiting human merge. Active Tier 2 queue is now empty — refill needed.
 
 ---
 
@@ -52,33 +52,30 @@ If your task requires touching globe init: re-read this section and do ONLY what
 - **Demo polish** — fact corrections, sourced claims, internal refs removed, PROGRESS.md updated
 - **Exhibition-loan extraction** — `src/lib/exhibition-loans.ts`, typed `ExhibitionLoan`, prose parser for Met + AIC (merged)
 - **Elevator pitches** — `draft/PITCH.md`, three versions 30s/2min/5min, 30s = 75 words (merged)
+- **Mobile-responsive globe + sidebar** (was #6) — merged as PR #19 (commit `a5a2a69`); globe height breakpoints + slide-in drawer sidebar
+
+---
+
+## 🔜 Built — awaiting human merge (do not re-queue)
+
+### 5. Cache TTL tuning + invalidation route — ✅ built + verified
+**Agent:** provenance-data
+**Branch:** `feat/provenance-data/priority-5` (commit `7994b88`, pushed to origin)
+**Status:** Built; `npm run build` + `tsc --noEmit` + `npm run honesty` all pass; honesty gate **APPROVED** 2026-06-23. **No PR opened** — gh CLI unavailable in this env. Human: merge the branch directly.
+**Delivered:** `/api/cache/invalidate?source=met|aic|wikidata|rkd`, `/api/cache` stats route, `CACHE_TTL` config (Met/AIC 7d, Wikidata/RKD 1d), console HIT/MISS/EXPIRED/SET/INVALIDATED logging.
+**Reviewer note (non-blocking):** `CACHE_KEY_PREFIXES` maps `search:` under both `met` and `aic`, but search keys hold mixed Met/AIC/Rijksmuseum/Europeana results — invalidating `met` or `aic` purges all search results (over-broad, harmless: just extra cache misses).
 
 ---
 
 ## Tier 2: Feature Expansion
 
-### 5. Cache TTL tuning + invalidation route
-**Agent:** provenance-data
-**Why:** Demo data must be fresh; no 429s during the recording.
-**What:**
-- Add `/api/cache/invalidate?source=met|aic|wikidata|rkd` route
-- TTL config: Met 7d, AIC 7d, Wikidata 1d, RKD 1d
-- Log cache hits/misses to console (not to UI)
-**Done when:** cache invalidation works; no rate-limit errors in 10 rapid queries.
-
-### 6. Mobile-responsive globe + sidebar
-**Agent:** provenance-globe
-**Why:** Globe is cramped on mobile; sidebar doesn't collapse.
-**What:**
-- Globe: 75% height on tablet, 50% on mobile (Tailwind breakpoints)
-- Sidebar → slide-in drawer on mobile (hamburger button)
-- Test on 390px viewport
-**Done when:** no layout breaks on mobile; animations smooth.
-**GLOBE CONTRACT:** Do not touch globe init. Only CSS/layout changes.
+_Empty — needs refill. Both prior Tier 2 items resolved: #6 merged (#19), #5 built + verified awaiting merge._
 
 ---
 
 ## Tier 3: Strategy & Narrative
+
+_Empty._
 
 ---
 
