@@ -2,7 +2,7 @@
 
 The hidden journeys of masterpieces — a curated provenance research tool that traces documented chains of custody for famous paintings using institutional records, art market data, and structured open data.
 
-**Live demo:** [provenance-tracker.vercel.app](https://provenance-tracker.vercel.app)
+**Live demo:** [provenance-tracker-tan.vercel.app](https://provenance-tracker-tan.vercel.app)
 
 ## Setup
 
