@@ -4,10 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { cacheGet, cacheSet } from '@/lib/cache'
+import { cacheGet, cacheSet, CACHE_TTL } from '@/lib/cache'
 import { searchRkd } from '@/lib/rkd'
-
-const RKD_TTL_MS = 30 * 60 * 1000 // 30 min
 
 export async function GET(request: NextRequest) {
   const artist = request.nextUrl.searchParams.get('artist') ?? ''
@@ -22,6 +20,6 @@ export async function GET(request: NextRequest) {
 
   const records = await searchRkd(artist, title, limit)
   const result = { records, source: 'RKD Netherlands Art Institute', count: records.length }
-  cacheSet(key, result, RKD_TTL_MS)
+  cacheSet(key, result, CACHE_TTL.rkd)
   return NextResponse.json(result)
 }

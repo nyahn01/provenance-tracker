@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -37,6 +38,45 @@ export default function RootLayout({
         }}
       >
         {children}
+        {/* Visible on marketing pages (their style tag sets body overflow:auto).
+            Clipped by body overflow-hidden on the full-screen globe — handled there separately. */}
+        <footer style={{
+          textAlign: 'center',
+          padding: '10px 16px',
+          fontFamily: 'var(--font-ui)',
+          fontSize: '0.65rem',
+          color: '#6b5f54',
+          background: '#0a0908',
+          borderTop: '1px solid #1e1a16',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 14,
+        }}>
+          <a
+            href="https://buymeacoffee.com/nyahn"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#d4a853', textDecoration: 'none' }}
+          >
+            ☕ Buy me a coffee
+          </a>
+          <span style={{ color: '#2a2218' }}>·</span>
+          <span>© 2026 Nayoung Ahn · All rights reserved</span>
+        </footer>
+        <Script
+          src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js"
+          data-name="bmc-button"
+          data-slug="nyahn"
+          data-color="#FFDD00"
+          data-emoji=""
+          data-font="Comic"
+          data-text="Buy me a coffee"
+          data-outline-color="#000000"
+          data-font-color="#000000"
+          data-coffee-color="#ffffff"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   )

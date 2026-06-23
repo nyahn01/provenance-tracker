@@ -29,6 +29,11 @@ without a human checking each one.
 | `provenance-story` | Demo script, pitch, hero-work selection, judging-criteria fit | opus |
 | `provenance-honesty-review` | BLOCKING credibility gate before any commit/record/pitch change | opus |
 
+**Operations**
+| Agent | Owns | Model |
+|---|---|---|
+| `feedback-triage` | Reviews open `feedback`-labeled GitHub issues (from the in-app form), writes valid ones to `feedback/`, opens a PR. On-demand. | sonnet |
+
 ## The ship gate — the one rule that makes agents trustworthy
 
 `node scripts/ship.mjs --commit "<conventional message>"`
@@ -43,6 +48,20 @@ greps) → commit only if all green.** Exit 1 = BLOCKED, nothing committed.
 - The contract lives in `src/lib/types.ts`. Agents import shapes from there and never
   invent a shape the other side doesn't implement. (This is what broke before:
   the globe called `?source=&id=` while the route read `?q=` and served fake data.)
+
+**The one sanctioned exception:** `feedback-triage` commits *docs-only* files under
+`feedback/` on a PR branch via plain `git` + `gh` — never `src/`, never config. The
+human-reviewed PR plus the `honesty-gate.yml` CI run give the same "main stays green"
+guarantee `ship.mjs` enforces for code. All product-code commits still go through `ship.mjs`.
+
+## Feedback triage (on-demand)
+
+Run when you want to process incoming feedback: invoke `feedback-triage`. It reads open
+GitHub issues labeled `feedback` (filed by visitors via the `/feedback` form → `/api/feedback`),
+judges each, writes the genuinely useful ones to `feedback/YYYY-MM-DD-<slug>.md`, and opens a
+single PR for you to review and merge. Spam/duplicates/out-of-scope are noted in the PR (not
+silently dropped) and their issues left open. Not scheduled — scheduled triage would need an
+Anthropic key with credits.
 
 ## Routing rules
 
@@ -67,7 +86,10 @@ greps) → commit only if all green.** Exit 1 = BLOCKED, nothing committed.
 
 ## The build loop (one task at a time)
 
-1. **Plan** the next change (the approved plan lives in `.claude/plans/`).
+1. **Plan** the next change — write the approved plan to `.claude/plans/YYYY-MM-DD-<slug>.md`
+   (see `.claude/plans/README.md` for frontmatter format) **before** implementation starts.
+   The plan file is the shared contract; if implementation drifts, update the plan and
+   re-confirm with the human first.
 2. **Build** — route to the owning agent. One coherent change at a time.
 3. **Gate** — ship via `node scripts/ship.mjs --push --commit "<msg>"`. Red → fix → re-run.
    For anything touching claims/data, the honesty grep in `verify.mjs` must pass; for bigger

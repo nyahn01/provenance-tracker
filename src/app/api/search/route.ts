@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cacheGet, cacheSet, checkRateLimit } from '@/lib/cache'
 import { searchRijks } from '@/lib/rijksmuseum'
+import { searchEuropeana } from '@/lib/europeana'
 import type { SearchResult, SearchResponse } from '@/lib/types'
 
 const SEARCH_TTL_MS = 5 * 60 * 1000 // 5 minutes
@@ -146,27 +147,31 @@ export async function GET(request: NextRequest) {
   const isMetQuery = ['met', 'metropolitan', 'metropolitanmuseum'].includes(qLower)
   const isAicQuery = ['aic', 'artinstituteofchicago', 'artinstitute', 'chicago'].includes(qLower)
 
-  const [metResult, aicResult, rijksResult] = await Promise.allSettled([
+  const [metResult, aicResult, rijksResult, europeanaResult] = await Promise.allSettled([
     isRijksQuery ? Promise.resolve([]) : searchMet(q),
     isRijksQuery ? Promise.resolve([]) : searchAic(q),
     // For Rijksmuseum name queries: browse without a specific title term
     isRijksQuery ? searchRijks('') : searchRijks(q),
+    searchEuropeana(q, 3),
   ])
 
   if (metResult.status === 'rejected') console.error('[search/met]', metResult.reason)
   if (aicResult.status === 'rejected') console.error('[search/aic]', aicResult.reason)
   if (rijksResult.status === 'rejected') console.error('[search/rijks]', rijksResult.reason)
+  if (europeanaResult.status === 'rejected') console.error('[search/europeana]', europeanaResult.reason)
 
   const results: SearchResult[] = [
     ...(metResult.status === 'fulfilled' ? metResult.value : []),
     ...(aicResult.status === 'fulfilled' ? aicResult.value : []),
     ...(rijksResult.status === 'fulfilled' ? rijksResult.value : []),
+    ...(europeanaResult.status === 'fulfilled' ? europeanaResult.value : []),
   ]
 
   const sources: string[] = []
   if (!isRijksQuery && metResult.status === 'fulfilled') sources.push('Metropolitan Museum of Art API')
   if (!isRijksQuery && aicResult.status === 'fulfilled') sources.push('Art Institute of Chicago API')
   if (rijksResult.status === 'fulfilled') sources.push('Rijksmuseum API')
+  if (europeanaResult.status === 'fulfilled' && (europeanaResult.value as SearchResult[]).length > 0) sources.push('Europeana API')
 
   const response: SearchResponse = { results, query: q, sources }
   cacheSet(cacheKey, response, SEARCH_TTL_MS)

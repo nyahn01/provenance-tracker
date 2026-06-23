@@ -146,8 +146,8 @@ export default function TeamPage() {
             </p>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
               {[
-                { stage: 'Stage 1 · Now', desc: 'Invoked per session in Claude Code', active: true },
-                { stage: 'Stage 2 · Max', desc: 'Background automation via Max — live now', active: true },
+                { stage: 'Stage 1 · Manual', desc: 'Agents invoked per session in Claude Code', active: true },
+                { stage: 'Stage 2 · Automated', desc: 'Background automation running on Max', active: true },
                 { stage: 'Stage 3 · Vision', desc: 'Fully event-driven, autonomous monitoring', active: false },
               ].map(s => (
                 <div key={s.stage} style={{ padding: '8px 14px', border: `1px solid ${s.active ? C.gold : C.border}`, borderRadius: 6, opacity: s.active ? 1 : 0.5 }}>
@@ -316,11 +316,22 @@ export default function TeamPage() {
           {/* Footer */}
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
             <div style={{ fontSize: '0.72rem', color: C.textFaint }}>
-              Built with Claude Sonnet &amp; Opus · Anthropic · 2025
+              Built with Claude Sonnet &amp; Opus · Anthropic · 2026
             </div>
-            <Link href="/" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-              Explore the journeys →
-            </Link>
+            <div style={{ display: 'flex', gap: 20 }}>
+              <Link href="/demo" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                Our story →
+              </Link>
+              <Link href="/pricing" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                Pricing →
+              </Link>
+              <Link href="/learn" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                Provenance glossary →
+              </Link>
+              <Link href="/" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                Explore journeys →
+              </Link>
+            </div>
           </div>
 
         </div>

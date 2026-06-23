@@ -1,52 +1,50 @@
-# PROGRESS — Completed Features & Lessons Learned
+# PROGRESS — Completed Features
 
-Batch agents move priorities here when merged. Each entry records: what shipped, what honesty-gate caught, process improvements.
-
----
-
-## Tier 1: Quick Wins (Completed)
-
-None yet. First batch run is [scheduled for tomorrow, 6am UTC].
+Batch agents move priorities here when merged.
 
 ---
 
-## Tier 2: Feature Expansion (In Progress)
+## Shipped to main (as of 2026-06-19)
 
-None yet.
+### Data layer
+- **Goupil & Cie seeding** — `scripts/seed-goupil.mjs`; 1,760 Goupil records merged with Knoedler to 4,388 total GPI dealer records. CC0. Honesty-gate: sourceLabel required on every record.
+- **RKD Netherlands Art Institute** — `src/lib/rkd.ts`; 4th parallel API fetch; teal badge in sidebar; collapsible section in story view.
+- **Confidence levels** — `LocationEntry.confidence: 'high' | 'medium' | 'low'`; ConfidenceDot component in timeline; high=green (AIC/Met direct), medium=amber (Wikidata P276), low=muted (inferred from prose).
 
----
+### Globe & front end
+- **Globe canvas fix** — ocean colour via 2×2 canvas `toDataURL()`; `showAtmosphere(false)`; zoom enabled. Replaced two prior broken attempts (scene.traverse caused z-fighting; atmosphere caused orange glow).
+- **3-tier arc system** — gold (custody 0.18 alt), sage (exhibition loan 0.30 alt), amber GPI dealer trail (0.12 alt); city dots per tier; auto-frame on artwork select.
+- **Sidebar unified timeline** — `buildUnifiedTimeline()` merges `locations` + `exhibitions` + `gettyRecords` into one `ProvenanceEvent[]`; EV_STYLES per event type; RKD collapsible.
+- **Sidebar empty-state** — "░ Provenance gap" styled card with `/learn#provenance-gap` link when `prov.locations.length < 2 || prov.hasGap`.
+- **Provenance Intelligence card** — deterministic insight generator (no Claude API needed); toggled by ✦ button; analyses custody depth, GPI records, gaps.
 
-## Tier 3: Design & UX (In Progress)
+### Pages
+- **`/learn`** — 6-section provenance glossary: what is provenance, custody vs loan, provenance gap (legal weight, Washington Principles), Getty GPI (Knoedler + Goupil), WWII era (1933–1945), Korean cultural heritage (Jikji).
+- **`/pricing`** — 3-tier cards (Explorer free / Researcher €99/mo / Institution €999/mo); "Coming soon" CTAs; nav links sitewide.
+- **`/team`** — 7 agent profiles, animated build pipeline SVG, ship gate callout, Stage 2 active.
+- **`/demo`** — 5-section scrollytelling (IntersectionObserver, no animation libraries); arc legend; data-flow SVG; corrected facts; sourced claims.
+- **`/demo/source`** — 12-section NotebookLM source doc (overview, origin, product, data sources + engineering layer, key numbers, agent team, business model, Jikji, honesty principles, tech stack, Q&A prep, key quotes).
 
-None yet.
-
----
-
-## Tier 4: Business & Strategy (In Progress)
-
-None yet.
-
----
-
-## Lessons Learned
-
-### Session 1: Initial Setup (2026-06-19)
-
-**What worked:**
-- Workflow framework is intuitive. Agents can read TOMORROW.md directly.
-- Honesty gate prevents over-claiming early.
-- Parallel agent spawning saves wall-clock time.
-
-**What didn't:**
-- (none yet)
-
-**Next time:**
-- (will update after first batch run)
+### Infrastructure
+- **Honesty gate CI** — `scripts/honesty-check.mjs` + `.github/workflows/honesty-gate.yml`; blocks commits with uncredited claims or custody/loan conflation.
+- **Obsidian research vault** — `vault/` with 13 notes; agent writing instructions.
+- **Pricing research memo** — `draft/RESEARCH_MEMO.md`; restitution-first positioning; 3-tier rationale.
 
 ---
 
-## See Also
+## Shipped to main (2026-06-22)
 
-- draft/TOMORROW.md — priority queue (what agents work on)
-- draft/CLAUDE.md — project vision & honesty rules
-- .claude/workflows/batch-agent-squad.mjs — the scheduled workflow script
+### Globe & front end
+- **Mobile-responsive globe + sidebar** (was TOMORROW #6, PR #19) — globe height breakpoints (smaller on tablet/mobile); sidebar becomes a slide-in drawer with a hamburger toggle on narrow viewports. CSS/layout only — globe init (canvas-data-URL ocean, `showAtmosphere(false)`, zoom enabled) left untouched per the GLOBE CONTRACT.
+
+### In review (not yet on main)
+- **Cache TTL tuning + invalidation route** (TOMORROW #5, PR #20 — open, all checks green) — `/api/cache/invalidate?source=met|aic|wikidata|rkd`; TTL config Met/AIC 7d, Wikidata/RKD 1d; console hit/miss logging. Awaiting human merge.
+
+---
+
+## Lessons learned
+
+- **Globe contract** — agents broke globe init twice (atmosphere + scene.traverse). Fix: canvas data URL + `showAtmosphere(false)`. Locked in TOMORROW.md with explicit prohibition list.
+- **Batch agent regressions** — provenance-globe agent stripped unified timeline on one run. Prevention: explicit GLOBE_CONTRACT in batch workflow prompt; full feature branch kept as reference.
+- **Honesty gate value** — gate caught custody/loan conflations in 2 of 3 batch runs before they reached main.
+- **NotebookLM source format** — structured prose with numbered sections and clear headings ingests better than bullet-only content.

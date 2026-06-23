@@ -2,9 +2,11 @@
 node_modules/
 .next/
 out/
+*.tsbuildinfo
 .env
 .env.local
 *.log
+*.err
 .vercel
 
 # macOS
@@ -17,3 +19,6 @@ out/
 # IDE
 .vscode/
 .idea/
+
+# Local research / consult notes (per-machine, not part of the product)
+*_consult.txt
