@@ -20,7 +20,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { cacheGet, cacheSet, checkRateLimit } from '@/lib/cache'
+import { cacheGet, cacheSet, checkRateLimit, CACHE_TTL } from '@/lib/cache'
 import { geocode, geocodeNamed } from '@/lib/geocode'
 import { fetchRijks } from '@/lib/rijksmuseum'
 import { searchGetty } from '@/lib/getty'
@@ -35,7 +35,7 @@ import type {
   ProvenanceResponse,
 } from '@/lib/types'
 
-const PROVENANCE_TTL_MS = 10 * 60 * 1000
+// TTL is source-dependent: Met/AIC = 7d, Wikidata = 1d (resolved at request time via CACHE_TTL)
 
 // ─── Museum detail fetchers ──────────────────────────────────────────────────
 
@@ -437,6 +437,8 @@ export async function GET(request: NextRequest) {
     gettyRecords: gettyRecords.length > 0 ? gettyRecords : undefined,
     rkdRecords: rkdRecords.length > 0 ? rkdRecords : undefined,
   }
-  cacheSet(cacheKey, response, PROVENANCE_TTL_MS)
+  // Use source-specific TTL: Met/AIC = 7d, Rijksmuseum/Europeana fall back to AIC TTL
+  const ttl = source === 'met' ? CACHE_TTL.met : CACHE_TTL.aic
+  cacheSet(cacheKey, response, ttl)
   return NextResponse.json(response)
 }
