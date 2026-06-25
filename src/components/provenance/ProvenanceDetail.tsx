@@ -484,6 +484,9 @@ export function ProvenanceDetail({
             <div style={{ padding: '26px 24px 40px', marginTop: 8, borderTop: `1px solid ${GAL.border}`, fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textFaint, lineHeight: 1.6 }}>
               <div>Sources: {sources.length ? sources.join(' · ') : 'Met · AIC · Rijksmuseum · Wikidata'}</div>
               {credit && <div style={{ marginTop: 4 }}>Image: {credit}</div>}
+              <a href="/feedback" style={{ display: 'inline-block', marginTop: 10, color: GAL.clay, textDecoration: 'none', borderBottom: `1px solid ${GAL.border}` }}>
+                Spot an error? Help correct the record →
+              </a>
             </div>
           </>
         )}
