@@ -6,27 +6,15 @@
 
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { MARKETING } from '@/lib/design-tokens'
 
 export const metadata: Metadata = {
   title: 'How it\'s built — Provenance Tracker',
   description: '7 specialized AI agent profiles, a blocking honesty gate, and an automated ship gate. Invoked per session today, autonomous tomorrow.',
 }
 
-// OBS palette
-const C = {
-  bg: '#0a0908',
-  surface: '#111010',
-  surface2: '#161413',
-  border: '#2a2218',
-  borderMid: '#3a3028',
-  text: '#f6f1e8',
-  textMuted: '#9a8f85',
-  textFaint: '#5a5248',
-  gold: '#d4a853',
-  sage: '#4a7a6a',
-  clay: '#c87855',
-  purple: '#9b7fe0',
-}
+// OBS palette — marketing base with /team's sage override (#4a7a6a, drift preserved)
+const C = { ...MARKETING, sage: '#4a7a6a' }
 
 interface Agent {
   name: string

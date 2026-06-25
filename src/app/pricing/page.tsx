@@ -6,26 +6,12 @@
 
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { MARKETING as C } from '@/lib/design-tokens'
 
 export const metadata: Metadata = {
   title: 'Pricing — Provenance Tracker',
   description:
     'Three-tier access to provenance research: Explorer (free), Researcher (€99/mo), and Institution (€999/mo) for museums, auction houses, and restitution law firms.',
-}
-
-// Design tokens — exact values from draft/CLAUDE.md
-const C = {
-  bg: '#0a0908',
-  surface: '#111010',
-  surface2: '#161413',
-  border: '#2a2218',
-  borderMid: '#3a3028',
-  text: '#f6f1e8',
-  textMuted: '#9a8f85',
-  textFaint: '#5a5248',
-  gold: '#d4a853',
-  sage: '#6f8d7d',
-  clay: '#c87855',
 }
 
 interface Tier {

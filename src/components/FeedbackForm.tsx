@@ -9,19 +9,7 @@
  */
 
 import { useState } from 'react'
-
-const C = {
-  bg: '#0a0908',
-  surface: '#111010',
-  border: '#2a2218',
-  borderMid: '#3a3028',
-  text: '#f6f1e8',
-  textMuted: '#9a8f85',
-  textFaint: '#5a5248',
-  gold: '#d4a853',
-  sage: '#6f8d7d',
-  clay: '#c87855',
-}
+import { MARKETING as C } from '@/lib/design-tokens'
 
 const EMAIL = 'ahn.ny01@gmail.com'
 const MAILTO = `mailto:${EMAIL}?subject=Provenance%20Tracker%20feedback`
