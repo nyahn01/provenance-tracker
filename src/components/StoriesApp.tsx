@@ -169,7 +169,7 @@ export default function StoriesApp() {
               </div>
               <div style={{ display: 'flex', gap: 8, maxWidth: 520, flexWrap: 'wrap' }}>
                 <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && runSearch(query)}
-                  placeholder="Search the Met · Art Institute · Rijksmuseum"
+                  placeholder="Search any artist or work — Klimt, Vermeer, Water Lilies…"
                   style={{ flex: 1, minWidth: 240, background: OBS.surface, border: `1px solid ${OBS.border}`, borderRadius: 8, padding: '10px 14px', color: OBS.text, fontFamily: 'var(--font-ui)', fontSize: '0.875rem', outline: 'none' }} />
                 <button onClick={() => runSearch(query)}
                   style={{ background: OBS.clay, color: OBS.bg, border: 'none', borderRadius: 8, padding: '10px 18px', fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>Search</button>
@@ -178,8 +178,8 @@ export default function StoriesApp() {
               {searching && <div style={{ color: OBS.textMuted, fontFamily: 'var(--font-ui)', fontSize: '0.85rem', marginTop: 16 }}>Searching…</div>}
               {searched && !searching && results.length === 0 && (
                 <div style={{ color: OBS.textMuted, fontFamily: 'var(--font-ui)', fontSize: '0.85rem', marginTop: 16, lineHeight: 1.5, maxWidth: 520 }}>
-                  Nothing in our sources for &quot;{query}&quot;. This demo focuses on a curated set —
-                  search covers works held by the Met, Art Institute, Rijksmuseum, and Europeana (requires API key).
+                  Nothing found for &quot;{query}&quot;. Search spans the Met, Art Institute of Chicago,
+                  Rijksmuseum, Europeana, and Wikidata — try an artist (e.g. Klimt, Vermeer) or a work title.
                 </div>
               )}
               {results.length > 0 && (

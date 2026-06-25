@@ -202,6 +202,43 @@ SELECT ?locationLabel ?startDate ?endDate ?coord WHERE {
   })
 }
 
+// Fetch artwork metadata for a Wikidata-sourced result (id is a bare Q-id).
+// Wikidata carries no provenance prose, so the custody chain comes from the
+// existing P276 fallback in the main pipeline (fetchWikidataLocations).
+async function fetchWikidata(id: string): Promise<Detail> {
+  const query = `
+SELECT ?itemLabel ?creatorLabel ?image ?date WHERE {
+  BIND(wd:${id} AS ?item)
+  OPTIONAL { ?item wdt:P18 ?image }
+  OPTIONAL { ?item wdt:P170 ?creator }
+  OPTIONAL { ?item wdt:P571 ?d . BIND(YEAR(?d) AS ?date) }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+} LIMIT 1`
+  const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`
+  const res = await fetch(url, {
+    headers: { Accept: 'application/sparql-results+json', 'User-Agent': WD_UA },
+    next: { revalidate: 0 },
+  })
+  if (!res.ok) throw new Error(`Wikidata HTTP ${res.status}`)
+  const json = (await res.json()) as { results: { bindings: Array<Record<string, { value: string }>> } }
+  const b = json.results.bindings[0]
+  if (!b) throw new Error(`Wikidata entity ${id} not found`)
+  const image = b.image?.value
+  return {
+    meta: {
+      id: `wikidata-${id}`,
+      source: 'wikidata',
+      title: b.itemLabel?.value || 'Untitled',
+      artist: b.creatorLabel?.value || 'Unknown artist',
+      date: b.date?.value ? String(b.date.value) : '',
+      thumbnail: image ? `${image}?width=400` : null,
+      geoLocation: null,
+    },
+    provenance: '',
+    exhibitions: '',
+  }
+}
+
 // ─── Claude prose extraction (tier A — the real journeys) ─────────────────────
 // Turn scholarly provenance/exhibition prose into dated, structured locations.
 // Claude is instructed to EXTRACT ONLY what the text states — never to invent.
@@ -333,9 +370,9 @@ export async function GET(request: NextRequest) {
   const source = request.nextUrl.searchParams.get('source')
   const id = request.nextUrl.searchParams.get('id')
 
-  if (source !== 'met' && source !== 'aic' && source !== 'rijks' && source !== 'europeana') {
+  if (source !== 'met' && source !== 'aic' && source !== 'rijks' && source !== 'europeana' && source !== 'wikidata') {
     return NextResponse.json(
-      { error: 'Query param "source" must be "met", "aic", "rijks", or "europeana"' },
+      { error: 'Query param "source" must be "met", "aic", "rijks", "europeana", or "wikidata"' },
       { status: 400 },
     )
   }
@@ -356,6 +393,7 @@ export async function GET(request: NextRequest) {
       source === 'met' ? await fetchMet(id)
       : source === 'rijks' ? await fetchRijks(id)
       : source === 'europeana' ? { ...await fetchEuropeana(id), exhibitions: '' }
+      : source === 'wikidata' ? await fetchWikidata(id)
       : await fetchAic(id)
     meta = detail.meta
     provenanceText = detail.provenance
@@ -371,7 +409,7 @@ export async function GET(request: NextRequest) {
   // 2. CUSTODY chain (the journey) from provenance_text — Claude, else deterministic,
   //    else Wikidata P276. Exhibitions are handled separately so a LOAN is never shown
   //    as a change of custody. This is the precision fix.
-  const srcName = source === 'met' ? 'Met' : source === 'rijks' ? 'Rijksmuseum' : source === 'europeana' ? 'Europeana' : 'AIC'
+  const srcName = source === 'met' ? 'Met' : source === 'rijks' ? 'Rijksmuseum' : source === 'europeana' ? 'Europeana' : source === 'wikidata' ? 'Wikidata' : 'AIC'
   const provLabel = `${srcName} provenance`
   let [ownership, wikiLocs, gettyRecords, rkdRecords] = await Promise.all([
     extractOwnershipLocations(meta.title, meta.artist, provenanceText, provLabel).catch(err => {
