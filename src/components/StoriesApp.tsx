@@ -1,305 +1,28 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
-import type { SearchResult, ProvenanceResponse, LocationEntry, ExhibitionLoan, GettyRecord } from '@/lib/types'
+import { useEffect, useState, useCallback } from 'react'
+import type { SearchResult, ProvenanceResponse } from '@/lib/types'
 import type { RkdRecord } from '@/lib/rkd'
 import { FEATURED_WORKS, aicImage, type FeaturedWork } from '@/lib/featured'
 import { OBS, GAL } from '@/lib/design-tokens'
-
-// ─── City coordinate lookup (for Getty dealer city dots) ─────────────────────
-const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
-  'paris': { lat: 48.8566, lng: 2.3522 }, 'london': { lat: 51.5074, lng: -0.1278 },
-  'new york': { lat: 40.7128, lng: -74.006 }, 'chicago': { lat: 41.8781, lng: -87.6298 },
-  'amsterdam': { lat: 52.3676, lng: 4.9041 }, 'brussels': { lat: 50.8503, lng: 4.3517 },
-  'berlin': { lat: 52.52, lng: 13.405 }, 'boston': { lat: 42.3601, lng: -71.0589 },
-  'philadelphia': { lat: 39.9526, lng: -75.1652 }, 'washington': { lat: 38.9072, lng: -77.0369 },
-  'san francisco': { lat: 37.7749, lng: -122.4194 }, 'los angeles': { lat: 34.0522, lng: -118.2437 },
-  'vienna': { lat: 48.2082, lng: 16.3738 }, 'zurich': { lat: 47.3769, lng: 8.5417 },
-  'geneva': { lat: 46.2044, lng: 6.1432 }, 'munich': { lat: 48.1351, lng: 11.582 },
-  'hamburg': { lat: 53.5511, lng: 9.9937 }, 'rome': { lat: 41.9028, lng: 12.4964 },
-  'florence': { lat: 43.7696, lng: 11.2558 }, 'madrid': { lat: 40.4168, lng: -3.7038 },
-  'st. petersburg': { lat: 59.9311, lng: 30.3609 }, 'moscow': { lat: 55.7558, lng: 37.6173 },
-  'pittsburgh': { lat: 40.4406, lng: -79.9959 }, 'minneapolis': { lat: 44.9778, lng: -93.265 },
-  'detroit': { lat: 42.3314, lng: -83.0458 }, 'cleveland': { lat: 41.4993, lng: -81.6944 },
-  'toronto': { lat: 43.6532, lng: -79.3832 }, 'montreal': { lat: 45.5017, lng: -73.5673 },
-  'tokyo': { lat: 35.6762, lng: 139.6503 }, 'seoul': { lat: 37.5665, lng: 126.978 },
-}
-function cityCoords(locationStr: string | null): { lat: number; lng: number } | null {
-  if (!locationStr) return null
-  const key = locationStr.toLowerCase().split(',')[0].trim()
-  return CITY_COORDS[key] ?? null
-}
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-interface GlobeArc { startLat: number; startLng: number; endLat: number; endLng: number; color: string; altitude: number; label: string }
-function buildArcs(locations: LocationEntry[], color: string, altitude: number): GlobeArc[] {
-  const arcs: GlobeArc[] = []
-  for (let i = 0; i < locations.length - 1; i++) {
-    const a = locations[i], b = locations[i + 1]
-    if (a.lat == null || a.lng == null || b.lat == null || b.lng == null) continue
-    if (a.lat === b.lat && a.lng === b.lng) continue
-    arcs.push({ startLat: a.lat, startLng: a.lng, endLat: b.lat, endLng: b.lng, color, altitude, label: `${a.name} → ${b.name}` })
-  }
-  return arcs
-}
-
-// Dealer arcs: seller → buyer within each GPI record (lower altitude, dimmer, smaller stroke)
-const AMBER_ARC = 'rgba(180,130,60,0.55)'
-const AMBER_DOT = 'rgba(180,130,60,0.70)'
-function buildDealerArcs(records: GettyRecord[]): GlobeArc[] {
-  const arcs: GlobeArc[] = []
-  const seen = new Set<string>()
-  for (const r of records) {
-    const seller = cityCoords(r.sellerLocation)
-    const buyer = cityCoords(r.buyerLocation)
-    if (!seller || !buyer) continue
-    if (seller.lat === buyer.lat && seller.lng === buyer.lng) continue
-    const key = `${seller.lat},${seller.lng}|${buyer.lat},${buyer.lng}`
-    if (seen.has(key)) continue
-    seen.add(key)
-    const sellerCity = (r.sellerLocation ?? '').split(',')[0].trim()
-    const buyerCity = (r.buyerLocation ?? '').split(',')[0].trim()
-    arcs.push({
-      startLat: seller.lat, startLng: seller.lng,
-      endLat: buyer.lat, endLng: buyer.lng,
-      color: AMBER_ARC, altitude: 0.12,
-      label: `Dealer: ${sellerCity} → ${buyerCity}${r.saleDate ? ` (${r.saleDate.slice(0, 4)})` : ''}`,
-    })
-  }
-  return arcs
-}
-function tierLabel(source: string): string {
-  const s = source.toLowerCase()
-  if (s.includes('met') || s.includes('metropolitan')) return 'MET'
-  if (s.includes('aic') || s.includes('art institute')) return 'AIC'
-  if (s.includes('rijks')) return 'RIJKS'
-  if (s.includes('wikidata')) return 'Wikidata'
-  if (s.includes('rkd')) return 'RKD'
-  if (s.includes('getty') || s.includes('knoedler') || s.includes('gpi') || s.includes('goupil')) return 'GPI'
-  if (s.includes('europeana')) return 'EUR'
-  return source.toUpperCase().slice(0, 12)
-}
-function SourceBadge({ source }: { source: string }) {
-  const label = tierLabel(source)
-  const isGPI = label === 'GPI'
-  const isRKD = label === 'RKD'
-  return (
-    <span style={{
-      background: isGPI ? 'rgba(124,92,191,0.12)' : isRKD ? 'rgba(74,122,106,0.12)' : 'rgba(160,120,48,0.10)',
-      color: isGPI ? '#9b7fe0' : isRKD ? GAL.sage : GAL.gold,
-      border: isGPI ? '1px solid rgba(124,92,191,0.30)' : isRKD ? '1px solid rgba(74,122,106,0.28)' : '1px solid rgba(160,120,48,0.25)',
-      borderRadius: 4, padding: '2px 7px', fontSize: '0.625rem', fontFamily: 'var(--font-ui)',
-      fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
-    }}>{label}</span>
-  )
-}
-
-const CONFIDENCE_DOT: Record<'high' | 'medium' | 'low', { color: string; label: string }> = {
-  high:   { color: 'rgba(100,180,100,0.8)', label: 'High confidence' },
-  medium: { color: 'rgba(200,160,60,0.8)',  label: 'Medium confidence' },
-  low:    { color: 'rgba(154,143,133,0.5)', label: 'Low confidence' },
-}
-
-function ConfidenceDot({ confidence }: { confidence: 'high' | 'medium' | 'low' }) {
-  const { color, label } = CONFIDENCE_DOT[confidence]
-  return (
-    <span
-      title={label}
-      aria-label={label}
-      style={{
-        display: 'inline-block',
-        width: 7,
-        height: 7,
-        borderRadius: '50%',
-        background: color,
-        flexShrink: 0,
-        cursor: 'default',
-      }}
-    />
-  )
-}
-
-// Inline price sparkline from Getty GPI records — shows when ≥2 records have parseable prices.
-function PriceSparkline({ records }: { records: GettyRecord[] }) {
-  type Pt = { yr: number; p: number }
-  const pts: Pt[] = records.flatMap(r => {
-    const yr = parseInt((r.saleDate ?? r.entryDate ?? '').slice(0, 4), 10)
-    const raw = r.salePrice ?? r.purchasePrice
-    const p = raw ? parseFloat(raw.replace(/[^0-9.]/g, '')) : NaN
-    return (yr > 1800 && !isNaN(p) && p > 0) ? [{ yr, p }] : []
-  }).sort((a, b) => a.yr - b.yr)
-  if (pts.length < 2) return null
-  const W = 140, H = 36, PAD = 4
-  const xMin = pts[0].yr, xMax = pts[pts.length - 1].yr
-  const pMin = Math.min(...pts.map(p => p.p)), pMax = Math.max(...pts.map(p => p.p))
-  const px = (yr: number) => PAD + ((yr - xMin) / Math.max(1, xMax - xMin)) * (W - PAD * 2)
-  const py = (p: number) => PAD + (1 - (p - pMin) / Math.max(1, pMax - pMin)) * (H - PAD * 2)
-  const polyPoints = pts.map(p => `${px(p.yr).toFixed(1)},${py(p.p).toFixed(1)}`).join(' ')
-  return (
-    <div style={{ marginTop: 6, marginBottom: 10 }}>
-      <svg width={W} height={H} style={{ display: 'block', overflow: 'visible' }}>
-        <polyline points={polyPoints} fill="none" stroke={GAL.clay} strokeWidth={1.5} strokeLinejoin="round" />
-        {pts.map((p, i) => (
-          <circle key={i} cx={px(p.yr)} cy={py(p.p)} r={2.5} fill={GAL.clay} />
-        ))}
-      </svg>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: GAL.textFaint, width: W }}>
-        <span>{xMin}</span>
-        <span>GPI price trajectory</span>
-        <span>{xMax}</span>
-      </div>
-    </div>
-  )
-}
-
-// ─── Unified timeline ─────────────────────────────────────────────────────────
-interface ProvenanceEvent {
-  year: string
-  sortKey: number
-  type: 'dealer' | 'custody' | 'gift' | 'acquisition' | 'exhibition' | 'gap'
-  who: string
-  where?: string
-  detail?: string
-  price?: string
-  source: string
-  sourceUrl?: string
-  /** Confidence level for this event, derived from the originating data source. */
-  confidence: 'high' | 'medium' | 'low'
-}
-
-function extractYear(date?: string): number {
-  if (!date) return 9999
-  const m = date.match(/\d{4}/)
-  return m ? parseInt(m[0]) : 9999
-}
-
-function fmtYear(date?: string): string {
-  if (!date) return '?'
-  const m = date.match(/(\d{4})/)
-  return m ? m[1] : date.slice(0, 10)
-}
-
-// Check if any gap in the custody chain overlaps the WWII risk period (1933–1945).
-// Returns the full gap window (not clamped to the period) for accurate reporting.
-function detectWWIIGap(locations: LocationEntry[]): { gapStart: number; gapEnd: number } | null {
-  if (locations.length < 2) return null
-  const dated = locations
-    .map(l => ({ yr: l.startDate ? parseInt(l.startDate.slice(0, 4), 10) : NaN }))
-    .filter(l => !isNaN(l.yr))
-    .sort((a, b) => a.yr - b.yr)
-  for (let i = 0; i < dated.length - 1; i++) {
-    const gapStart = dated[i].yr, gapEnd = dated[i + 1].yr
-    if (gapEnd - gapStart > 1 && gapStart < 1945 && gapEnd > 1933) return { gapStart, gapEnd }
-  }
-  return null
-}
-
-/**
- * Map a source label to a confidence tier.
- *
- * high:   AIC/Met direct museum records with explicit dates, or Getty GPI records
- *         that carry an explicit date + price (the richest structured evidence we have).
- * medium: Wikidata P276 — location is known but dates are often approximate or absent.
- * low:    prose extracted without explicit dates (deterministic fallback path) or any
- *         other source we can't score higher.
- */
-function sourceConfidence(source: string, hasExplicitDate: boolean): ProvenanceEvent['confidence'] {
-  const s = source.toLowerCase()
-  if (s === 'gpi') return hasExplicitDate ? 'high' : 'medium'
-  if (s.includes('aic') || s.includes('art institute') || s.includes('met') || s.includes('metropolitan') || s.includes('rijks')) {
-    return hasExplicitDate ? 'high' : 'low'
-  }
-  if (s.includes('wikidata')) return 'medium'
-  return 'low'
-}
-
-function buildUnifiedTimeline(
-  locations: LocationEntry[],
-  exhibitions: ExhibitionLoan[],
-  gettyRecords: GettyRecord[],
-): ProvenanceEvent[] {
-  const events: ProvenanceEvent[] = []
-
-  for (const loc of locations) {
-    const nameL = loc.name.toLowerCase()
-    const instL = (loc.institution ?? '').toLowerCase()
-    const combined = nameL + ' ' + instL
-    const type: ProvenanceEvent['type'] =
-      (combined.includes('bequest') || combined.includes('gift') || combined.includes('donat')) ? 'gift'
-      : (combined.includes('museum') || combined.includes('institute') || combined.includes('gallery') || combined.includes('acqui')) ? 'acquisition'
-      : 'custody'
-    const label = tierLabel(loc.source)
-    events.push({
-      year: fmtYear(loc.startDate ?? undefined),
-      sortKey: extractYear(loc.startDate ?? undefined),
-      type,
-      who: (loc.institution && loc.institution !== loc.name) ? loc.institution : loc.name,
-      where: (loc.institution && loc.institution !== loc.name) ? loc.name : undefined,
-      source: label,
-      confidence: loc.confidence ?? sourceConfidence(label, loc.startDate != null),
-    })
-  }
-
-  for (const ex of exhibitions.slice(0, 4)) {
-    const label = tierLabel(ex.source)
-    events.push({
-      year: fmtYear(ex.startDate ?? undefined),
-      sortKey: extractYear(ex.startDate ?? undefined),
-      type: 'exhibition',
-      who: (ex.institution && ex.institution !== ex.name) ? ex.institution : ex.name,
-      where: (ex.institution && ex.institution !== ex.name) ? ex.name : undefined,
-      detail: 'Exhibition loan — not a custody change',
-      source: label,
-      confidence: ex.confidence ?? sourceConfidence(label, ex.startDate != null),
-    })
-  }
-
-  for (const rec of gettyRecords.slice(0, 4)) {
-    const dateStr = rec.saleDate ?? rec.entryDate ?? undefined
-    const seller = rec.seller ?? ''
-    const buyer = rec.buyer ?? ''
-    const via = [seller, buyer].filter(Boolean).join(' → ')
-    const price = [rec.purchasePrice, rec.salePrice].filter(Boolean).join(' / ') || undefined
-    const hasDate = dateStr != null
-    const hasPrice = !!(rec.purchasePrice || rec.salePrice)
-    events.push({
-      year: fmtYear(dateStr),
-      sortKey: extractYear(dateStr),
-      type: 'dealer',
-      who: buyer || seller || 'Knoedler & Co.',
-      where: rec.buyerLocation ?? undefined,
-      detail: via || undefined,
-      price,
-      source: 'GPI',
-      sourceUrl: rec.sourceUrl ?? undefined,
-      confidence: hasDate && hasPrice ? 'high' : hasDate ? 'medium' : 'low',
-    })
-  }
-
-  events.sort((a, b) => a.sortKey - b.sortKey)
-  return events
-}
-
-// ─── Event row style helpers ──────────────────────────────────────────────────
-const EV_STYLES: Record<ProvenanceEvent['type'], { icon: string; color: string; bg: string; border: string }> = {
-  dealer:      { icon: '→', color: '#7c5cbf', bg: 'rgba(124,92,191,0.07)', border: 'rgba(124,92,191,0.25)' },
-  custody:     { icon: '⌂', color: '#a07830', bg: 'rgba(160,120,48,0.06)', border: 'rgba(160,120,48,0.22)' },
-  gift:        { icon: '♥', color: '#a07830', bg: 'rgba(160,120,48,0.06)', border: 'rgba(160,120,48,0.22)' },
-  acquisition: { icon: '⌂', color: '#4a7a6a', bg: 'rgba(74,122,106,0.07)', border: 'rgba(74,122,106,0.22)' },
-  exhibition:  { icon: '↻', color: '#4a7a6a', bg: 'rgba(74,122,106,0.04)', border: 'rgba(74,122,106,0.14)' },
-  gap:         { icon: '░', color: '#9a8f85', bg: 'transparent',            border: 'rgba(154,143,133,0.20)' },
-}
+import { GlobeContainer } from './provenance/GlobeContainer'
+import { SourceBadge } from './provenance/SourceBadge'
+import { ConfidenceDot } from './provenance/ConfidenceDot'
+import { PriceSparkline } from './provenance/PriceSparkline'
+import { buildUnifiedTimeline, detectWWIIGap, EV_STYLES } from './provenance/timeline'
 
 // ─── Responsive breakpoints ───────────────────────────────────────────────────
 const BP_TABLET = 1024  // px — sidebar collapses to drawer below this
 const BP_MOBILE = 768   // px — globe height reduced below this
 
 function useViewport() {
-  const [width, setWidth] = useState<number>(() =>
-    typeof window !== 'undefined' ? window.innerWidth : 1280
-  )
+  // Start from the SSR default (1280) on both server and first client render so
+  // markup matches during hydration, then snap to the real width after mount.
+  // This avoids the height-prop hydration mismatch the globe container used to throw.
+  const [width, setWidth] = useState<number>(1280)
   useEffect(() => {
     const handler = () => setWidth(window.innerWidth)
+    handler()
     window.addEventListener('resize', handler)
     return () => window.removeEventListener('resize', handler)
   }, [])
@@ -307,9 +30,6 @@ function useViewport() {
 }
 
 export default function StoriesApp() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const globeRef = useRef<any>(null)
-
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [searching, setSearching] = useState(false)
@@ -329,99 +49,6 @@ export default function StoriesApp() {
   const isTablet = viewportWidth < BP_TABLET
 
   const inStory = !!selected
-
-  // ── Globe init (full-screen background, once) ──────────────────────────────
-  useEffect(() => {
-    if (!containerRef.current) return
-    let mounted = true
-    let onResize: (() => void) | null = null
-    ;(async () => {
-      const GlobeGL = (await import('globe.gl')).default
-      if (!mounted || !containerRef.current) return
-      let geo: { features: unknown[] } = { features: [] }
-      try { const r = await fetch('/geo/countries-simple.json'); if (r.ok) geo = await r.json() } catch {}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const globe = (GlobeGL as any)()(containerRef.current) as any
-      // Solid-color canvas texture for the ocean — avoids touching Three.js internals
-      // (scene.traverse caused z-fighting / black noise artifacts when zooming).
-      const oceanCanvas = document.createElement('canvas')
-      oceanCanvas.width = 2; oceanCanvas.height = 2
-      const octx = oceanCanvas.getContext('2d')!
-      octx.fillStyle = '#060504'
-      octx.fillRect(0, 0, 2, 2)
-      globe.globeImageUrl(oceanCanvas.toDataURL()).backgroundColor(OBS.bg).showAtmosphere(false)
-      if (geo.features.length) {
-        globe.polygonsData(geo.features).polygonCapColor(() => OBS.globeLand)
-          .polygonSideColor(() => 'rgba(0,0,0,0)').polygonStrokeColor(() => OBS.globeBorder).polygonAltitude(0.005)
-      }
-      globe.arcsData([])
-        .arcColor((d: any) => d.color ?? OBS.gold)
-        .arcAltitude((d: any) => d.altitude ?? 0.18)
-        .arcStroke((d: any) => d.altitude <= 0.12 ? 0.35 : 0.6)
-        .arcDashLength((d: any) => d.altitude <= 0.12 ? 0.02 : 0.015)
-        .arcDashGap((d: any) => d.altitude <= 0.12 ? 0.025 : 0.015)
-        .arcDashAnimateTime(10000)
-      globe.pointsData([]).pointLat((d: any) => d.lat).pointLng((d: any) => d.lng)
-        .pointAltitude(0.006).pointRadius((d: any) => d.r ?? 0.28)
-        .pointColor((d: any) => d.color ?? 'rgba(212,168,83,0.8)')
-      setTimeout(() => { const c = globe.controls?.(); if (c) { c.autoRotate = true; c.autoRotateSpeed = 0.25; c.enableZoom = true; c.zoomSpeed = 1.2 } }, 100)
-      const fit = () => { const el = containerRef.current; if (el) globe.width(el.clientWidth).height(el.clientHeight) }
-      fit(); onResize = fit; window.addEventListener('resize', fit)
-      globeRef.current = globe
-    })()
-    return () => { mounted = false; if (onResize) window.removeEventListener('resize', onResize) }
-  }, [])
-
-  // ── Arcs + dots + auto-frame on provenance ────────────────────────────────
-  useEffect(() => {
-    const g = globeRef.current
-    if (!g) return
-    if (!prov) {
-      g.arcsData([]).pointsData([])
-      const c = g.controls?.(); if (c) c.autoRotate = true
-      return
-    }
-    // Three arc tiers — custody (gold, 0.18), exhibition loans (sage, 0.30), dealer trails (amber, 0.12)
-    const custodyArcs = buildArcs(prov.locations, OBS.gold, 0.18)
-    const exhibitionArcs = buildArcs(prov.exhibitions, OBS.sage, 0.30)
-    const dealerArcs = buildDealerArcs(prov.gettyRecords ?? [])
-    g.arcsData([...custodyArcs, ...exhibitionArcs, ...dealerArcs])
-
-    // City dots — custody (large gold), exhibition (medium sage), GPI endpoints (small amber)
-    const custodyDots = prov.locations
-      .filter(l => l.lat != null && l.lng != null)
-      .map(l => ({ lat: l.lat as number, lng: l.lng as number, r: 0.32, color: 'rgba(212,168,83,0.85)' }))
-    const exhibDots = prov.exhibitions
-      .filter(l => l.lat != null && l.lng != null)
-      .map(l => ({ lat: l.lat as number, lng: l.lng as number, r: 0.22, color: 'rgba(111,141,125,0.75)' }))
-    const seenDots = new Set<string>()
-    const dealerDots = (prov.gettyRecords ?? []).flatMap(r => {
-      const dots: { lat: number; lng: number; r: number; color: string }[] = []
-      for (const loc of [r.sellerLocation, r.buyerLocation]) {
-        const coords = cityCoords(loc)
-        if (!coords) continue
-        const key = `${coords.lat},${coords.lng}`
-        if (seenDots.has(key)) continue
-        seenDots.add(key)
-        dots.push({ ...coords, r: 0.20, color: AMBER_DOT })
-      }
-      return dots
-    })
-    g.pointsData([...custodyDots, ...exhibDots, ...dealerDots])
-
-    const custodyPts = prov.locations.filter(l => l.lat != null && l.lng != null)
-    const dealerPts = [...seenDots].map(k => { const [lat, lng] = k.split(',').map(Number); return { lat, lng } })
-    const allPts = [...custodyPts, ...prov.exhibitions.filter(l => l.lat != null && l.lng != null)]
-    const framePts = custodyPts.length >= 2 ? custodyPts : allPts.length >= 2 ? allPts : [...custodyPts, ...dealerPts]
-    const c = g.controls?.(); if (c) c.autoRotate = framePts.length < 2
-    if (framePts.length && typeof g.pointOfView === 'function') {
-      const lats = framePts.map(p => p.lat as number), lngs = framePts.map(p => p.lng as number)
-      const lat = (Math.min(...lats) + Math.max(...lats)) / 2
-      const lng = (Math.min(...lngs) + Math.max(...lngs)) / 2
-      const spread = Math.max(Math.max(...lats) - Math.min(...lats), Math.max(...lngs) - Math.min(...lngs))
-      g.pointOfView({ lat, lng, altitude: Math.min(2.5, Math.max(0.7, spread / 40)) }, 1200)
-    }
-  }, [prov])
 
   // ── Data actions ───────────────────────────────────────────────────────────
   const openWork = useCallback(async (r: SearchResult, heroUrl: string | null, creditLine: string | null) => {
@@ -466,8 +93,8 @@ export default function StoriesApp() {
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: OBS.bg }}>
-      {/* Globe container — height is responsive; only CSS/layout, not globe init */}
-      <div ref={containerRef} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: globeHeightPct }} />
+      {/* Globe — owns its own refs + the locked GLOBE CONTRACT init (see GlobeContainer) */}
+      <GlobeContainer prov={prov} globeHeightPct={globeHeightPct} />
 
       {/* Overlay only covers the globe area */}
       {!inStory && (
