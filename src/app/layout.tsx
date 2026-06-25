@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 import './globals.css'
+import { SiteNav } from '@/components/SiteNav'
 
 export const metadata: Metadata = {
   title: 'Provenance Tracker',
@@ -37,6 +38,7 @@ export default function RootLayout({
           fontFamily: 'var(--font-ui)',
         }}
       >
+        <SiteNav />
         {children}
         {/* Visible on marketing pages (their style tag sets body overflow:auto).
             Clipped by body overflow-hidden on the full-screen globe — handled there separately. */}
