@@ -13,6 +13,7 @@ import { cacheGet, cacheSet, checkRateLimit } from '@/lib/cache'
 import { searchRijks } from '@/lib/rijksmuseum'
 import { searchEuropeana } from '@/lib/europeana'
 import { searchWikidata } from '@/lib/wikidata-search'
+import { searchCleveland } from '@/lib/cleveland'
 import type { SearchResult, SearchResponse } from '@/lib/types'
 
 const SEARCH_TTL_MS = 5 * 60 * 1000 // 5 minutes
@@ -148,7 +149,7 @@ export async function GET(request: NextRequest) {
   const isMetQuery = ['met', 'metropolitan', 'metropolitanmuseum'].includes(qLower)
   const isAicQuery = ['aic', 'artinstituteofchicago', 'artinstitute', 'chicago'].includes(qLower)
 
-  const [metResult, aicResult, rijksResult, europeanaResult, wikidataResult] = await Promise.allSettled([
+  const [metResult, aicResult, rijksResult, europeanaResult, wikidataResult, clevelandResult] = await Promise.allSettled([
     isRijksQuery ? Promise.resolve([]) : searchMet(q),
     isRijksQuery ? Promise.resolve([]) : searchAic(q),
     // For Rijksmuseum name queries: browse without a specific title term
@@ -156,6 +157,8 @@ export async function GET(request: NextRequest) {
     searchEuropeana(q, 3),
     // Wikidata indexes works held outside our museum APIs (e.g. Klimt at the Belvedere)
     isRijksQuery || isMetQuery || isAicQuery ? Promise.resolve([]) : searchWikidata(q, 4),
+    // Cleveland: open access, dated structured provenance + images
+    isRijksQuery || isMetQuery || isAicQuery ? Promise.resolve([]) : searchCleveland(q, 3),
   ])
 
   if (metResult.status === 'rejected') console.error('[search/met]', metResult.reason)
@@ -163,6 +166,7 @@ export async function GET(request: NextRequest) {
   if (rijksResult.status === 'rejected') console.error('[search/rijks]', rijksResult.reason)
   if (europeanaResult.status === 'rejected') console.error('[search/europeana]', europeanaResult.reason)
   if (wikidataResult.status === 'rejected') console.error('[search/wikidata]', wikidataResult.reason)
+  if (clevelandResult.status === 'rejected') console.error('[search/cleveland]', clevelandResult.reason)
 
   const merged: SearchResult[] = [
     ...(metResult.status === 'fulfilled' ? metResult.value : []),
@@ -170,6 +174,7 @@ export async function GET(request: NextRequest) {
     ...(rijksResult.status === 'fulfilled' ? rijksResult.value : []),
     ...(europeanaResult.status === 'fulfilled' ? europeanaResult.value : []),
     ...(wikidataResult.status === 'fulfilled' ? wikidataResult.value : []),
+    ...(clevelandResult.status === 'fulfilled' ? clevelandResult.value : []),
   ]
 
   // Dedup by normalised artist+title (the same work can surface from >1 source),
@@ -193,6 +198,7 @@ export async function GET(request: NextRequest) {
   if (rijksResult.status === 'fulfilled') sources.push('Rijksmuseum API')
   if (europeanaResult.status === 'fulfilled' && (europeanaResult.value as SearchResult[]).length > 0) sources.push('Europeana API')
   if (wikidataResult.status === 'fulfilled' && (wikidataResult.value as SearchResult[]).length > 0) sources.push('Wikidata')
+  if (clevelandResult.status === 'fulfilled' && (clevelandResult.value as SearchResult[]).length > 0) sources.push('Cleveland Museum of Art API')
 
   const response: SearchResponse = { results, query: q, sources }
   cacheSet(cacheKey, response, SEARCH_TTL_MS)
