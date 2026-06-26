@@ -16,7 +16,15 @@ export const metadata: Metadata = {
     'Share feedback, report a bug, suggest a feature, or flag a data correction. Provenance Tracker is in public beta — your input shapes what gets built next.',
 }
 
+const EMAIL = 'ahn.ny01@gmail.com'
+const MAILTO = `mailto:${EMAIL}?subject=Provenance%20Tracker%20feedback`
+
 export default function FeedbackPage() {
+  // Server-side check: if GITHUB_TOKEN is not configured in this environment,
+  // the /api/feedback route will return 503. Surface this proactively so users
+  // don't fill out the form and then hit an error.
+  const issueFilingAvailable = !!process.env.GITHUB_TOKEN
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
@@ -57,6 +65,37 @@ export default function FeedbackPage() {
               correction, or an idea — it all helps. Every submission is reviewed.
             </p>
           </div>
+
+          {/* Proactive email banner when issue-filing backend is not yet configured */}
+          {!issueFilingAvailable && (
+            <div style={{
+              marginBottom: 28,
+              padding: '16px 20px',
+              background: 'rgba(212,168,83,0.06)',
+              border: `1px solid rgba(212,168,83,0.24)`,
+              borderRadius: 10,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+            }}>
+              <div style={{ fontSize: '0.8rem', color: C.text, lineHeight: 1.55 }}>
+                The in-app form isn&apos;t wired to the issue tracker in this environment yet.
+                The fastest way to reach me is directly by email — I read every message.
+              </div>
+              <a href={MAILTO} style={{
+                display: 'inline-flex', alignSelf: 'flex-start',
+                padding: '8px 16px',
+                background: 'rgba(212,168,83,0.10)',
+                border: `1px solid rgba(212,168,83,0.35)`,
+                borderRadius: 7,
+                color: C.gold,
+                fontSize: '0.82rem',
+                fontWeight: 600,
+              }}>
+                Email {EMAIL} →
+              </a>
+            </div>
+          )}
 
           <FeedbackForm />
 

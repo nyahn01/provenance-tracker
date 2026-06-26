@@ -137,7 +137,8 @@ async function processCSV() {
       ),
       transaction: fields[idx['Transaction']] || null,
       notes: fields[idx['Verbatim Notes']] || fields[idx['Notes']] || null,
-      sourceUrl: fields[idx['Rosetta Handle']] ? `https://hdl.handle.net/${fields[idx['Rosetta Handle']]}` : null,
+      // The Rosetta Handle field is already a full URL; only prefix bare handles.
+      sourceUrl: (() => { const h = fields[idx['Rosetta Handle']]; return h ? (h.startsWith('http') ? h : `https://hdl.handle.net/${h}`) : null })(),
       sourceLabel: 'Getty GPI — Goupil & Cie (1846–1919)',
     }
 
