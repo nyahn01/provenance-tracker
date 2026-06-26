@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import type { SearchResult, ProvenanceResponse } from '@/lib/types'
-import { FEATURED_WORKS, aicImage, type FeaturedWork } from '@/lib/featured'
+import { FEATURED_WORKS, type FeaturedWork } from '@/lib/featured'
 import { OBS } from '@/lib/design-tokens'
 import { GlobeContainer } from './provenance/GlobeContainer'
 import { SourceBadge } from './provenance/SourceBadge'
@@ -67,7 +67,7 @@ export default function StoriesApp() {
 
   const selectFeatured = (f: FeaturedWork) =>
     openWork({ id: `${f.source}-${f.id}`, source: f.source, title: f.title, artist: f.artist, date: f.year, thumbnail: null },
-      aicImage(f.imageId, 843), f.credit)
+      f.localSrc, f.credit)
 
   const selectResult = (r: SearchResult) => openWork(r, r.thumbnail, null)
 
@@ -152,7 +152,7 @@ export default function StoriesApp() {
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = OBS.clay }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = OBS.border }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={aicImage(f.imageId, 600)} alt={f.title} loading="lazy"
+                  <img src={f.localSrc} alt={f.title} loading="lazy" decoding="async" width={260} height={200}
                     onError={e => { e.currentTarget.style.visibility = 'hidden' }}
                     style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block', background: OBS.globeLand }} />
                   <div style={{ padding: '14px 16px 16px' }}>

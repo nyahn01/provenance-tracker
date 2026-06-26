@@ -102,18 +102,32 @@ export async function POST(request: NextRequest) {
     .filter(l => l !== null)
     .join('\n')
 
-  try {
-    const res = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
+  const ghHeaders = {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'ProvenanceTracker-Feedback',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'Content-Type': 'application/json',
+  }
+  const postIssue = (withLabels: boolean) =>
+    fetch(`https://api.github.com/repos/${REPO}/issues`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
-        'User-Agent': 'ProvenanceTracker-Feedback',
-        'X-GitHub-Api-Version': '2022-11-28',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ title, body: issueBody, labels: ['feedback'] }),
+      headers: ghHeaders,
+      body: JSON.stringify(
+        withLabels ? { title, body: issueBody, labels: ['feedback'] } : { title, body: issueBody },
+      ),
     })
+
+  try {
+    let res = await postIssue(true)
+
+    // A missing "feedback" label (or a token lacking label-write) can 403/422 the
+    // labeled request even when plain issue creation is allowed. Retry unlabeled
+    // before giving up so a label problem never silently breaks feedback.
+    if (!res.ok && (res.status === 403 || res.status === 422)) {
+      console.error(`[feedback] labeled issue create failed (HTTP ${res.status}); retrying without label`)
+      res = await postIssue(false)
+    }
 
     if (!res.ok) {
       // Log status server-side; never leak token or GitHub payload to the client.

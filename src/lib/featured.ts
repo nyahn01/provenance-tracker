@@ -23,6 +23,14 @@ export interface FeaturedWork {
   hook: string
   /** AIC IIIF image id (public-domain works only). */
   imageId: string
+  /**
+   * Self-hosted image under /public/works. AIC's IIIF host is now behind a
+   * Cloudflare bot challenge (HTTP 403, CORP:same-origin) that blocks both
+   * hotlinking and server-side proxying, so featured images are served locally
+   * (sourced from Wikimedia Commons, public domain). This also makes the hero
+   * image load instantly instead of waiting on a slow/blocked external request.
+   */
+  localSrc: string
   credit: string
 }
 
@@ -35,7 +43,7 @@ export const FEATURED_WORKS: FeaturedWork[] = [
     title: 'Water Lilies',
     artist: 'Claude Monet', year: '1906',
     hook: 'Knoedler Paris to Bertha Palmer to AIC. The dealer receipt survives.',
-    imageId: '3c27b499-af56-f0d5-93b5-a7f2f1ad5813', credit: AIC_CREDIT,
+    imageId: '3c27b499-af56-f0d5-93b5-a7f2f1ad5813', localSrc: '/works/water-lilies.jpg', credit: AIC_CREDIT,
   },
   {
     // 48 Getty records + iconic status + French pre-donation gap worth exploring
@@ -43,7 +51,7 @@ export const FEATURED_WORKS: FeaturedWork[] = [
     title: 'A Sunday on La Grande Jatte',
     artist: 'Georges Seurat', year: '1884-86',
     hook: 'Paris to Brussels to Paris to Chicago -- a Neo-Impressionist icon crosses the Atlantic.',
-    imageId: '2d484387-2509-5e8e-2c43-22f9981972eb', credit: AIC_CREDIT,
+    imageId: '2d484387-2509-5e8e-2c43-22f9981972eb', localSrc: '/works/grande-jatte.jpg', credit: AIC_CREDIT,
   },
   {
     // Degas: 201 Getty/Knoedler records (highest in dataset), Goupil & Cie record in provenance prose
@@ -51,7 +59,7 @@ export const FEATURED_WORKS: FeaturedWork[] = [
     title: 'Yellow Dancers (In the Wings)',
     artist: 'Edgar Degas', year: '1874-76',
     hook: 'Deschamps London to Goupil Paris to Chicago -- the dealer chain is documented.',
-    imageId: '8fe022ba-e358-5cda-aa70-d96edd0b4f20', credit: AIC_CREDIT,
+    imageId: '8fe022ba-e358-5cda-aa70-d96edd0b4f20', localSrc: '/works/yellow-dancers.jpg', credit: AIC_CREDIT,
   },
   {
     // Visual anchor -- striking even with thinner Getty data
@@ -59,7 +67,7 @@ export const FEATURED_WORKS: FeaturedWork[] = [
     title: 'Paris Street; Rainy Day',
     artist: 'Gustave Caillebotte', year: '1877',
     hook: 'A Parisian boulevard scene that moved through Berlin and Boston to Chicago.',
-    imageId: 'f8fd76e9-c396-5678-36ed-6a348c904d27', credit: AIC_CREDIT,
+    imageId: 'f8fd76e9-c396-5678-36ed-6a348c904d27', localSrc: '/works/paris-rainy-day.jpg', credit: AIC_CREDIT,
   },
   {
     // Famous Van Gogh -- good provenance narrative; five owners documented
@@ -67,7 +75,7 @@ export const FEATURED_WORKS: FeaturedWork[] = [
     title: 'The Bedroom',
     artist: 'Vincent van Gogh', year: '1889',
     hook: 'Five owners across Paris, Vienna, New York and Chicago, 1889-1926.',
-    imageId: '6644829f-f292-c5c4-a73c-0356a6fdbf0d', credit: AIC_CREDIT,
+    imageId: '6644829f-f292-c5c4-a73c-0356a6fdbf0d', localSrc: '/works/the-bedroom.jpg', credit: AIC_CREDIT,
   },
   {
     // Second Monet -- 167 Getty records, Monet series context
@@ -75,7 +83,7 @@ export const FEATURED_WORKS: FeaturedWork[] = [
     title: 'Stacks of Wheat (End of Summer)',
     artist: 'Claude Monet', year: '1890-91',
     hook: "One of Monet's celebrated series -- Paris dealer network to Chicago.",
-    imageId: 'a38e2828-ec6f-ece1-a30f-70243449197b', credit: AIC_CREDIT,
+    imageId: 'a38e2828-ec6f-ece1-a30f-70243449197b', localSrc: '/works/stacks-of-wheat.jpg', credit: AIC_CREDIT,
   },
 ]
 
