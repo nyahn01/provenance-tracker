@@ -10,10 +10,20 @@ import type { GettyRecord } from './types'
 
 let _records: GettyRecord[] | null = null
 
+// Repair a seed bug where a full Rosetta Handle URL was prefixed again, e.g.
+// "https://hdl.handle.net/http://hdl.handle.net/10020/xxx". Strip the outer
+// wrapper so the archival-evidence link actually resolves.
+function normalizeSourceUrl(url: string | null): string | null {
+  if (!url) return url
+  const m = url.match(/^https?:\/\/hdl\.handle\.net\/(https?:\/\/.+)$/)
+  return m ? m[1] : url
+}
+
 function loadFile(filename: string, warnScript: string): GettyRecord[] {
   try {
     const raw = readFileSync(join(process.cwd(), 'public', 'data', filename), 'utf8')
-    return JSON.parse(raw) as GettyRecord[]
+    const records = JSON.parse(raw) as GettyRecord[]
+    return records.map(r => ({ ...r, sourceUrl: normalizeSourceUrl(r.sourceUrl) }))
   } catch {
     console.warn(`[getty] Seed file missing: ${filename} — run: node scripts/${warnScript}`)
     return []

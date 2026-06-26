@@ -442,6 +442,18 @@ export function ProvenanceDetail({
                             {' '}These pre-museum records document the commercial layer the museum archive typically omits.
                           </p>
                           <PriceSparkline records={prov.gettyRecords} />
+                          {(() => {
+                            const ledgerUrl = prov.gettyRecords.find(r => r.sourceUrl)?.sourceUrl
+                            return ledgerUrl ? (
+                              <a
+                                href={ledgerUrl}
+                                target="_blank" rel="noopener noreferrer"
+                                style={{ display: 'inline-block', marginTop: 2, marginBottom: 6, fontSize: '0.72rem', color: GAL.clay, textDecoration: 'none', borderBottom: `1px solid ${GAL.border}` }}
+                              >
+                                View the original dealer ledger entry (Getty archive) →
+                              </a>
+                            ) : null
+                          })()}
                         </>
                       ) : (
                         <p style={{ marginBottom: 10, color: GAL.textMuted }}>
