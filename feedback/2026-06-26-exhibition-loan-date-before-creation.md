@@ -4,7 +4,7 @@ date: 2026-06-26
 author: nyahn01
 category: bug
 priority: high
-status: triaged
+status: addressed
 ---
 ## Summary
 Exhibition loans can display dates earlier than the artwork's creation year because the date-extraction regex has no lower-bound cross-check against the artwork's own date.

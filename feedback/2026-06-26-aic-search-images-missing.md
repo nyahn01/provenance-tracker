@@ -4,7 +4,7 @@ date: 2026-06-26
 author: nyahn01
 category: ux
 priority: medium
-status: triaged
+status: addressed
 ---
 ## Summary
 AIC search result thumbnails are blank for all non-featured works because the AIC IIIF image host is behind a Cloudflare bot challenge, but the UI shows no explanation to the user.

@@ -458,13 +458,19 @@ export async function GET(request: NextRequest) {
   //   1. Dedicated exhibition_history field (AIC tier-A) — no keyword required.
   //   2. Provenance prose — scanned for "on loan to" / "loaned to" / "borrowed by" markers.
   // A loan is never a change of custody; it is separate from the ownership chain.
+  // Parse the artwork's earliest creation year to guard against stray numbers in prose
+  // being read as loan dates (e.g. "Gallery 1600" for an 1889 painting).
+  const creationYear = (() => { const m = meta.date?.match(/\d{4}/); return m ? parseInt(m[0], 10) : null })()
+
   const exhibitionHistoryLoans = extractExhibitionHistoryLoans(
     exhibitionText,
     `${srcName} exhibition history`,
+    creationYear,
   )
   const provenanceLoanMarkers = extractProvenanceLoans(
     provenanceText,
     `${srcName} provenance prose`,
+    creationYear,
   )
   const exhibitions: ExhibitionLoan[] = mergeLoans(exhibitionHistoryLoans, provenanceLoanMarkers)
 
