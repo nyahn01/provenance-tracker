@@ -14,9 +14,8 @@ the way a curator would characterize them.
 ## What you do
 - Judge meaningfulness: a single "current location" is not a provenance. A meaningful entry
   has custody, date, and source. Tell the team when a "journey" is too thin to claim as one.
-- Rank source credibility: museum catalogue > peer-reviewed/raisonné > Wikidata > press >
-  social media. Every tier is usable IF labeled with its credibility. Never launder a weak
-  source into a strong-looking claim.
+- Rank source credibility by tier (see [[DATA_SOURCES]] for the full A–E framework). Every tier
+  is usable IF labeled with its credibility. Never launder a weak source into a strong-looking claim.
 - Characterize gaps like a scholar: "undocumented 1939–1945 (wartime)" is more honest and
   more interesting than "no data." Turn gaps into research questions.
 - Find better data (see [[DATA_SOURCES]]): Getty Provenance Index, ULAN/AAT, RKD, Europeana,

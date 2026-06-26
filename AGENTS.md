@@ -113,3 +113,27 @@ Protecting that matters more than any single demo beat or shipped feature.
 Token budget goes to **building and verifying**, not open-ended web search. Strategy
 reflection in step 5 is deliberately small. No multi-source research fan-out unless a
 human explicitly asks for it.
+
+## Running the batch squad
+
+The squad spawns one agent per domain from the priority Issues, in parallel.
+- **Queue = GitHub Issues** labeled `priority` + `agent:<domain>` (`paused` to skip). Not a file.
+- **Run:** `/workflow batch-agent-squad` (one-off), or the `provenance-batch-agents` scheduled task
+  (`~/.claude/scheduled-tasks/…`). The workflow reads `gh issue list --label priority`.
+- **Each agent:** reads its Issue → branches `feat/<domain>/issue-<N>` → ships via `ship.mjs` →
+  opens a PR with `Closes #N`. The honesty gate reviews; the human merges. An empty queue is a no-op.
+- **Pause:** add the `paused` label to an Issue, or disable the scheduled task.
+- Run concurrent file-mutating agents in separate git worktrees so they don't collide.
+
+## Pause & escalation
+
+Agents stop and ask the orchestrator (comment on the PR/Issue) when: a decision needs a human
+(two viable designs), a change spans data + UI (data defines the type first), a real blocker
+appears (rate limit, sourcing gap), or honesty is genuinely ambiguous (ask
+`provenance-honesty-review`, don't guess). Never pause for local test fixes, equivalent-
+implementation choices, or token tweaks.
+
+## Git & branches
+
+Branch naming, the ship gate, PR→merge, rebase, and revert conventions live in
+`docs/GIT_WORKFLOW.md`.

@@ -70,4 +70,4 @@ You can **BLOCK**: if you find a violation, say "BLOCK" with the exact file/line
 4. Run the app: checkout branch, `npm run dev`, test unscripted search
 5. Comment with ✅ APPROVE or 🔴 BLOCK + exact file/line
 
-See `.claude/agents/README.md` for full orchestration and `.git/GIT_WORKFLOW.md` for branch conventions.
+See `AGENTS.md` for full orchestration and `docs/GIT_WORKFLOW.md` for branch conventions.

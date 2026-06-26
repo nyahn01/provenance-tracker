@@ -59,4 +59,4 @@ pitch, the product, and the truth never diverge.
 
 **Pitch positioning:** Problem → Solution → Market → Magic (Claude reconciliation).
 
-See `.claude/agents/README.md` for full orchestration and `.git/GIT_WORKFLOW.md` for branching conventions.
+See `AGENTS.md` for full orchestration and `docs/GIT_WORKFLOW.md` for branch conventions.

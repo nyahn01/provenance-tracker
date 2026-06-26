@@ -68,4 +68,4 @@ Every new source MUST fit `src/lib/types.ts` — extend the contract first, neve
 
 **Claude reconciliation:** Collect fragments from all APIs → pass to Claude with conflict flags → return unified timeline + honesty warnings.
 
-See `.claude/agents/README.md` for full orchestration and `.git/GIT_WORKFLOW.md` for branching conventions.
+See `AGENTS.md` for full orchestration and `docs/GIT_WORKFLOW.md` for branch conventions.
