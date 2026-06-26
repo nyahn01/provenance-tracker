@@ -1,13 +1,13 @@
 # Project Status — what's implemented
 
-_Last updated 2026-06-25. A factual inventory of what exists and works today. For vision and rules see [draft/CLAUDE.md](draft/CLAUDE.md); for the live work queue see [draft/TOMORROW.md](draft/TOMORROW.md)._
+_Last updated 2026-06-26. A factual inventory of what exists and works today. For vision and rules see [draft/CLAUDE.md](draft/CLAUDE.md); for the live work queue see [draft/TOMORROW.md](draft/TOMORROW.md)._
 
 ## Stack
 
-- **Next.js 14.2** (App Router) · **React 18** · **TypeScript** (strict)
+- **Next.js 16** (App Router) · **React 18** · **TypeScript** (strict) · **Vercel Speed Insights**
 - **globe.gl 2.46** (Three.js) for the 3D globe
 - **Tailwind 3.4** + CSS custom properties; JS color tokens in [src/lib/design-tokens.ts](src/lib/design-tokens.ts)
-- **@anthropic-ai/sdk** for optional Claude prose extraction (deterministic fallback when unfunded)
+- **@anthropic-ai/sdk** for Claude Haiku prose extraction (deterministic fallback when API is unavailable)
 
 ## Pages
 
@@ -42,7 +42,8 @@ _Last updated 2026-06-25. A factual inventory of what exists and works today. Fo
 - **Provenance Intelligence card** — deterministic FLAG/REVIEW/CLEAR risk tier + Getty price sparkline.
 - **Per-source TTL cache + per-IP rate limiting** ([src/lib/cache.ts](src/lib/cache.ts)).
 - **Feedback → GitHub issue** with email fallback ([src/components/FeedbackForm.tsx](src/components/FeedbackForm.tsx)).
-- **6 curated featured works** (public-domain, deep Tier-A provenance) in [src/lib/featured.ts](src/lib/featured.ts).
+- **6 curated featured works** (public-domain, deep Tier-A provenance) in [src/lib/featured.ts](src/lib/featured.ts). Custody chains pre-parsed and committed to [src/lib/featured-provenance.json](src/lib/featured-provenance.json) — zero Claude runtime cost for featured works.
+- **Prose extraction cache** — disk-backed ([src/lib/prose-cache.ts](src/lib/prose-cache.ts)) so each user-searched artwork is parsed by Claude at most once per server instance.
 
 ## Component architecture (post-refactor)
 
@@ -62,10 +63,11 @@ Every fact carries a source. Custody ≠ exhibition loans (separate arrays + UI)
 - `npm run dev` · `npm run build`
 - `node scripts/ship.mjs [--commit "…"] [--push]` — build → serve → verify gate (agents never commit raw)
 - `npm run honesty` — over-claim / invented-data grep on the diff
+- `npm run preparse` — re-run Claude Haiku over the 6 featured works; commit the output to lock in results
 
 ## Known constraints
 
-- **Anthropic API** (product runtime Claude calls) is unfunded → `/api/provenance` and `/api/reconcile` use the deterministic fallback. MAX covers Claude Code (building), not the deployed site's API calls. The demo needs zero API spend.
 - In-memory cache is single-node (swap for Redis if multi-instance).
 - Met public API exposes no provenance prose (metadata only).
-- City geocoding is a ~30-city static gazetteer; unmapped places stay off the globe (honest).
+- City geocoding is a static gazetteer; unmapped places stay off the globe (honest).
+- Disk prose cache (`cache/prose-cache.json`) is gitignored — warm per-instance, not shared across Vercel deployments. Featured works are exempt (pre-committed JSON).
