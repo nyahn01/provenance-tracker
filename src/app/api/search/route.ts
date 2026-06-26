@@ -17,6 +17,7 @@ import { searchCleveland } from '@/lib/cleveland'
 import type { SearchResult, SearchResponse } from '@/lib/types'
 
 const SEARCH_TTL_MS = 5 * 60 * 1000 // 5 minutes
+const FETCH_TIMEOUT_MS = 5000 // per-call cap so one slow upstream never stalls search
 
 // ---------------------------------------------------------------------------
 // Met Museum helpers
@@ -39,7 +40,7 @@ async function searchMet(q: string): Promise<SearchResult[]> {
   const searchRes = await fetch(
     `https://collectionapi.metmuseum.org/public/collection/v1/search` +
       `?q=${encodeURIComponent(q)}&hasImages=true`,
-    { next: { revalidate: 0 } },
+    { next: { revalidate: 0 }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) },
   )
   if (!searchRes.ok) throw new Error(`Met search HTTP ${searchRes.status}`)
 
@@ -50,7 +51,7 @@ async function searchMet(q: string): Promise<SearchResult[]> {
     objectIDs.slice(0, 3).map(id =>
       fetch(
         `https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`,
-        { next: { revalidate: 0 } },
+        { next: { revalidate: 0 }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) },
       ).then(r => {
         if (!r.ok) throw new Error(`Met object HTTP ${r.status}`)
         return r.json() as Promise<MetObject>
@@ -92,7 +93,7 @@ async function searchAic(q: string): Promise<SearchResult[]> {
     `https://api.artic.edu/api/v1/artworks/search` +
       `?q=${encodeURIComponent(q)}&limit=3` +
       `&fields=id,title,artist_display,date_display,place_of_origin,image_id`,
-    { next: { revalidate: 0 } },
+    { next: { revalidate: 0 }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) },
   )
   if (!res.ok) throw new Error(`AIC search HTTP ${res.status}`)
 
@@ -104,9 +105,11 @@ async function searchAic(q: string): Promise<SearchResult[]> {
     title: a.title || 'Untitled',
     artist: a.artist_display || 'Unknown artist',
     date: a.date_display || '',
-    thumbnail: a.image_id
-      ? `https://www.artic.edu/iiif/2/${a.image_id}/full/200,/0/default.jpg`
-      : null,
+    // AIC's IIIF image host is now behind a Cloudflare bot challenge (HTTP 403,
+    // CORP:same-origin) that blocks both cross-origin <img> hotlinks and
+    // server-side proxying. Return null so the UI shows a clean placeholder
+    // rather than a broken image. (Featured AIC works are self-hosted instead.)
+    thumbnail: null,
   }))
 }
 
@@ -177,8 +180,7 @@ export async function GET(request: NextRequest) {
     ...(clevelandResult.status === 'fulfilled' ? clevelandResult.value : []),
   ]
 
-  // Dedup by normalised artist+title (the same work can surface from >1 source),
-  // then sort so results WITH a thumbnail come first (better visual scan).
+  // Dedup by normalised artist+title (the same work can surface from >1 source).
   const dedupKey = (r: SearchResult) =>
     `${r.artist}|${r.title}`.toLowerCase().replace(/[^a-z0-9]/g, '')
   const byKey = new Map<string, SearchResult>()
@@ -188,9 +190,52 @@ export async function GET(request: NextRequest) {
     // Prefer the variant that has a thumbnail.
     if (!existing || (!existing.thumbnail && r.thumbnail)) byKey.set(k, r)
   }
-  const results: SearchResult[] = [...byKey.values()].sort(
-    (a, b) => (b.thumbnail ? 1 : 0) - (a.thumbnail ? 1 : 0),
-  )
+
+  // ── Relevance ranking ──────────────────────────────────────────────────────
+  // Rank by how well the result matches the query, not just "has an image".
+  // Title matches outweigh artist matches; exact/prefix beats substring beats
+  // per-token; a thumbnail and a provenance-rich source are tie-breakers.
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
+  const qn = norm(q)
+  const qTokens = qn.split(' ').filter(t => t.length > 1)
+  // Sources with dated, structured provenance rank above thin aggregators on ties.
+  const sourceRank: Record<SearchResult['source'], number> = {
+    aic: 6, met: 5, cleveland: 4, rijks: 3, wikidata: 2, europeana: 1,
+  }
+
+  // A whole-word match on the artist field is the strongest signal for a
+  // surname query ("Klimt" → works BY Klimt), so weight it near title-exact.
+  const wordRe = (t: string) => new RegExp(`\\b${t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
+  function score(r: SearchResult): number {
+    const title = norm(r.title)
+    const artist = norm(r.artist)
+    const artistKnown = artist.length > 0 && artist !== 'unknown artist'
+    let s = 0
+    if (title === qn) s += 110
+    else if (title.startsWith(qn)) s += 70
+    else if (title.includes(qn)) s += 45
+    if (artistKnown) {
+      if (artist === qn) s += 115
+      // A work BY the queried artist (surname appears as a word in "Gustav
+      // Klimt") beats a work merely TITLED that word by someone else.
+      else if (wordRe(qn).test(artist)) s += 115
+      else if (artist.includes(qn)) s += 50
+    }
+    for (const t of qTokens) {
+      if (title.includes(t)) s += 10
+      if (artistKnown && artist.includes(t)) s += 8
+    }
+    // A nameless result (common in aggregator junk) is rarely what's wanted.
+    if (!artistKnown) s -= 30
+    if (r.thumbnail) s += 10
+    s += sourceRank[r.source] ?? 0
+    return s
+  }
+
+  const results: SearchResult[] = [...byKey.values()]
+    .map(r => ({ r, s: score(r) }))
+    .sort((a, b) => b.s - a.s)
+    .map(({ r }) => r)
 
   const sources: string[] = []
   if (!isRijksQuery && metResult.status === 'fulfilled') sources.push('Metropolitan Museum of Art API')

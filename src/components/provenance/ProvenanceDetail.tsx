@@ -102,7 +102,10 @@ export function ProvenanceDetail({
 
         {hero && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={hero} alt={selected.title} style={{ width: '100%', maxHeight: 280, objectFit: 'cover', display: 'block' }} />
+          <img src={hero} alt={selected.title} loading="eager" decoding="async" fetchPriority="high"
+            onError={e => { e.currentTarget.style.display = 'none' }}
+            // Reserve the band so the panel doesn't reflow when the image arrives.
+            style={{ width: '100%', height: 280, objectFit: 'cover', display: 'block', background: GAL.surface2 }} />
         )}
 
         <div style={{ padding: '22px 24px 8px' }}>
