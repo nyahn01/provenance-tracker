@@ -1,0 +1,356 @@
+{
+  "aic:16568": [
+    {
+      "name": "Paris",
+      "institution": "Claude Monet",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": null,
+      "endDate": "1909",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Durand-Ruel",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1909",
+      "endDate": "1911",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Durand-Ruel",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1911",
+      "endDate": "1914",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Martin A. Ryerson",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1914",
+      "endDate": "1932",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "The Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1933",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ],
+  "aic:27992": [
+    {
+      "name": "Paris",
+      "institution": "Mme. Seurat",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1891",
+      "endDate": "1899",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Casimir Brû",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1900",
+      "endDate": "1900",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Lucie Brû Cousturier and Edmond Cousturier",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1900",
+      "endDate": "1924",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Frederic Clay Bartlett and Helen Birch Bartlett",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1924",
+      "endDate": "1926",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "The Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1926",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ],
+  "aic:18951": [
+    {
+      "name": "London",
+      "institution": "Edgar Degas",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "startDate": null,
+      "endDate": "1876",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "London",
+      "institution": "Charles W. Deschamps",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "startDate": "1876",
+      "endDate": "1891",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Goupil et Cie",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1891",
+      "endDate": "1891",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Potter Palmer",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1891",
+      "endDate": "1902",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Palmer family",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1902",
+      "endDate": "1963",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "The Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1963",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ],
+  "aic:20684": [
+    {
+      "name": "Paris",
+      "institution": "Gustave Caillebotte",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": null,
+      "endDate": "1894",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Martial Caillebotte and Marie Minoret",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1894",
+      "endDate": "1900",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Provins",
+      "institution": "Georges Minoret",
+      "lat": null,
+      "lng": null,
+      "startDate": "1900",
+      "endDate": "1950",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Albert and Geneviève Chardeau",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1950",
+      "endDate": "1954",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Walter P. Chrysler, Jr.",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1954",
+      "endDate": "1964",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "The Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1964",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ],
+  "aic:28560": [
+    {
+      "name": "Paris",
+      "institution": "Vincent van Gogh",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": null,
+      "endDate": "1889",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Theo van Gogh",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1889",
+      "endDate": "1891",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "the Netherlands",
+      "institution": "Johanna van Gogh-Bonger",
+      "lat": null,
+      "lng": null,
+      "startDate": "1891",
+      "endDate": "1901",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Jos Hessel",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1901",
+      "endDate": "1909",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Vienna",
+      "institution": "Carl Reininghaus",
+      "lat": 48.2082,
+      "lng": 16.3738,
+      "startDate": "1909",
+      "endDate": "1914",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Paul Rosenberg",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1926",
+      "endDate": "1926",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Frederic Clay Bartlett",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1926",
+      "endDate": "1926",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "The Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1926",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ],
+  "aic:64818": [
+    {
+      "name": "Paris",
+      "institution": "Claude Monet",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": null,
+      "endDate": "1891",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Durand-Ruel",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1891",
+      "endDate": "1891",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Boston",
+      "institution": "Charles Fairchild",
+      "lat": 42.3601,
+      "lng": -71.0589,
+      "startDate": "1891",
+      "endDate": "1891",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Durand-Ruel",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1891",
+      "endDate": "1891",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Potter Palmer",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1891",
+      "endDate": "1902",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Palmer Family",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1902",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Lake Forest, Illinois",
+      "institution": "Arthur M. Wood and Pauline Palmer Wood",
+      "lat": null,
+      "lng": null,
+      "startDate": null,
+      "endDate": "1984",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "The Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1985",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ]
+}
