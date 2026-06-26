@@ -124,7 +124,8 @@ async function processCSV() {
       salePrice: priceStr(priceAmt, priceCur),
       transaction: transaction || null,
       notes: fields[idx['Verbatim Notes']] || null,
-      sourceUrl: fields[idx['Rosetta Handle']] ? `https://hdl.handle.net/${fields[idx['Rosetta Handle']]}` : null,
+      // The Rosetta Handle field is already a full URL; only prefix bare handles.
+      sourceUrl: (() => { const h = fields[idx['Rosetta Handle']]; return h ? (h.startsWith('http') ? h : `https://hdl.handle.net/${h}`) : null })(),
       sourceLabel: 'Getty GPI — Knoedler Stock Books (1872–1970)',
     }
 

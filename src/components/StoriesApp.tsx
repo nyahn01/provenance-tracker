@@ -69,7 +69,7 @@ export default function StoriesApp() {
     openWork({ id: `${f.source}-${f.id}`, source: f.source, title: f.title, artist: f.artist, date: f.year, thumbnail: null },
       aicImage(f.imageId, 843), f.credit)
 
-  const selectResult = (r: SearchResult) => openWork(r, null, null)
+  const selectResult = (r: SearchResult) => openWork(r, r.thumbnail, null)
 
   const close = () => { setSelected(null); setProv(null); setHero(null); setCredit(null); setDrawerOpen(false) }
 
@@ -122,6 +122,29 @@ export default function StoriesApp() {
               custody — every fact sourced, every gap shown honestly.
             </p>
 
+            {/* How it works — three beats so the goal lands at a glance */}
+            <div style={{ display: 'flex', gap: 'clamp(18px, 3vw, 36px)', marginTop: 28, flexWrap: 'wrap' }}>
+              {[
+                { n: '1', t: 'Pick a masterpiece', d: 'From the curated set, or search the world’s museums' },
+                { n: '2', t: 'Trace its journey', d: 'Owner to owner, dealer to dealer, across the globe' },
+                { n: '3', t: 'See the honest gaps', d: 'Undocumented years are flagged — never invented' },
+              ].map(s => (
+                <div key={s.n} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', maxWidth: 210 }}>
+                  <span style={{
+                    flexShrink: 0, width: 22, height: 22, borderRadius: '50%',
+                    border: `1px solid rgba(200,120,85,0.30)`,
+                    background: 'rgba(200,120,85,0.10)', color: OBS.clay,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'var(--font-ui)', fontSize: '0.72rem', fontWeight: 600,
+                  }}>{s.n}</span>
+                  <div>
+                    <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.84rem', fontWeight: 600, color: OBS.text }}>{s.t}</div>
+                    <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.76rem', color: OBS.textFaint, lineHeight: 1.45, marginTop: 2 }}>{s.d}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20, marginTop: 44 }}>
               {FEATURED_WORKS.map(f => (
                 <button key={f.id} onClick={() => selectFeatured(f)}
@@ -146,7 +169,7 @@ export default function StoriesApp() {
               </div>
               <div style={{ display: 'flex', gap: 8, maxWidth: 520, flexWrap: 'wrap' }}>
                 <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && runSearch(query)}
-                  placeholder="Search the Met · Art Institute · Rijksmuseum"
+                  placeholder="Search any artist or work — Klimt, Vermeer, Water Lilies…"
                   style={{ flex: 1, minWidth: 240, background: OBS.surface, border: `1px solid ${OBS.border}`, borderRadius: 8, padding: '10px 14px', color: OBS.text, fontFamily: 'var(--font-ui)', fontSize: '0.875rem', outline: 'none' }} />
                 <button onClick={() => runSearch(query)}
                   style={{ background: OBS.clay, color: OBS.bg, border: 'none', borderRadius: 8, padding: '10px 18px', fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>Search</button>
@@ -155,19 +178,29 @@ export default function StoriesApp() {
               {searching && <div style={{ color: OBS.textMuted, fontFamily: 'var(--font-ui)', fontSize: '0.85rem', marginTop: 16 }}>Searching…</div>}
               {searched && !searching && results.length === 0 && (
                 <div style={{ color: OBS.textMuted, fontFamily: 'var(--font-ui)', fontSize: '0.85rem', marginTop: 16, lineHeight: 1.5, maxWidth: 520 }}>
-                  Nothing in our sources for &quot;{query}&quot;. This demo focuses on a curated set —
-                  search covers works held by the Met, Art Institute, Rijksmuseum, and Europeana (requires API key).
+                  Nothing found for &quot;{query}&quot;. Search spans the Met, Art Institute of Chicago,
+                  Rijksmuseum, Europeana, and Wikidata — try an artist (e.g. Klimt, Vermeer) or a work title.
                 </div>
               )}
               {results.length > 0 && (
                 <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 6, maxWidth: 640 }}>
                   {results.map(r => (
                     <button key={r.id} onClick={() => selectResult(r)}
-                      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, textAlign: 'left', background: 'transparent', border: `1px solid ${OBS.border}`, borderRadius: 8, padding: '10px 14px', cursor: 'pointer', color: OBS.text }}
+                      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, textAlign: 'left', background: 'transparent', border: `1px solid ${OBS.border}`, borderRadius: 8, padding: '8px 12px', cursor: 'pointer', color: OBS.text }}
                       onMouseEnter={e => { e.currentTarget.style.background = 'rgba(200,120,85,0.10)' }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
-                      <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.85rem' }}>
-                        {r.title} <span style={{ color: OBS.textMuted }}>· {r.artist}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                        {r.thumbnail ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={r.thumbnail} alt="" loading="lazy"
+                            style={{ width: 44, height: 44, flexShrink: 0, objectFit: 'cover', borderRadius: 5, background: OBS.globeLand, display: 'block' }} />
+                        ) : (
+                          <span aria-hidden="true"
+                            style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 5, background: OBS.surface, border: `1px solid ${OBS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: OBS.textFaint, fontSize: '1rem' }}>◇</span>
+                        )}
+                        <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.85rem', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {r.title} <span style={{ color: OBS.textMuted }}>· {r.artist}</span>
+                        </span>
                       </span>
                       <SourceBadge source={r.source} />
                     </button>
@@ -190,6 +223,9 @@ export default function StoriesApp() {
                 </a>
                 <a href="/pricing" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
                   Pricing →
+                </a>
+                <a href="/feedback" style={{ color: OBS.clay, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
+                  Feedback →
                 </a>
                 <a href="https://buymeacoffee.com/nyahn" target="_blank" rel="noopener noreferrer" style={{ color: OBS.clay, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
                   ☕ Buy me a coffee →

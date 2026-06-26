@@ -12,6 +12,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { cacheGet, cacheSet, checkRateLimit } from '@/lib/cache'
 import { searchRijks } from '@/lib/rijksmuseum'
 import { searchEuropeana } from '@/lib/europeana'
+import { searchWikidata } from '@/lib/wikidata-search'
+import { searchCleveland } from '@/lib/cleveland'
 import type { SearchResult, SearchResponse } from '@/lib/types'
 
 const SEARCH_TTL_MS = 5 * 60 * 1000 // 5 minutes
@@ -147,31 +149,56 @@ export async function GET(request: NextRequest) {
   const isMetQuery = ['met', 'metropolitan', 'metropolitanmuseum'].includes(qLower)
   const isAicQuery = ['aic', 'artinstituteofchicago', 'artinstitute', 'chicago'].includes(qLower)
 
-  const [metResult, aicResult, rijksResult, europeanaResult] = await Promise.allSettled([
+  const [metResult, aicResult, rijksResult, europeanaResult, wikidataResult, clevelandResult] = await Promise.allSettled([
     isRijksQuery ? Promise.resolve([]) : searchMet(q),
     isRijksQuery ? Promise.resolve([]) : searchAic(q),
     // For Rijksmuseum name queries: browse without a specific title term
     isRijksQuery ? searchRijks('') : searchRijks(q),
     searchEuropeana(q, 3),
+    // Wikidata indexes works held outside our museum APIs (e.g. Klimt at the Belvedere)
+    isRijksQuery || isMetQuery || isAicQuery ? Promise.resolve([]) : searchWikidata(q, 4),
+    // Cleveland: open access, dated structured provenance + images
+    isRijksQuery || isMetQuery || isAicQuery ? Promise.resolve([]) : searchCleveland(q, 3),
   ])
 
   if (metResult.status === 'rejected') console.error('[search/met]', metResult.reason)
   if (aicResult.status === 'rejected') console.error('[search/aic]', aicResult.reason)
   if (rijksResult.status === 'rejected') console.error('[search/rijks]', rijksResult.reason)
   if (europeanaResult.status === 'rejected') console.error('[search/europeana]', europeanaResult.reason)
+  if (wikidataResult.status === 'rejected') console.error('[search/wikidata]', wikidataResult.reason)
+  if (clevelandResult.status === 'rejected') console.error('[search/cleveland]', clevelandResult.reason)
 
-  const results: SearchResult[] = [
+  const merged: SearchResult[] = [
     ...(metResult.status === 'fulfilled' ? metResult.value : []),
     ...(aicResult.status === 'fulfilled' ? aicResult.value : []),
     ...(rijksResult.status === 'fulfilled' ? rijksResult.value : []),
     ...(europeanaResult.status === 'fulfilled' ? europeanaResult.value : []),
+    ...(wikidataResult.status === 'fulfilled' ? wikidataResult.value : []),
+    ...(clevelandResult.status === 'fulfilled' ? clevelandResult.value : []),
   ]
+
+  // Dedup by normalised artist+title (the same work can surface from >1 source),
+  // then sort so results WITH a thumbnail come first (better visual scan).
+  const dedupKey = (r: SearchResult) =>
+    `${r.artist}|${r.title}`.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const byKey = new Map<string, SearchResult>()
+  for (const r of merged) {
+    const k = dedupKey(r)
+    const existing = byKey.get(k)
+    // Prefer the variant that has a thumbnail.
+    if (!existing || (!existing.thumbnail && r.thumbnail)) byKey.set(k, r)
+  }
+  const results: SearchResult[] = [...byKey.values()].sort(
+    (a, b) => (b.thumbnail ? 1 : 0) - (a.thumbnail ? 1 : 0),
+  )
 
   const sources: string[] = []
   if (!isRijksQuery && metResult.status === 'fulfilled') sources.push('Metropolitan Museum of Art API')
   if (!isRijksQuery && aicResult.status === 'fulfilled') sources.push('Art Institute of Chicago API')
   if (rijksResult.status === 'fulfilled') sources.push('Rijksmuseum API')
   if (europeanaResult.status === 'fulfilled' && (europeanaResult.value as SearchResult[]).length > 0) sources.push('Europeana API')
+  if (wikidataResult.status === 'fulfilled' && (wikidataResult.value as SearchResult[]).length > 0) sources.push('Wikidata')
+  if (clevelandResult.status === 'fulfilled' && (clevelandResult.value as SearchResult[]).length > 0) sources.push('Cleveland Museum of Art API')
 
   const response: SearchResponse = { results, query: q, sources }
   cacheSet(cacheKey, response, SEARCH_TTL_MS)

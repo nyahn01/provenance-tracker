@@ -129,6 +129,15 @@ html, body {
   animation: shimmer 1.6s ease-in-out infinite;
 }
 
+/* ─── Nav links: horizontally scrollable on narrow widths, no visible scrollbar ─ */
+.nav-links {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.nav-links::-webkit-scrollbar {
+  display: none;
+}
+
 /* ─── Focus ring ─────────────────────────────────────────────────────────────── */
 :focus-visible {
   outline: 2px solid var(--obs-clay);

@@ -208,24 +208,32 @@ export default function FeedbackForm() {
       {status.kind === 'error' && (
         <div
           style={{
-            padding: '12px 14px',
-            background: 'rgba(200,120,85,0.08)',
-            border: `1px solid rgba(200,120,85,0.3)`,
+            padding: '14px 16px',
+            // Email-fallback is graceful degradation, not a hard error — style it calmly.
+            background: status.emailFallback ? 'rgba(212,168,83,0.06)' : 'rgba(200,120,85,0.08)',
+            border: `1px solid ${status.emailFallback ? 'rgba(212,168,83,0.28)' : 'rgba(200,120,85,0.3)'}`,
             borderRadius: 8,
             fontSize: '0.82rem',
             color: C.text,
-            lineHeight: 1.5,
+            lineHeight: 1.55,
           }}
         >
-          {status.message}
+          {status.emailFallback
+            ? 'The in-app form can’t file your feedback right now, but your message still matters — send it straight to me by email and I’ll see it.'
+            : status.message}
           {status.emailFallback && (
-            <>
-              {' '}
-              <a href={MAILTO} style={{ color: C.gold, textDecoration: 'underline' }}>
-                Email {EMAIL}
-              </a>{' '}
-              instead.
-            </>
+            <a
+              href={MAILTO}
+              style={{
+                display: 'inline-block', marginTop: 12,
+                padding: '9px 18px', background: 'rgba(212,168,83,0.10)',
+                border: `1px solid ${C.gold}`, borderRadius: 8,
+                color: C.gold, fontSize: '0.82rem', fontWeight: 600,
+                textDecoration: 'none',
+              }}
+            >
+              Email {EMAIL} →
+            </a>
           )}
         </div>
       )}
