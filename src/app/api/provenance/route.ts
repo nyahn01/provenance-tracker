@@ -26,6 +26,7 @@ import { fetchRijks } from '@/lib/rijksmuseum'
 import { searchGetty } from '@/lib/getty'
 import { searchRkd } from '@/lib/rkd'
 import { fetchEuropeana } from '@/lib/europeana'
+import { fetchClevelandDetail } from '@/lib/cleveland'
 import { extractExhibitionHistoryLoans, extractProvenanceLoans, mergeLoans } from '@/lib/exhibition-loans'
 import type {
   ArtworkMeta,
@@ -370,9 +371,9 @@ export async function GET(request: NextRequest) {
   const source = request.nextUrl.searchParams.get('source')
   const id = request.nextUrl.searchParams.get('id')
 
-  if (source !== 'met' && source !== 'aic' && source !== 'rijks' && source !== 'europeana' && source !== 'wikidata') {
+  if (source !== 'met' && source !== 'aic' && source !== 'rijks' && source !== 'europeana' && source !== 'wikidata' && source !== 'cleveland') {
     return NextResponse.json(
-      { error: 'Query param "source" must be "met", "aic", "rijks", "europeana", or "wikidata"' },
+      { error: 'Query param "source" must be "met", "aic", "rijks", "europeana", "wikidata", or "cleveland"' },
       { status: 400 },
     )
   }
@@ -394,6 +395,7 @@ export async function GET(request: NextRequest) {
       : source === 'rijks' ? await fetchRijks(id)
       : source === 'europeana' ? { ...await fetchEuropeana(id), exhibitions: '' }
       : source === 'wikidata' ? await fetchWikidata(id)
+      : source === 'cleveland' ? await fetchClevelandDetail(id)
       : await fetchAic(id)
     meta = detail.meta
     provenanceText = detail.provenance
@@ -409,7 +411,7 @@ export async function GET(request: NextRequest) {
   // 2. CUSTODY chain (the journey) from provenance_text — Claude, else deterministic,
   //    else Wikidata P276. Exhibitions are handled separately so a LOAN is never shown
   //    as a change of custody. This is the precision fix.
-  const srcName = source === 'met' ? 'Met' : source === 'rijks' ? 'Rijksmuseum' : source === 'europeana' ? 'Europeana' : source === 'wikidata' ? 'Wikidata' : 'AIC'
+  const srcName = source === 'met' ? 'Met' : source === 'rijks' ? 'Rijksmuseum' : source === 'europeana' ? 'Europeana' : source === 'wikidata' ? 'Wikidata' : source === 'cleveland' ? 'Cleveland Museum of Art' : 'AIC'
   const provLabel = `${srcName} provenance`
   let [ownership, wikiLocs, gettyRecords, rkdRecords] = await Promise.all([
     extractOwnershipLocations(meta.title, meta.artist, provenanceText, provLabel).catch(err => {
