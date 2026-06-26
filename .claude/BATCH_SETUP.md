@@ -1,14 +1,20 @@
 # Agent Orchestration with Max — Setup & Control
 
+> ⚠️ **PARTIALLY OUTDATED (queue migrated 2026-06-26).** The priority queue is now **GitHub
+> Issues** (`gh issue list --label priority`), not `draft/TOMORROW.md`, and completed work is
+> tracked by closed Issues + git history, not `PROGRESS.md`. To pause an item, add the `paused`
+> label instead of `[PAUSED]`. The Max/scheduling guidance below still applies; the queue
+> mechanics are superseded by the root `CLAUDE.md` "Work tracking" section. Full rewrite: Phase 2.
+
 **You have Max.** Continuous 24/7 agent work with instant fallback to daily batch mode.
 
 ---
 
 ## ✅ What You Just Got
 
-- **TOMORROW.md** — Unified priority queue (10 items across 4 tiers). Agents read this regardless of mode.
+- **GitHub Issues (`priority` label)** — the priority queue. Agents read it via `gh issue list`.
 - **batch-agent-squad.mjs** — The workflow that spawns agents in parallel (works in both Max and batch mode).
-- **PROGRESS.md** — Tracks completed features and lessons learned.
+- **Closed Issues + git history** — what shipped (replaces the old PROGRESS.md).
 - **This guide** — How to start Max, pause anytime, or switch to batch mode.
 
 ---

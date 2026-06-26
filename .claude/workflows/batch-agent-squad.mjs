@@ -30,60 +30,51 @@ Report: the commit hash main is now at, whether a fast-forward happened, and any
 );
 log(`🔄 main sync: ${syncResult ? String(syncResult).split("\n")[0].slice(0, 160) : "no result"}`);
 
-// Read TOMORROW.md as source of truth (not a hardcoded queue)
-const tomorrowRaw = await agent(
-  `Read the file draft/TOMORROW.md in the provenance-tracker project at C:\\Users\\Windows11\\Downloads\\provenance-tracker and return its full text contents. Return ONLY the raw file contents, nothing else.`,
-  { label: "read:TOMORROW.md", phase: "Plan" }
+// Read the priority queue from GitHub Issues — the single source of truth (not a
+// markdown file). An agent runs `gh` and returns raw JSON; we parse it here.
+// A priority = an open Issue labeled `priority` + an `agent:<domain>` label;
+// anything also labeled `paused` is skipped.
+const issuesRaw = await agent(
+  `In the provenance-tracker project at C:\\Users\\Windows11\\Downloads\\provenance-tracker, run exactly this command:
+  gh issue list --label priority --state open --json number,title,body,labels --limit 50
+Return ONLY the raw JSON array the command prints — no prose, no code fences.`,
+  { label: "read:priority-issues", phase: "Plan" }
 );
 
-if (!tomorrowRaw) {
-  log("❌ Could not read TOMORROW.md — aborting.");
-  return { error: "Could not read TOMORROW.md" };
+if (!issuesRaw) {
+  log("❌ Could not read priority Issues — aborting.");
+  return { error: "Could not read priority Issues" };
 }
 
-// Parse priorities from the raw markdown
-// Extract: ### N. Title, **Agent:** name, **Done when:** ..., full block up to next ###
-const PRIORITY_QUEUE = [];
-const lines = tomorrowRaw.split("\n");
-
-let current = null;
-for (let i = 0; i < lines.length; i++) {
-  const line = lines[i];
-
-  // Match active priority headings (skip [PAUSED])
-  const headingMatch = line.match(/^### (?!\[PAUSED\])(\d+)\. (.+)/);
-  if (headingMatch) {
-    if (current) PRIORITY_QUEUE.push(current);
-    current = {
-      id: headingMatch[1],
-      title: headingMatch[2].trim(),
-      agent: null,
-      fullBlock: line + "\n",
-    };
-    continue;
-  }
-
-  // Match **Agent:** line
-  if (current) {
-    const agentMatch = line.match(/^\*\*Agent:\*\*\s+(.+)/);
-    if (agentMatch) {
-      current.agent = agentMatch[1].trim();
-    }
-    // Stop at next section heading or horizontal rule
-    if (line.startsWith("## ") || line.startsWith("---")) {
-      if (current) { PRIORITY_QUEUE.push(current); current = null; }
-    } else {
-      current.fullBlock += line + "\n";
-    }
-  }
+let issues;
+try {
+  // Tolerate stray prose / code fences around the JSON the agent returns.
+  const start = issuesRaw.indexOf("[");
+  const end = issuesRaw.lastIndexOf("]");
+  issues = JSON.parse(start >= 0 && end >= 0 ? issuesRaw.slice(start, end + 1) : issuesRaw);
+} catch (e) {
+  log(`❌ Could not parse Issues JSON: ${String(e).slice(0, 120)}`);
+  return { error: "Bad Issues JSON" };
 }
-if (current) PRIORITY_QUEUE.push(current);
 
-// Filter out entries without an agent (malformed or section headers)
-const valid = PRIORITY_QUEUE.filter(p => p.agent);
+// Map Issues → priorities {id, title, agent, fullBlock}. agent comes from the
+// `agent:<domain>` label; the Issue body carries the Done-when criteria.
+const valid = [];
+for (const it of issues) {
+  const names = (it.labels || []).map((l) => l.name);
+  if (names.includes("paused")) continue;
+  const agentLabel = names.find((n) => n.startsWith("agent:"));
+  if (!agentLabel) continue; // unrouted — needs an owner label
+  valid.push({
+    id: String(it.number),
+    title: it.title,
+    agent: agentLabel.slice("agent:".length),
+    fullBlock: it.body || "",
+  });
+}
 
 if (valid.length === 0) {
-  log("✅ No active priorities in TOMORROW.md — nothing to do.");
+  log("✅ No open priority Issues with an agent: label — nothing to do.");
   return { priorities: 0 };
 }
 
@@ -114,30 +105,30 @@ const agentRuns = await parallel(
 
 Working directory: C:\\Users\\Windows11\\Downloads\\provenance-tracker
 
-## Priority #${topPriority.id}: ${topPriority.title}
+## Issue #${topPriority.id}: ${topPriority.title}
 
 ${topPriority.fullBlock}
 
 ## Hard constraints (read before starting)
 
-1. **GLOBE CONTRACT** — If your task touches StoriesApp.tsx, re-read the GLOBE CONTRACT section in draft/TOMORROW.md first. The globe init pattern is locked. Do not deviate.
+1. **GLOBE CONTRACT** — If your task touches StoriesApp.tsx or GlobeContainer.tsx, re-read the GLOBE CONTRACT section in the root CLAUDE.md first. The globe init pattern is locked. Do not deviate.
 2. **Types first** — Any new data shape MUST be added to src/lib/types.ts before any other file changes.
 3. **Honesty** — Never invent dates, coordinates, or sources. Sparse data shown as a gap, not faked.
 4. **Design tokens** — Use ONLY colors/fonts from src/lib/design-tokens.ts (see GLOBE CONTRACT in root CLAUDE.md). No deviations.
 
 ## Workflow
 
-1. Read draft/TOMORROW.md priority #${topPriority.id} in full (especially "Done when" criteria).
-2. Check if the feature already exists — if it does, close this task with "already shipped" and stop.
-3. Branch: \`git checkout -b feat/${agentName.toLowerCase().replace(/\s+/g, "-")}/priority-${topPriority.id}\`
+1. Read Issue #${topPriority.id} in full: \`gh issue view ${topPriority.id}\` — especially the "Done when" criteria above.
+2. Check if the feature already exists — if it does, comment "already shipped" on the Issue and stop.
+3. Branch: \`git checkout -b feat/${agentName.toLowerCase().replace(/\s+/g, "-")}/issue-${topPriority.id}\`
 4. Implement. Run \`npm run build\` — fix ALL TypeScript errors before continuing.
 5. Run \`npm run honesty\` — fix any honesty violations.
 6. Commit with semantic messages. Push: \`git push --set-upstream origin HEAD\`
 7. Open a GitHub PR:
    - Title: \`feat: ${topPriority.title}\`
-   - Body: Link to TOMORROW.md priority #${topPriority.id} + "Done when" checklist ticked
+   - Body: MUST contain \`Closes #${topPriority.id}\` (auto-closes the Issue on merge) + the "Done when" checklist ticked
 8. Report back: PR URL + one-sentence summary of what was built.
-9. Do NOT merge. Main session runs honesty gate before merge.
+9. Do NOT merge. The human reviews the Vercel preview and merges.
 
 ## Blockers
 

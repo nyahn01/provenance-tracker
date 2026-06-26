@@ -25,7 +25,7 @@ provenance-honesty-review and provenance-story so pitch, product, and claims sta
 
 ## Workflow
 
-**Input:** Main session spawns you with research task + link to TOMORROW.md priority (e.g., "research customer segments").
+**Input:** Main session spawns you with a research task + the assigned GitHub Issue (`#N`, labeled `priority`; e.g., "research customer segments"). Your PR must `Closes #N`.
 
 **Output:** Feature branch `feat/provenance-strategy/[research-name]` → PR with updated BUSINESS_CASE.md + findings.
 

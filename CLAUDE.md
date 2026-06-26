@@ -76,6 +76,10 @@ A priority = an open Issue labeled `priority` + `agent:<domain>` (+ `paused` to 
 `Closes #N` auto-closes it on merge — the queue self-cleans. The Projects board is the at-a-glance
 view (readable on phone). The batch workflow reads `gh issue list --label priority`, not markdown.
 
+`main` is protected by the `protect-main` ruleset (PR required, honesty+build checks must pass,
+no direct pushes). Approvals are intentionally OFF for the solo maintainer — see
+`docs/decisions/0001-branch-protection-solo-dev.md`. Agents NEVER merge; the human merges.
+
 ## Agent team (definitions in .claude/agents/)
 `provenance-globe` (globe/UI + token fidelity) · `provenance-data` (Wikidata/Met/AIC/RKD, reconcile,
 honest empty states) · `provenance-story` (demo/narrative) · `provenance-strategy` (business case) ·
