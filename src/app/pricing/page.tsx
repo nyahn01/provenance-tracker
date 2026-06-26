@@ -1,7 +1,7 @@
 /**
  * /pricing — Three-tier pricing page
  * Static server component — no client-side JS required.
- * Design tokens match /learn and /team exactly (draft/CLAUDE.md).
+ * Design tokens match /learn and /team exactly (src/lib/design-tokens.ts).
  */
 
 import Link from 'next/link'

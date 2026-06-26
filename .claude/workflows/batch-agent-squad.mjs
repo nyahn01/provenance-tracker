@@ -123,7 +123,7 @@ ${topPriority.fullBlock}
 1. **GLOBE CONTRACT** — If your task touches StoriesApp.tsx, re-read the GLOBE CONTRACT section in draft/TOMORROW.md first. The globe init pattern is locked. Do not deviate.
 2. **Types first** — Any new data shape MUST be added to src/lib/types.ts before any other file changes.
 3. **Honesty** — Never invent dates, coordinates, or sources. Sparse data shown as a gap, not faked.
-4. **Design tokens** — Use ONLY colors/fonts from draft/CLAUDE.md. No deviations.
+4. **Design tokens** — Use ONLY colors/fonts from src/lib/design-tokens.ts (see GLOBE CONTRACT in root CLAUDE.md). No deviations.
 
 ## Workflow
 

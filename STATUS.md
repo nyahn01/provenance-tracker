@@ -1,6 +1,6 @@
 # Project Status — what's implemented
 
-_Last updated 2026-06-26. A factual inventory of what exists and works today. For vision and rules see [draft/CLAUDE.md](draft/CLAUDE.md); for the live work queue see [draft/TOMORROW.md](draft/TOMORROW.md)._
+_Last updated 2026-06-26. A factual inventory of what exists and works today. For vision and rules see [CLAUDE.md](CLAUDE.md); for the live work queue see the GitHub Issues `priority` label / Projects board._
 
 ## Stack
 

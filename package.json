@@ -11,6 +11,7 @@
     "verify": "node scripts/verify.mjs",
     "honesty": "node scripts/honesty-check.mjs",
     "honesty:full": "node scripts/honesty-check.mjs --full",
+    "check:docs": "node scripts/check-doc-tokens.mjs",
     "ship": "node scripts/ship.mjs",
     "preparse": "node scripts/preparse-provenance.mjs"
   },
