@@ -148,6 +148,15 @@ After each batch run, main session updates [draft/PROGRESS.md](draft/PROGRESS.md
 
 ## 🔄 How Agents Work (The Loop)
 
+### 0. Sync local main to origin (Plan phase)
+
+Before reading the queue, the workflow fast-forwards local `main` to `origin/main`
+(`sync:local-main-to-origin`). The squad reads the **local** `TOMORROW.md` and agents
+branch from **local** main; if local lags origin, already-merged priorities get rebuilt
+as duplicate branches (happened 2026-06-23: priority #5 was rebuilt after it had merged).
+The sync makes `origin/main` the source of truth. A diverged main stops with a blocker
+rather than force-resetting.
+
 ### 1. Batch runs at 6am UTC
 
 The workflow reads `TOMORROW.md`, groups priorities by agent domain, spawns agents in parallel.
