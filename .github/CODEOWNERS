@@ -1,0 +1,14 @@
+# Require human review on the highest-risk paths (the GLOBE CONTRACT,
+# the single token/type sources of truth, the honesty gate, and CI).
+# Everything else can be approved by the normal PR flow.
+
+/src/components/StoriesApp.tsx              @nyahn01
+/src/components/provenance/GlobeContainer.tsx  @nyahn01
+/src/lib/design-tokens.ts                   @nyahn01
+/src/lib/types.ts                           @nyahn01
+
+# Operating contract + honesty enforcement + automation
+/CLAUDE.md                                  @nyahn01
+/scripts/honesty-check.mjs                  @nyahn01
+/scripts/check-doc-tokens.mjs               @nyahn01
+/.github/                                   @nyahn01

@@ -6,7 +6,7 @@ folder as vault). Exclude `node_modules/`, `.next/`, `.git/` under Settings → 
 ## Map of the project (start here)
 | File | What it is |
 |---|---|
-| [draft/CLAUDE.md](draft/CLAUDE.md) | Product spec — what it is, honesty rules, design tokens, tech, APIs |
+| [CLAUDE.md](CLAUDE.md) | Operating contract — vision, honesty rules, design tokens, GLOBE CONTRACT, tech, APIs |
 | [draft/BUSINESS_CASE.md](draft/BUSINESS_CASE.md) | Positioning — curated provenance stories; what we do/don't claim |
 | [draft/DESIGN_SYSTEM.md](draft/DESIGN_SYSTEM.md) | Type, color, spacing, motion — the visual contract |
 | [draft/DATA_SOURCES.md](draft/DATA_SOURCES.md) | Tiered sourcing strategy + credibility tiers |

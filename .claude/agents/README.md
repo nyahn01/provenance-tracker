@@ -128,7 +128,5 @@ Main session responds in PR comment, agent continues.
 ---
 
 ## See Also
-- [CLAUDE.md](../draft/CLAUDE.md) — project vision & honesty rules
-- [TOMORROW.md](../draft/TOMORROW.md) — priority queue
-- [PROGRESS.md](../draft/PROGRESS.md) — what shipped & lessons learned
-- [GIT_WORKFLOW.md](../../.git/GIT_WORKFLOW.md) — branching & commit conventions
+- [CLAUDE.md](../../CLAUDE.md) — operating contract: vision, honesty rules, design tokens, GLOBE CONTRACT
+- Priority queue & what shipped — **GitHub Issues + Projects** (`gh issue list --label priority`), not markdown

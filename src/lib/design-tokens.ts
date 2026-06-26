@@ -23,8 +23,7 @@
  *   • /team uses MARKETING with sage overridden to #4a7a6a (see usage note below).
  *
  * The globe trio (ocean/land/border) is governed by the GLOBE CONTRACT in
- * draft/TOMORROW.md — these are the values that actually render, NOT the stale
- * globe-* block in draft/CLAUDE.md.
+ * the root CLAUDE.md — these are the values that actually render.
  */
 
 // ─── Observatory (dark) — app chrome + globe ─────────────────────────────────
@@ -82,7 +81,7 @@ export const state = {
   gap: '#9a8f85',                      // EV_STYLES.gap
 } as const
 
-// ─── Globe trio (GLOBE CONTRACT — draft/TOMORROW.md) ─────────────────────────
+// ─── Globe trio (GLOBE CONTRACT — root CLAUDE.md) ────────────────────────────
 export const globe = {
   ocean: '#060504',   // canvas fill literal in StoriesApp globe init — DO NOT change
   land: '#7a5828',
