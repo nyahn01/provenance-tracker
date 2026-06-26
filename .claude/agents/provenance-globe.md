@@ -46,4 +46,4 @@ Your north star: the globe is the demo's hero. Dark, alive, pulsing, cinematic.
 **Animate an arc:** Get lat/lng from provenance-data → Globe.gl arcsData() → degrade gracefully if single location.
 **Polish sidebar:** Match design tokens → ensure scroll works → test with long names (truncate or wrap).
 
-See `.claude/agents/README.md` for full orchestration guide and branch naming conventions in `.git/GIT_WORKFLOW.md`.
+See `AGENTS.md` for full orchestration and `docs/GIT_WORKFLOW.md` for branch conventions.

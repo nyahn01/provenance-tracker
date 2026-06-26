@@ -40,6 +40,7 @@ written to a file, it's lost when the context window rolls. This file is the saf
   app name) and the API returns 410 without one. ACTION FOR HUMAN: register a free key at
   rijksmuseum.nl/en/rijksstudio and add RIJKSMUSEUM_KEY to .env.local. Until then, AIC is our
   richest no-key prose source.
+  **[RESOLVED 2026-06-27: key NOT needed — Rijksmuseum search uses the keyless Linked Art API; AIC stays the primary prose source. Won't-do.]**
 
 - `#design #process` Admitted: the "redesign" was a RESKIN, not a redesign — fonts + a gallery
   detail panel, but the v0 information architecture was untouched (same dark globe, same museum-list
@@ -62,6 +63,7 @@ written to a file, it's lost when the context window rolls. This file is the saf
   runs when Claude is unavailable — lower precision (can't resolve "by descent to his mother" to a
   city) but honest (only emits a KNOWN city literally in the text, never invents). Claude becomes the
   quality upgrade once the key is funded. ACTION FOR HUMAN: add Anthropic credits to restore Claude.
+  **[RESOLVED 2026-06-27: credits restored — Claude prose extraction + /api/reconcile active again; deterministic fallback retained as a safety net.]**
 
 - `#design #process` Polish pass verified live (orchestrator, screenshots). CONFIRMED good: globe
   now shows continent outlines + atmospheric glow + glowing pins (luminous, no longer an empty

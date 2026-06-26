@@ -27,7 +27,7 @@ The honesty gate (`npm run honesty`, CI on every PR) enforces these mechanically
 | Research / strategy / lessons | `vault/` + `docs/` |
 
 Rules: link, never copy a value. Before creating a doc, evolve an existing one. No dated/dormant
-files — done work closes an Issue; a lesson merges into `docs/lessons.md`. Keep this file lean
+files — done work closes an Issue; a lesson merges into `docs/INSIGHTS.md`. Keep this file lean
 (~150 lines max) — it loads on every turn of every agent.
 
 ## ⚠️ GLOBE CONTRACT — read before touching StoriesApp.tsx / GlobeContainer.tsx
@@ -57,11 +57,12 @@ Next.js 16 (App Router) · TypeScript (strict) · Tailwind · Globe.gl (dynamic 
 · Pretendard (CDN) · Anthropic SDK (`claude-sonnet-4-6`) · Vercel (auto-deploy on push to main;
 preview per PR via `vercel[bot]`).
 
-## APIs (all keyless unless noted — full detail in docs/data-sources.md)
+## APIs (all keyless unless noted — full detail in docs/DATA_SOURCES.md)
 Met · AIC · Rijksmuseum Linked Art · Wikidata SPARQL · Cleveland · Getty GPI (Knoedler+Goupil
 seeded via `scripts/seed-goupil.mjs`) · RKD (`src/lib/rkd.ts`) · Europeana (`EUROPEANA_API_KEY`).
-**Anthropic API is OUT OF CREDITS** — extraction falls back to deterministic prose mining; do
-not call `/api/reconcile` in the demo.
+**Anthropic API has credits** (restored 2026-06-27): Claude prose extraction + `/api/reconcile`
+are active. Featured works stay pre-parsed (zero runtime cost); a deterministic prose-mining
+fallback remains if a call fails.
 
 ## Coding rules
 - TypeScript strict. Never hardcode keys — always `process.env`.
@@ -87,8 +88,13 @@ honest empty states) · `provenance-story` (demo/narrative) · `provenance-strat
 `design-director` / `dataviz-engineer` / `art-historian` / `art-insurance-advisor` (specialists) ·
 `provenance-honesty-review` (BLOCKING gate: overclaiming, missing sources, faked data) ·
 `feedback-triage`. Each profile owns its domain rules — don't duplicate them here.
+Full orchestration (ship gate, routing, build loop, git conventions) is in `AGENTS.md`.
 
 ## Workflow
 Read this file + open Issues at session start. Branch `feat/<domain>/<slug>`. Build →
 `npm run build` (fix all TS errors) → `npm run honesty` → open PR (do NOT merge; human gate).
 Verify against the PR's Vercel preview URL. Run `npm run build` before every push.
+
+Cross-device: laptop = VS Code + Claude Code extension (rich diffs, run/verify); phone/tablet =
+Claude Code web + GitHub app (review the Vercel preview, reorder the board, merge). The
+SessionStart hook ff-syncs remote sessions and warns on a stale/dirty local tree.
