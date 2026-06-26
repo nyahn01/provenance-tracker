@@ -19,7 +19,7 @@ Your north star: the globe is the demo's hero. Dark, alive, pulsing, cinematic.
 
 ## Workflow
 
-**Input:** Main session spawns you with a feature description + link to TOMORROW.md priority.
+**Input:** Main session spawns you with a feature description + the assigned GitHub Issue (`#N`, labeled `priority`). Your PR must `Closes #N`.
 
 **Output:** Feature branch `feat/provenance-globe/[feature-name]` → PR with screenshot + checklist → honesty gate review.
 

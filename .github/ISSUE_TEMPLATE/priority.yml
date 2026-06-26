@@ -1,0 +1,48 @@
+name: "Build priority"
+description: "Queue a feature/task for the agent squad (becomes a priority Issue)."
+title: "<short imperative title>"
+labels: ["priority"]
+body:
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Agent
+      description: "Which specialist owns this? (adds the agent:<domain> label by hand after filing)"
+      options:
+        - provenance-globe
+        - provenance-data
+        - provenance-story
+        - provenance-strategy
+        - design-director
+        - dataviz-engineer
+        - art-historian
+        - art-insurance-advisor
+    validations:
+      required: true
+  - type: textarea
+    id: done-when
+    attributes:
+      label: Done when
+      description: "Concrete, checkable acceptance criteria. The agent stops when these are all true."
+      placeholder: |
+        - …
+        - npm run build and npm run honesty both pass
+    validations:
+      required: true
+  - type: textarea
+    id: honesty
+    attributes:
+      label: Honesty notes
+      description: "Source requirements / gap handling / custody-vs-loan concerns specific to this task."
+      placeholder: "Every shown fact needs a visible source. No invented dates/coords. Custody ≠ loans."
+    validations:
+      required: false
+  - type: checkboxes
+    id: ack
+    attributes:
+      label: Before filing
+      options:
+        - label: "I checked this isn't already an open priority Issue or already shipped."
+          required: true
+        - label: "If it touches StoriesApp/GlobeContainer, the GLOBE CONTRACT in CLAUDE.md applies."
+          required: false
