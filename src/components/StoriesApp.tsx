@@ -197,8 +197,12 @@ export default function StoriesApp() {
                             onError={e => { e.currentTarget.style.visibility = 'hidden' }}
                             style={{ width: 44, height: 44, flexShrink: 0, objectFit: 'cover', borderRadius: 5, background: OBS.globeLand, display: 'block' }} />
                         ) : (
-                          <span aria-hidden="true"
-                            style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 5, background: OBS.surface, border: `1px solid ${OBS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: OBS.textFaint, fontSize: '1rem' }}>◇</span>
+                          <span
+                            title={r.source === 'aic' ? 'Image unavailable — AIC IIIF restriction' : undefined}
+                            aria-label={r.source === 'aic' ? 'Image unavailable' : 'No image'}
+                            style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 5, background: OBS.surface, border: `1px solid ${OBS.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: OBS.textFaint, fontSize: r.source === 'aic' ? '0.55rem' : '1rem', gap: 1, letterSpacing: '0.03em' }}>
+                            {r.source === 'aic' ? <><span style={{ fontSize: '0.7rem' }}>◇</span><span>AIC</span></> : '◇'}
+                          </span>
                         )}
                         <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.85rem', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {r.title} <span style={{ color: OBS.textMuted }}>· {r.artist}</span>

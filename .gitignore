@@ -22,3 +22,6 @@ out/
 
 # Local research / consult notes (per-machine, not part of the product)
 *_consult.txt
+
+# Disk-backed prose extraction cache (generated at runtime, not shared)
+cache/

@@ -28,6 +28,8 @@ import { searchRkd } from '@/lib/rkd'
 import { fetchEuropeana } from '@/lib/europeana'
 import { fetchClevelandDetail } from '@/lib/cleveland'
 import { extractExhibitionHistoryLoans, extractProvenanceLoans, mergeLoans } from '@/lib/exhibition-loans'
+import { getProseCacheEntry, setProseCacheEntry } from '@/lib/prose-cache'
+import featuredProvenanceData from '@/lib/featured-provenance.json'
 import type {
   ArtworkMeta,
   LocationEntry,
@@ -35,6 +37,10 @@ import type {
   GapEntry,
   ProvenanceResponse,
 } from '@/lib/types'
+
+// Pre-parsed ownership chains for the 6 featured artworks (zero runtime Claude cost).
+// Populated by: node scripts/preparse-provenance.mjs
+const FEATURED_PROVENANCE = featuredProvenanceData as Record<string, LocationEntry[]>
 
 // TTL is source-dependent: Met/AIC = 7d, Wikidata = 1d (resolved at request time via CACHE_TTL)
 
@@ -413,10 +419,15 @@ export async function GET(request: NextRequest) {
   //    as a change of custody. This is the precision fix.
   const srcName = source === 'met' ? 'Met' : source === 'rijks' ? 'Rijksmuseum' : source === 'europeana' ? 'Europeana' : source === 'wikidata' ? 'Wikidata' : source === 'cleveland' ? 'Cleveland Museum of Art' : 'AIC'
   const provLabel = `${srcName} provenance`
-  let [ownership, wikiLocs, gettyRecords, rkdRecords] = await Promise.all([
-    extractOwnershipLocations(meta.title, meta.artist, provenanceText, provLabel).catch(err => {
-      console.error('[provenance/ownership]', err); return [] as LocationEntry[]
-    }),
+  const proseCacheKey = `${source}:${id}`
+
+  // Check pre-parsed featured JSON (committed, zero cost) then disk cache (survives restarts)
+  const cachedOwnership =
+    (FEATURED_PROVENANCE[proseCacheKey] as LocationEntry[] | undefined) ??
+    getProseCacheEntry(proseCacheKey)
+
+  // Secondary sources run in parallel regardless of ownership cache status
+  const [wikiLocs, gettyRecords, rkdRecords] = await Promise.all([
     fetchWikidataLocations(meta.title, meta.artist).catch(err => {
       console.error('[provenance/wikidata]', err); return [] as LocationEntry[]
     }),
@@ -425,6 +436,18 @@ export async function GET(request: NextRequest) {
       console.warn('[provenance/rkd]', err); return []
     }),
   ])
+
+  let ownership: LocationEntry[]
+  if (cachedOwnership) {
+    ownership = cachedOwnership
+  } else {
+    ownership = await extractOwnershipLocations(meta.title, meta.artist, provenanceText, provLabel).catch(err => {
+      console.error('[provenance/ownership]', err); return [] as LocationEntry[]
+    })
+    // Persist so restarts don't re-bill the same artwork
+    if (ownership.length > 0) setProseCacheEntry(proseCacheKey, ownership)
+  }
+
   if (ownership.length === 0) ownership = deterministicExtract(provenanceText, provLabel)
   // Wikidata only fills the custody chain when the prose gave us nothing — prose is
   // tier-A and avoids the wrong-entity matches Wikidata sometimes returns.
@@ -435,13 +458,19 @@ export async function GET(request: NextRequest) {
   //   1. Dedicated exhibition_history field (AIC tier-A) — no keyword required.
   //   2. Provenance prose — scanned for "on loan to" / "loaned to" / "borrowed by" markers.
   // A loan is never a change of custody; it is separate from the ownership chain.
+  // Parse the artwork's earliest creation year to guard against stray numbers in prose
+  // being read as loan dates (e.g. "Gallery 1600" for an 1889 painting).
+  const creationYear = (() => { const m = meta.date?.match(/\d{4}/); return m ? parseInt(m[0], 10) : null })()
+
   const exhibitionHistoryLoans = extractExhibitionHistoryLoans(
     exhibitionText,
     `${srcName} exhibition history`,
+    creationYear,
   )
   const provenanceLoanMarkers = extractProvenanceLoans(
     provenanceText,
     `${srcName} provenance prose`,
+    creationYear,
   )
   const exhibitions: ExhibitionLoan[] = mergeLoans(exhibitionHistoryLoans, provenanceLoanMarkers)
 

@@ -26,17 +26,26 @@ const LOAN_MARKERS: Array<{ keyword: RegExp; type: ExhibitionLoan['loanMarker'] 
 ]
 
 // Year and year-range patterns.
-const YEAR_RANGE = /\b(1[5-9]\d{2}|20[0-2]\d)\s*[–\-]\s*(1[5-9]\d{2}|20[0-2]\d)\b/
-const YEAR_SINGLE = /\b(1[5-9]\d{2}|20[0-2]\d)\b/g
+// Lower bound 1200 covers the earliest plausible Western art provenance records.
+const YEAR_RANGE = /\b(1[2-9]\d{2}|20[0-2]\d)\s*[–\-]\s*(1[2-9]\d{2}|20[0-2]\d)\b/
+const YEAR_SINGLE = /\b(1[2-9]\d{2}|20[0-2]\d)\b/g
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function extractYears(
   clause: string,
+  minYear = 1200,
 ): { startDate: string | null; endDate: string | null } {
   const rangeM = clause.match(YEAR_RANGE)
-  if (rangeM) return { startDate: rangeM[1], endDate: rangeM[2] }
-  const all = [...clause.matchAll(YEAR_SINGLE)].map(m => m[1])
+  if (rangeM) {
+    const s = parseInt(rangeM[1], 10)
+    if (s < minYear) return { startDate: null, endDate: null }
+    const e = parseInt(rangeM[2], 10)
+    return { startDate: rangeM[1], endDate: e >= minYear ? rangeM[2] : null }
+  }
+  const all = [...clause.matchAll(YEAR_SINGLE)]
+    .map(m => m[1])
+    .filter(y => parseInt(y, 10) >= minYear)
   if (all.length === 0) return { startDate: null, endDate: null }
   if (all.length === 1) return { startDate: all[0], endDate: null }
   return { startDate: all[0], endDate: all[all.length - 1] }
@@ -75,6 +84,7 @@ function dedupKey(loan: ExhibitionLoan): string {
 export function extractProvenanceLoans(
   provenanceProse: string,
   sourceLabel: string,
+  creationYear: number | null = null,
 ): ExhibitionLoan[] {
   if (!provenanceProse || provenanceProse.trim().length < 20) return []
 
@@ -99,7 +109,10 @@ export function extractProvenanceLoans(
     const city = geocodeNamed(afterMarker) ?? geocodeNamed(clause)
     if (!city) continue
 
-    const { startDate, endDate } = extractYears(clause)
+    const { startDate, endDate } = extractYears(clause, creationYear ?? 1200)
+    // Reject dates that predate the artwork's creation — they are stray numbers, not loan years.
+    if (creationYear && startDate && parseInt(startDate, 10) < creationYear) continue
+
     const institution = firstInstitution(afterMarker.trim()) || firstInstitution(clause)
     const confidence = confidenceFrom(
       !!(startDate && endDate),
@@ -142,6 +155,7 @@ export function extractProvenanceLoans(
 export function extractExhibitionHistoryLoans(
   exhibitionProse: string,
   sourceLabel: string,
+  creationYear: number | null = null,
 ): ExhibitionLoan[] {
   if (!exhibitionProse || exhibitionProse.trim().length < 10) return []
 
@@ -155,7 +169,10 @@ export function extractExhibitionHistoryLoans(
     const city = geocodeNamed(clause)
     if (!city) continue
 
-    const { startDate, endDate } = extractYears(clause)
+    const { startDate, endDate } = extractYears(clause, creationYear ?? 1200)
+    // Reject dates that predate the artwork's creation — they are stray numbers, not loan years.
+    if (creationYear && startDate && parseInt(startDate, 10) < creationYear) continue
+
     const institution = firstInstitution(clause)
     const confidence = confidenceFrom(
       !!(startDate && endDate),
