@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 import { SiteNav } from '@/components/SiteNav'
 
@@ -79,6 +80,7 @@ export default function RootLayout({
           data-coffee-color="#ffffff"
           strategy="afterInteractive"
         />
+        <SpeedInsights />
       </body>
     </html>
   )
