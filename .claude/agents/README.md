@@ -1,29 +1,32 @@
 # Agent Team Orchestration Guide
 
-Five specialists live here. The main session (orchestrator) routes tasks, receives PRs, and runs the credibility gate.
+Ten specialists live here (definitions in this folder). The main session (orchestrator) routes
+tasks, receives PRs, and runs the honesty gate. Agents never merge — the human merges.
 
-## Spawning an Agent
+## Spawning an agent
 
-```bash
-# In main session, spawn an agent with a detailed task
-runSubagent "provenance-data" "Add Wikidata P276 location history query + caching layer for Starry Night test case"
-```
-
-The agent receives:
+Spawn via the **Agent tool** (one task per agent; run independent agents in parallel in a single
+message), or let the **batch-agent-squad** workflow spawn them from the priority Issues. Each agent
+receives:
 - Your task description (what to build)
 - The assigned GitHub Issue (`#N`, labeled `priority`)
-- Reference to existing code (git state)
-- Instruction: "Open a PR when done; main session will run honesty gate"
+- The existing code / git state
+- Instruction: "Open a PR with `Closes #N` when done; do NOT merge — the honesty gate reviews first"
 
 ## What Each Agent Owns
 
-| Agent | Domain | Start with |
+| Agent | Domain | Profile |
 |---|---|---|
 | `provenance-globe` | 3D globe UI, pins, arcs, animations, panels, responsive | [provenance-globe.md](provenance-globe.md) |
-| `provenance-data` | APIs (Wikidata SPARQL, Met, AIC), reconciliation, caching | [provenance-data.md](provenance-data.md) |
-| `provenance-strategy` | Business case, positioning, customer research | [provenance-strategy.md](provenance-strategy.md) |
+| `provenance-data` | APIs (Wikidata/Met/AIC/RKD/Getty), reconciliation, caching, empty states | [provenance-data.md](provenance-data.md) |
 | `provenance-story` | Demo script, narrative, hero-work selection | [provenance-story.md](provenance-story.md) |
+| `provenance-strategy` | Business case, positioning, market/customer research | [provenance-strategy.md](provenance-strategy.md) |
+| `design-director` | Visual language & art direction; owns the design system | [design-director.md](design-director.md) |
+| `dataviz-engineer` | Timeline / map / provenance-graph information design | [dataviz-engineer.md](dataviz-engineer.md) |
+| `art-historian` | Provenance scholarship & source credibility | [art-historian.md](art-historian.md) |
+| `art-insurance-advisor` | Fine-art insurance / underwriting domain input | [art-insurance-advisor.md](art-insurance-advisor.md) |
 | `provenance-honesty-review` | BLOCKING gate: fact-check, source lines, no faking | [provenance-honesty-review.md](provenance-honesty-review.md) |
+| `feedback-triage` | Triage in-app `feedback` Issues into structured files | [feedback-triage.md](feedback-triage.md) |
 
 ## Agent Workflow (per task)
 
@@ -68,21 +71,16 @@ The agent receives:
 - Choosing between equivalent implementations
 - Tweaking design tokens (follow exactly what CLAUDE.md says)
 
-## Parallel Work (Batch Mode)
+## Parallel work (batch mode)
 
-When the queue (priority Issues) has independent features (e.g., "Add Wikidata SPARQL" + "Polish globe animations"):
-
-```bash
-# Main session runs /batch to spawn isolated worktrees
-/batch feat/provenance-data/wikidata-sparql
-/batch feat/provenance-globe/pin-animations
-```
-
-Each agent:
-- Gets its own branch + worktree
-- Opens PR independently
-- Can be reviewed + merged separately
-- Both can run in parallel (honesty gate reviews both)
+When the queue (priority Issues) has independent features across domains, the **batch-agent-squad**
+workflow (`.claude/workflows/batch-agent-squad.mjs`, run via `/workflow batch-agent-squad`) reads the
+`priority` Issues, groups them by `agent:<domain>`, and spawns one agent per domain in parallel.
+For agents that mutate files concurrently, run each in its own **git worktree** (isolation) so they
+don't collide. Each agent:
+- Works on its own branch `feat/<domain>/issue-<N>`
+- Opens a PR independently (body contains `Closes #N`)
+- Is reviewed by the honesty gate and merged by the human separately
 
 ## State Handoff: Main → Agent
 
