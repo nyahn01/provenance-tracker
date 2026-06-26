@@ -35,9 +35,12 @@ function qid(uri: string): string {
   return uri.slice(uri.lastIndexOf('/') + 1)
 }
 
-/** Commons FilePath URL → sized thumbnail (FilePath honours a width param). */
+/** Commons FilePath URL → sized thumbnail (FilePath honours a width param).
+ *  Wikimedia SPARQL returns http:// URLs; force https:// to prevent mixed-content
+ *  blocking on HTTPS pages (Vercel production blocks HTTP media). */
 function thumb(imageUrl: string, width = 220): string {
-  return imageUrl.includes('?') ? imageUrl : `${imageUrl}?width=${width}`
+  const secure = imageUrl.replace(/^http:\/\//, 'https://')
+  return secure.includes('?') ? secure : `${secure}?width=${width}`
 }
 
 async function resolveEntities(q: string, signal: AbortSignal): Promise<string[]> {

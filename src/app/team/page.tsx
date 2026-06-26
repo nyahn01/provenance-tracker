@@ -32,21 +32,33 @@ const AGENTS: Agent[] = [
     model: 'OPUS',
   },
   {
-    name: 'frontend-engineer',
+    name: 'provenance-globe',
     role: 'Globe, sidebar & all front-end',
-    owns: 'Globe.gl arcs/pins, sidebar panels, dataviz, responsive layout, strict design-token fidelity.',
+    owns: 'Globe.gl arcs/pins, sidebar panels, responsive layout, strict design-token fidelity.',
+    model: 'SONNET',
+  },
+  {
+    name: 'dataviz-engineer',
+    role: 'Information design',
+    owns: 'Timeline, movement map, provenance graph — how the journey is shown clearly and beautifully.',
     model: 'SONNET',
   },
   {
     name: 'provenance-data',
     role: 'Data integration & APIs',
-    owns: 'Wikidata SPARQL, Met/AIC/Rijks/Getty APIs, geocoding, caching, rate limiting, data contracts.',
+    owns: 'Wikidata SPARQL, Met/AIC/Rijks/Europeana/Cleveland/Getty APIs, caching, rate limiting, data contracts.',
     model: 'SONNET',
   },
   {
     name: 'art-historian',
     role: 'Provenance scholarship',
     owns: 'Source credibility ranking, gap characterization, what makes custody evidence trustworthy.',
+    model: 'OPUS',
+  },
+  {
+    name: 'art-insurance-advisor',
+    role: 'Insurance & underwriting',
+    owns: 'What underwriters price, what data they trust, how provenance signals map to real risk models.',
     model: 'OPUS',
   },
   {
@@ -129,13 +141,13 @@ export default function TeamPage() {
               Ready when you are.<br />Autonomous by design.
             </h1>
             <p style={{ fontSize: '1rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 560, marginBottom: 16 }}>
-              7 specialized AI agent profiles run this platform on Max. Each owns a domain.
+              9 specialized AI agent profiles run this platform on Max. Each owns a domain.
               Each can block a commit. Every fact you see passed a credibility review.
             </p>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
               {[
-                { stage: 'Stage 1 · Manual', desc: 'Agents invoked per session in Claude Code', active: true },
-                { stage: 'Stage 2 · Automated', desc: 'Background automation running on Max', active: true },
+                { stage: 'Stage 1 · Active', desc: 'Agents invoked per session in Claude Code', active: true },
+                { stage: 'Stage 2 · Scheduled', desc: 'Batch workflow queued via TOMORROW.md, human-gated', active: true },
                 { stage: 'Stage 3 · Vision', desc: 'Fully event-driven, autonomous monitoring', active: false },
               ].map(s => (
                 <div key={s.stage} style={{ padding: '8px 14px', border: `1px solid ${s.active ? C.gold : C.border}`, borderRadius: 6, opacity: s.active ? 1 : 0.5 }}>
@@ -228,7 +240,7 @@ export default function TeamPage() {
           {/* Agent Cards */}
           <div style={{ marginBottom: 72 }}>
             <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 28 }}>
-              The specialists ({AGENTS.length} agents)
+              The specialists ({AGENTS.length} active agents)
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
               {AGENTS.map((agent) => (
@@ -288,8 +300,8 @@ export default function TeamPage() {
           {/* Data layer callout */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20, marginBottom: 80 }}>
             {[
-              { label: 'Museum APIs', desc: 'Met · AIC · Rijksmuseum · Wikidata. Every fact sourced, every gap shown honestly.', color: C.sage },
-              { label: 'Getty GPI', desc: 'Knoedler Stock Books 1872–1970. 2,600+ pre-museum dealer transactions. CC0.', color: C.purple },
+              { label: 'Museum APIs', desc: 'Met · AIC · Rijksmuseum · Europeana · Wikidata · Cleveland Museum of Art. Every fact sourced, every gap shown honestly.', color: C.sage },
+              { label: 'Getty GPI', desc: 'Knoedler Stock Books (1872–1970) + Goupil & Cie (1846–1919). 4,388 pre-museum dealer records with archival scan links. CC0.', color: C.purple },
               { label: 'Honesty contract', desc: 'No invented dates. No live custody claims. Custody ≠ exhibition. Gaps shown explicitly.', color: C.gold },
             ].map(item => (
               <div key={item.label} style={{ padding: '20px 24px', border: `1px solid ${C.border}`, borderRadius: 10, background: C.surface }}>

@@ -153,6 +153,7 @@ export default function StoriesApp() {
                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = OBS.border }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={aicImage(f.imageId, 600)} alt={f.title} loading="lazy"
+                    onError={e => { e.currentTarget.style.visibility = 'hidden' }}
                     style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block', background: OBS.globeLand }} />
                   <div style={{ padding: '14px 16px 16px' }}>
                     <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', color: OBS.text, lineHeight: 1.15 }}>{f.title}</div>
@@ -193,6 +194,7 @@ export default function StoriesApp() {
                         {r.thumbnail ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={r.thumbnail} alt="" loading="lazy"
+                            onError={e => { e.currentTarget.style.visibility = 'hidden' }}
                             style={{ width: 44, height: 44, flexShrink: 0, objectFit: 'cover', borderRadius: 5, background: OBS.globeLand, display: 'block' }} />
                         ) : (
                           <span aria-hidden="true"
@@ -212,7 +214,8 @@ export default function StoriesApp() {
             <div style={{ marginTop: 64, borderTop: `1px solid ${OBS.border}`, paddingTop: 20, fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: OBS.textFaint, lineHeight: 1.6, maxWidth: 720 }}>
               <strong style={{ color: OBS.textMuted, fontWeight: 600 }}>Data &amp; rights.</strong> Provenance and exhibition facts come from
               the open APIs of the Metropolitan Museum of Art, the Art Institute of Chicago, the Rijksmuseum,
-              Europeana, Wikidata, and the Getty Research Institute (Knoedler Stock Books, CC0 1.0).
+              Europeana, Wikidata, the Cleveland Museum of Art, and the Getty Research Institute
+              (Knoedler &amp; Goupil dealer records, CC0 1.0).
               Images are shown only for public-domain works, credited to their institution. Gaps are shown, never invented.
               <div style={{ marginTop: 10, display: 'flex', gap: 20, flexWrap: 'wrap' }}>
                 <a href="/team" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
