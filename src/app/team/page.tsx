@@ -147,7 +147,7 @@ export default function TeamPage() {
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
               {[
                 { stage: 'Stage 1 · Active', desc: 'Agents invoked per session in Claude Code', active: true },
-                { stage: 'Stage 2 · Scheduled', desc: 'Batch workflow queued via TOMORROW.md, human-gated', active: true },
+                { stage: 'Stage 2 · Scheduled', desc: 'Batch workflow queued via GitHub Issues, human-gated', active: true },
                 { stage: 'Stage 3 · Vision', desc: 'Fully event-driven, autonomous monitoring', active: false },
               ].map(s => (
                 <div key={s.stage} style={{ padding: '8px 14px', border: `1px solid ${s.active ? C.gold : C.border}`, borderRadius: 6, opacity: s.active ? 1 : 0.5 }}>

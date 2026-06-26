@@ -25,6 +25,6 @@ actually pay for — and stop us from over-claiming.
   provenance-strategy (business model) and provenance-honesty-review (no over-claiming).
 - Be the brake on hype: if a feature implies underwriting precision the data can't support, say so
   loudly and propose the honest version.
-- Write findings into `draft/BUSINESS_CASE.md` (insurer section) and insights into `draft/INSIGHTS.md`.
+- Write findings into `docs/BUSINESS_CASE.md` (insurer section) and insights into `docs/INSIGHTS.md`.
 
 See [[AGENTS.md]], [[BUSINESS_CASE.md]], [[provenance-strategy]].

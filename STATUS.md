@@ -35,7 +35,7 @@ _Last updated 2026-06-26. A factual inventory of what exists and works today. Fo
 
 ## Features (all working)
 
-- **3D globe** — three arc tiers (custody gold / exhibition-loan sage / dealer-trail amber) + city dots, auto-rotate, auto-framing on selection. Init is locked by the **GLOBE CONTRACT** (see [draft/TOMORROW.md](draft/TOMORROW.md)). Lives in [src/components/provenance/GlobeContainer.tsx](src/components/provenance/GlobeContainer.tsx).
+- **3D globe** — three arc tiers (custody gold / exhibition-loan sage / dealer-trail amber) + city dots, auto-rotate, auto-framing on selection. Init is locked by the **GLOBE CONTRACT** (see [CLAUDE.md](CLAUDE.md)). Lives in [src/components/provenance/GlobeContainer.tsx](src/components/provenance/GlobeContainer.tsx).
 - **Unified timeline** — merges custody / exhibition-loan / Getty-dealer events, sorted, with source-tier badges and high/medium/low confidence dots. Logic in [src/components/provenance/timeline.ts](src/components/provenance/timeline.ts).
 - **Honest gaps** — thin/missing custody shown as explicit gap panels, never faked; unmapped cities kept off the globe.
 - **WWII-era detection** — flags undocumented custody overlapping 1933–1945 (Washington Principles note).

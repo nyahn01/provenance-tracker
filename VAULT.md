@@ -7,17 +7,17 @@ folder as vault). Exclude `node_modules/`, `.next/`, `.git/` under Settings → 
 | File | What it is |
 |---|---|
 | [CLAUDE.md](CLAUDE.md) | Operating contract — vision, honesty rules, design tokens, GLOBE CONTRACT, tech, APIs |
-| [draft/BUSINESS_CASE.md](draft/BUSINESS_CASE.md) | Positioning — curated provenance stories; what we do/don't claim |
-| [draft/DESIGN_SYSTEM.md](draft/DESIGN_SYSTEM.md) | Type, color, spacing, motion — the visual contract |
-| [draft/DATA_SOURCES.md](draft/DATA_SOURCES.md) | Tiered sourcing strategy + credibility tiers |
-| [draft/DEMO_SCRIPT.md](draft/DEMO_SCRIPT.md) | The ~3-min demo flow |
-| [draft/INSIGHTS.md](draft/INSIGHTS.md) | Running knowledge log — findings, decisions, dead-ends |
+| [docs/BUSINESS_CASE.md](docs/BUSINESS_CASE.md) | Positioning — curated provenance stories; what we do/don't claim |
+| [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) | Type, color, spacing, motion — the visual contract |
+| [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md) | Tiered sourcing strategy + credibility tiers |
+| [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) | The ~3-min demo flow |
+| [docs/INSIGHTS.md](docs/INSIGHTS.md) | Running knowledge log — findings, decisions, dead-ends |
 | [AGENTS.md](AGENTS.md) | Agent team + build loop + the ship gate |
 | `.claude/plans/` | Approved implementation plans |
 | `memory/` | Cross-session facts (also surfaced to Claude) |
 
 ## How this stays meaningful
-- Insights and decisions go in `draft/INSIGHTS.md` the moment they happen (chat is volatile).
+- Insights and decisions go in `docs/INSIGHTS.md` the moment they happen (chat is volatile).
 - Specs (`CLAUDE`/`BUSINESS_CASE`/`DESIGN_SYSTEM`/`DATA_SOURCES`) are the source of truth; update
   them when a decision changes the product. Use `[[wikilinks]]` so the graph view connects them.
 - Every code change ships through `node scripts/ship.mjs --push` (build + live verify + honesty grep),

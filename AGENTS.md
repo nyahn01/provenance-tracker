@@ -74,15 +74,15 @@ Anthropic key with credits.
 - Any feature touching data + UI: `provenance-data` defines/extends `src/lib/types.ts`
   FIRST, then UI agents render it. Never let the UI invent data to look finished.
 - Design freelancing is banned: `provenance-globe`/`dataviz-engineer` style only from
-  `draft/DESIGN_SYSTEM.md`. If it's not in the system, ask `design-director` to add it.
+  `docs/DESIGN_SYSTEM.md`. If it's not in the system, ask `design-director` to add it.
 
 ## Knowledge capture (never lose an insight)
 
-- Every agent appends findings/decisions/dead-ends to `draft/INSIGHTS.md` the moment they
+- Every agent appends findings/decisions/dead-ends to `docs/INSIGHTS.md` the moment they
   occur — chat is volatile, files are the record. Durable facts also go to `memory/`.
 - Decisions that change the spec also update the owning doc (CLAUDE.md, BUSINESS_CASE.md,
   DESIGN_SYSTEM.md, DATA_SOURCES.md). Wikilink with `[[...]]` so the Obsidian graph connects them.
-- `draft/INSIGHTS.md` is the running knowledge log (what was learned/decided/dead-ended).
+- `docs/INSIGHTS.md` is the running knowledge log (what was learned/decided/dead-ended).
 
 ## The build loop (one task at a time)
 
@@ -94,13 +94,13 @@ Anthropic key with credits.
 3. **Gate** — ship via `node scripts/ship.mjs --push --commit "<msg>"`. Red → fix → re-run.
    For anything touching claims/data, the honesty grep in `verify.mjs` must pass; for bigger
    surface changes, also run `provenance-honesty-review` and obey a BLOCK.
-4. **Log** — append findings/decisions to `draft/INSIGHTS.md`; update the owning spec doc if the
+4. **Log** — append findings/decisions to `docs/INSIGHTS.md`; update the owning spec doc if the
    change alters it; durable facts → `memory/`.
 
 ## What the human checks
 
 `git log --oneline` (every commit is gate-verified), `npm run verify` (live gate), and a
-spot-check of the app. `draft/INSIGHTS.md` is the knowledge trail.
+spot-check of the app. `docs/INSIGHTS.md` is the knowledge trail.
 
 ## Honesty is the product
 

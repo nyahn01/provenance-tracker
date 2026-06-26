@@ -46,9 +46,9 @@ background fades from near-black to warm paper.
 | `--obs-sage`         | `#6f8d7d`                     | Tier-B badges, secondary accent |
 | `--obs-panel`        | `rgba(10,9,8,0.88)`           | Translucent sidebars |
 | `--obs-dropdown`     | `rgba(13,12,11,0.97)`         | Search dropdown |
-| `--obs-globe-ocean`  | `#111010`                     | Globe water fill |
-| `--obs-globe-land`   | `#1c1612`                     | Globe continent fill |
-| `--obs-globe-border` | `#2a2218`                     | Globe country lines |
+| `OBS.globeOcean`     | `#060504`                     | Globe water fill (runtime token in design-tokens.ts, not a CSS var) |
+| `OBS.globeLand`      | `#7a5828`                     | Globe continent fill (runtime token) |
+| `OBS.globeBorder`    | `#a87848`                     | Globe country lines (runtime token) |
 
 ### 1b. Gallery palette (light mode — detail / provenance panel)
 
@@ -321,9 +321,8 @@ On mobile (< 768px): right panel becomes a bottom sheet (60vh), left sidebar hid
   --obs-sage:         #6f8d7d;
   --obs-panel:        rgba(10,9,8,0.88);
   --obs-dropdown:     rgba(13,12,11,0.97);
-  --obs-globe-ocean:  #111010;
-  --obs-globe-land:   #1c1612;
-  --obs-globe-border: #2a2218;
+  /* globe trio = runtime tokens (OBS.globeOcean/Land/Border in design-tokens.ts), NOT CSS vars */
+  /* OBS.globeOcean #060504 · OBS.globeLand #7a5828 · OBS.globeBorder #a87848 */
 
   /* Gallery (light) */
   --gal-bg:           #f7f4ee;

@@ -4,7 +4,7 @@
  * GlobeContainer — the full-screen 3D globe (globe.gl) plus the arcs/dots/auto-
  * frame behaviour driven by the selected work's provenance.
  *
- * ⚠️  GLOBE CONTRACT (draft/TOMORROW.md) — this init pattern broke twice before
+ * ⚠️  GLOBE CONTRACT (root CLAUDE.md) — this init pattern broke twice before
  *     and is locked. Do NOT: enable atmosphere, set atmosphereColor, traverse
  *     the Three.js scene, set material.shininess, or disable zoom. The ocean is
  *     a 2×2 #060504 canvas data-URL (NOT a token) on purpose. Both effects below

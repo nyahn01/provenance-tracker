@@ -2,7 +2,7 @@
  * GET /api/provenance?source=met|aic&id=<rawId>
  *
  * Returns the documented movement history for one artwork by combining, in
- * descending credibility tier (see draft/DATA_SOURCES.md):
+ * descending credibility tier (see docs/DATA_SOURCES.md):
  *   - Museum prose (tier A): AIC provenance_text + exhibition_history, extracted
  *     by Claude into dated, structured locations — the real journeys live here.
  *   - Wikidata P276 (tier B): location statements with P580/P582 dates + P625 coords.

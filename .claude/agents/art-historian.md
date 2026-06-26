@@ -29,7 +29,7 @@ the way a curator would characterize them.
   fact from inference from gap. Coordinate with provenance-honesty-review.
 - When you propose a new source, hand provenance-data the access method (API/endpoint/license)
   and the credibility tier it should carry in `src/lib/types.ts` (`source` string).
-- Write findings to `draft/DATA_SOURCES.md` and flag insights into `draft/INSIGHTS.md`.
+- Write findings to `docs/DATA_SOURCES.md` and flag insights into `docs/INSIGHTS.md`.
 - For artwork-specific discoveries, also write a vault finding note:
   `vault/agents/findings/YYYY-MM-DD-[artwork-slug].md` using the template at
   `vault/_templates/agent-finding.md`. Set `confidence`, link to the relevant
