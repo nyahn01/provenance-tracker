@@ -49,28 +49,16 @@ Font:            Pretendard
 - Anthropic SDK (claude-sonnet-4-6)
 - Vercel deployment
 
-## APIs
-- Metropolitan Museum API (no key): https://collectionapi.metmuseum.org/public/collection/v1
-- Art Institute of Chicago API (no key): https://api.artic.edu/api/v1
-- Wikidata SPARQL (no key): https://query.wikidata.org/sparql
-- Rijksmuseum (NO key — new Linked Art API): https://data.rijksmuseum.nl/search/collection (creator=/title=/type=schilderij) + https://id.rijksmuseum.nl/<id>. Old www.rijksmuseum.nl/api is retired (410).
+## APIs (all keyless unless noted)
+- Met Museum API: https://collectionapi.metmuseum.org/public/collection/v1
+- Art Institute of Chicago API: https://api.artic.edu/api/v1
+- Rijksmuseum Linked Art API (NO key): https://data.rijksmuseum.nl/search/collection + https://id.rijksmuseum.nl/<id>. Old www.rijksmuseum.nl/api is retired (410).
+- Europeana API: https://api.europeana.eu/record/v2/search.json — key: EUROPEANA_API_KEY
+- Wikidata SPARQL: https://query.wikidata.org/sparql (entity search: `wbsearchentities`)
+- Cleveland Museum of Art API (no key): https://openaccess.clevelandart.org/api/artworks
+- Getty Provenance Index (GPI): Knoedler + Goupil seeded locally via `scripts/seed-goupil.mjs`
+- RKD (Netherlands Art Institute): `src/lib/rkd.ts` (keyless)
 - Anthropic API (key: ANTHROPIC_API_KEY) — currently OUT OF CREDITS; extraction falls back to deterministic prose mining until funded. Do not call /api/reconcile in the demo.
-
-## Top 10 Museums
-```ts
-[
-  { id: 'louvre', name: 'Louvre', city: 'Paris', country: 'France', lat: 48.8606, lng: 2.3376 },
-  { id: 'met', name: 'The Met', city: 'New York', country: 'USA', lat: 40.7794, lng: -73.9632 },
-  { id: 'national-gallery', name: 'National Gallery', city: 'London', country: 'UK', lat: 51.5089, lng: -0.1283 },
-  { id: 'uffizi', name: 'Uffizi', city: 'Florence', country: 'Italy', lat: 43.7678, lng: 11.2553 },
-  { id: 'rijksmuseum', name: 'Rijksmuseum', city: 'Amsterdam', country: 'Netherlands', lat: 52.3600, lng: 4.8852 },
-  { id: 'prado', name: 'Prado', city: 'Madrid', country: 'Spain', lat: 40.4138, lng: -3.6922 },
-  { id: 'hermitage', name: 'Hermitage', city: 'St Petersburg', country: 'Russia', lat: 59.9398, lng: 30.3146 },
-  { id: 'smithsonian', name: 'Smithsonian', city: 'Washington DC', country: 'USA', lat: 38.8913, lng: -77.0261 },
-  { id: 'aic', name: 'Art Institute', city: 'Chicago', country: 'USA', lat: 41.8796, lng: -87.6237 },
-  { id: 'taipei', name: 'National Palace', city: 'Taipei', country: 'Taiwan', lat: 25.1024, lng: 121.5489 },
-]
-```
 
 ## Coding rules
 - TypeScript with strict types
@@ -78,11 +66,8 @@ Font:            Pretendard
 - Globe.gl must be dynamically imported with ssr: false
 - All external API calls go through Next.js API routes (server-side only)
 - Cache/pre-warm external API responses; add per-IP rate limiting (we proxy rate-limited free APIs)
-- Budget-cap the Anthropic key
 - Tailwind for all styling
 - Commit after every completed feature, push immediately
-- Update [[PROGRESS.md]] after every session
-- Read [[TONIGHT.md]] (or [[TOMORROW.md]]) at session start
 - Read [[MEMORY.md]] and [[BUSINESS_CASE.md]] for all context
 
 ## The agent team (see .claude/agents/)

@@ -15,18 +15,18 @@ never invented data. Each `LocationEntry.source` / timeline entry must name its 
 
 Rule: a fact may use any tier, but the tier must be visible to the user. Never launder D/E into A.
 
-## Sources to integrate (status)
-- [x] **Wikidata SPARQL** (B) — P276 location chain + date qualifiers + P625 coords. *Live.*
+## Sources (status as of 2026-06-26)
 - [x] **Met Museum API** (A) — object detail, image, own location. *Live.*
 - [x] **Art Institute of Chicago API** (A) — object detail, provenance_text, exhibition_history. *Live.*
-- [ ] **Rijksmuseum API** (A) — key already in env. Dutch Golden Age depth. *Next.*
-- [ ] **Europeana API** (B) — 50M+ objects, 3000+ institutions; free instant key. Big coverage win.
-- [ ] **Getty Provenance Index + ULAN/AAT** (A) — sales/inventory records 1550–1950; LOD endpoints.
-- [ ] **RKD (Netherlands)** (A) — Old Masters provenance research; free API.
-- [ ] **Wikimedia Commons** (B) — high-res images + structured data, fills image gaps.
-- [ ] **Auction archives** (C) — Christie's/Sotheby's public lot archives (scrape-extract, label C).
-- [ ] **Repatriation/looted-art + news** (D) — extract movement events with Claude, label D + date.
-- [ ] **Google Arts & Culture** (C) — partner pages; extract exhibition/location mentions, label C.
+- [x] **Rijksmuseum Linked Art API** (A) — keyless; `data.rijksmuseum.nl` + `id.rijksmuseum.nl`; Dutch Golden Age provenance prose (AAT `300444174`). *Live.*
+- [x] **Europeana API** (B) — 50M+ objects, 3000+ institutions; `src/lib/europeana.ts`. *Live.*
+- [x] **Wikidata SPARQL / Search API** (B) — P276 location chain + date qualifiers + P625 coords; `wbsearchentities` for entity lookup. *Live.*
+- [x] **Cleveland Museum of Art API** (A) — open-access, dated structured provenance, images; `openaccess.clevelandart.org`. *Live.*
+- [x] **Getty Provenance Index** (A) — Knoedler (4,388 dealer records) + Goupil & Cie seeded via `scripts/seed-goupil.mjs`; art market transactions 1820–1970. *Live.*
+- [x] **RKD Netherlands Art Institute** (A) — Old Masters provenance research; `src/lib/rkd.ts`; teal badge in sidebar. *Live.*
+- [ ] **Auction archives** (C) — Christie's/Sotheby's public lot archives (scrape-extract, label C). *Future.*
+- [ ] **Repatriation/looted-art + news** (D) — extract movement events with Claude, label D + date. *Future.*
+- [ ] **Google Arts & Culture** (C) — partner pages; extract exhibition/location mentions, label C. *Future.*
 
 ## How to add a source (the only correct way)
 1. art-historian assigns its credibility tier; art-insurance-advisor confirms it matters.
