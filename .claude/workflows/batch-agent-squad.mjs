@@ -11,6 +11,25 @@ export const meta = {
 // ─── Phase: Plan ─────────────────────────────────────────────────────────────
 phase("Plan");
 
+// Sync local main to origin BEFORE reading the queue. The workflow reads the
+// local working-tree TOMORROW.md and agents branch from local main; if local is
+// stale the squad rebuilds already-merged priorities (happened 2026-06-23: #5
+// was merged as PR #20 on origin but local main lagged, so #5 was duplicated).
+const syncResult = await agent(
+  `In the provenance-tracker project at C:\\Users\\Windows11\\Downloads\\provenance-tracker, sync local main to origin so the batch run reads the true remote state.
+
+Run these git commands in order and report the outcome:
+1. \`git stash --include-untracked\` ONLY if there are uncommitted changes (check \`git status --porcelain\` first; skip stash if clean).
+2. \`git fetch origin --prune\`
+3. \`git checkout main\`
+4. \`git merge --ff-only origin/main\`  — if this fails because local main has diverged, do NOT force; stop and report "main diverged — manual reconciliation needed".
+5. If you stashed in step 1, \`git stash pop\` (report any conflicts; do not force-resolve).
+
+Report: the commit hash main is now at, whether a fast-forward happened, and any blocker. Do NOT push, merge PRs, or modify files other than via the git operations above.`,
+  { label: "sync:local-main-to-origin", phase: "Plan" }
+);
+log(`🔄 main sync: ${syncResult ? String(syncResult).split("\n")[0].slice(0, 160) : "no result"}`);
+
 // Read TOMORROW.md as source of truth (not a hardcoded queue)
 const tomorrowRaw = await agent(
   `Read the file draft/TOMORROW.md in the provenance-tracker project at C:\\Users\\Windows11\\Downloads\\provenance-tracker and return its full text contents. Return ONLY the raw file contents, nothing else.`,
