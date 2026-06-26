@@ -1,329 +1,37 @@
-# Agent Orchestration with Max — Setup & Control
-
-> ⚠️ **PARTIALLY OUTDATED (queue migrated 2026-06-26).** The priority queue is now **GitHub
-> Issues** (`gh issue list --label priority`), not `draft/TOMORROW.md`, and completed work is
-> tracked by closed Issues + git history, not `PROGRESS.md`. To pause an item, add the `paused`
-> label instead of `[PAUSED]`. The Max/scheduling guidance below still applies; the queue
-> mechanics are superseded by the root `CLAUDE.md` "Work tracking" section. Full rewrite: Phase 2.
-
-**You have Max.** Continuous 24/7 agent work with instant fallback to daily batch mode.
-
----
-
-## ✅ What You Just Got
-
-- **GitHub Issues (`priority` label)** — the priority queue. Agents read it via `gh issue list`.
-- **batch-agent-squad.mjs** — The workflow that spawns agents in parallel (works in both Max and batch mode).
-- **Closed Issues + git history** — what shipped (replaces the old PROGRESS.md).
-- **This guide** — How to start Max, pause anytime, or switch to batch mode.
-
----
-
-## 🚀 Launch Max Now
-
-You have Max. Agents work 24/7, respond instantly to TOMORROW.md priorities and GitHub issues.
-
-### Start Max Continuous
-
-```bash
-/schedule --max true --workflow batch-agent-squad
-```
-
-Agents will:
-- Wake every 2 hours and spawn new workers on top TOMORROW.md priorities
-- Respond to GitHub issues/PRs (if webhook configured)
-- Work in background (no Claude Code session needed)
-- Read TOMORROW.md live; priorities can be paused anytime with `[PAUSED]`
-
-### Test Run First (Optional)
-
-Before scheduling, try a test run:
-
-```bash
-/workflow batch-agent-squad
-```
-
-This runs once **in your session right now**. You'll see what agents spawn and what PRs would open. Good for validation before Max takes over.
-
----
-
-## ⏸️ Pause Max Anytime
-
-### Kill All Max Agents (Complete Stop)
-
-```bash
-/schedule --list
-# Note the Max job ID (e.g., wf_abc123)
-
-/schedule --cancel wf_abc123
-```
-
-All agent work stops immediately. Existing PRs stay open; no more agents spawn until you restart.
-
-### Pause One Priority (But Keep Max Running)
-
-Edit `draft/TOMORROW.md`:
-
-```markdown
-### [PAUSED] 1. Reconciliation reconciliation: fix the uncertainty display
-```
-
-Max will skip this priority next round and work on #2. Remove `[PAUSED]` to resume.
-
-### Pause One Agent Domain (But Keep Others)
-
-Edit the specific priorities for that agent in TOMORROW.md:
-
-```markdown
-### [PAUSED] 2. Museum exhibition-loan extraction from prose
-**Agent:** provenance-data
-```
-
-This pauses that specific provenance-data priority; other provenance-data priorities will still run.
-
----
-
-## 🔄 Fallback to Daily Batch (Anytime)
-
-**If Max is too aggressive, dial it back to daily batch runs:**
-
-```bash
-/schedule --list
-# Note the Max job ID
-
-/schedule --cancel wf_abc123
-
-# Now start daily batch instead
-/schedule --interval "0 6 * * *" --workflow batch-agent-squad
-```
-
-Agents now run **once per day at 6am UTC** instead of continuously. Easier to monitor and control.
-
-**To go back to Max:**
-
-```bash
-/schedule --cancel <daily-job-id>
-/schedule --max true --workflow batch-agent-squad
-```
-
----
-
-## 📋 Max vs Batch Comparison
-
-| Feature | Max (Continuous) | Batch (Daily) |
-|---------|---|---|
-| **Frequency** | Every 2 hours + webhooks | Once per day (6am UTC) |
-| **Wall-clock Speed** | Fast (agents always working) | Slower (wait until 6am) |
-| **Cost** | Higher (continuous compute) | Lower (daily bursts) |
-| **Control** | Harder (always running) | Easier (scheduled windows) |
-| **Pause** | `/schedule --cancel` | `/schedule --cancel` |
-| **Switch** | `--cancel` + restart with `--interval` | `--cancel` + restart with `--max` |
-
----
-
-## 📊 Monitor Runs
-
-### See all scheduled workflows
-
-```bash
-/schedule --list
-```
-
-Shows: job ID, interval, next run time, last run status.
-
-### View last batch results
-
-In Claude Code, look for a message like:
-
-```
-🤖 Batch orchestration complete
-✅ Agent runs: 4/5 agents spawned PRs
-📊 Honesty gate: 3 approved, 1 blocked
-🎉 Results logged in draft/PROGRESS.md
-```
-
-### Check PROGRESS.md
-
-After each batch run, main session updates [draft/PROGRESS.md](draft/PROGRESS.md) with:
-- What shipped (merged features)
-- What honesty-gate blocked (and why)
-- Lessons learned
-- Next-run improvements
-
----
-
-## 🔄 How Agents Work (The Loop)
-
-### 0. Sync local main to origin (Plan phase)
-
-Before reading the queue, the workflow fast-forwards local `main` to `origin/main`
-(`sync:local-main-to-origin`). The squad reads the **local** `TOMORROW.md` and agents
-branch from **local** main; if local lags origin, already-merged priorities get rebuilt
-as duplicate branches (happened 2026-06-23: priority #5 was rebuilt after it had merged).
-The sync makes `origin/main` the source of truth. A diverged main stops with a blocker
-rather than force-resetting.
-
-### 1. Batch runs at 6am UTC
-
-The workflow reads `TOMORROW.md`, groups priorities by agent domain, spawns agents in parallel.
-
-### 2. Each agent:
-
-- Reads their priority from TOMORROW.md
-- Creates branch: `feat/[domain]/priority-[id]`
-- Codes, tests, runs `npm run verify`
-- Commits with semantic messages
-- Opens PR with:
-  - Title: `feat: [priority title]`
-  - Description: Link to TOMORROW.md priority #[id]
-  - Checklist: Acceptance criteria ("Done when")
-  - Self-check: Honesty items pre-ticked
-
-### 3. Honesty gate reviews each PR
-
-**Can APPROVE:**
-- All facts sourced and visible
-- Data shape extends types.ts correctly
-- No invented dates/locations
-- Custody ≠ loans
-
-**Can BLOCK:**
-- Over-claiming ("Met Museum collection" when it's just search results)
-- Missing source lines
-- Sparse data shown as fake completion
-- Mixed custody and exhibition
-
-### 4. Main session merges approved PRs
-
-Blocked PRs go back to agent for fixes. Agent commits again, honesty gate re-reviews.
-
-### 5. PROGRESS.md updated
-
-Completed feature moves to PROGRESS.md + lessons learned.
-
----
-
-## 🎯 Customize Priority Order
-
-Edit `draft/TOMORROW.md`:
-
-- **Reorder** priorities within a tier (top = next to run)
-- **Add new priorities** following the template (title, agent, criteria)
-- **Delete stale items** when no longer relevant
-- **Pause** with `[PAUSED]` prefix
-
-The next batch run will pick up changes automatically.
-
----
-
-## 🔐 Honesty Gate Fail-Safes
-
-The honesty gate is BLOCKING — no PR merges without approval.
-
-### If gate blocks a priority:
-
-1. Agent reads the feedback (comment in PR)
-2. Agent fixes the issue (e.g., adds source line, fixes type shape)
-3. Agent commits again and pushes to the same PR
-4. Honesty gate re-reviews automatically
-5. When approved, main session merges
-
-### If agent can't fix it:
-
-Agent comments in PR:
-```markdown
-## Blocker: [reason]
-Unable to proceed because [detail].
-@main-session: [question or decision needed]
-```
-
-Main session reads PR comment, responds in thread, agent continues. This is NOT a failed batch — it's escalation.
-
----
-
-## 📝 Common Edits
-
-### Change run time (not 6am)
-
-```bash
-/schedule --cancel <old-job-id>
-/schedule --interval "0 22 * * *" --workflow batch-agent-squad  # 10pm UTC instead
-```
-
-### Add a new priority
-
-1. Edit `draft/TOMORROW.md`
-2. Add a new `### N. Title` section under the right tier
-3. Fill in: Agent, Why, What, Done when, Blocks
-4. Next batch run will pick it up
-
-### Remove a priority
-
-Delete the section from `draft/TOMORROW.md`. Agents skip it next run.
-
-### Max integration (future)
-
-To add continuous agent work (webhook-triggered hotfixes):
-
-```bash
-/schedule --max true --workflow batch-agent-squad
-```
-
-This keeps agents running 24/7, responding to issues and PRs. You can still pause individual items with `[PAUSED]`.
-
----
-
-## 🆘 Troubleshooting
-
-### "Workflow didn't run at 6am"
-
-Check:
-```bash
-/schedule --list
-# Is the job there? Is "next run" in the future?
-# If not listed, re-schedule:
-/schedule --interval "0 6 * * *" --workflow batch-agent-squad
-```
-
-### "PR opened but honesty gate is stuck"
-
-Honesty gate has its own execution window (main session must be active to run it). Check back in 5 minutes. If still stuck:
-```bash
-/schedule --cancel <honesty-gate-job>
-# Manually run honesty-review agent on the PR in your session
-```
-
-### "Agent opened a PR on wrong branch"
-
-Agent made a typo (happens). In Claude Code:
-```bash
-git branch -d <wrong-branch>
-git push origin --delete <wrong-branch>
-```
-
-Agent will re-run and use the correct branch next time.
-
----
-
-## 📞 Contact / Escalate
-
-If batch orchestration breaks or you want to redesign the workflow:
-
-1. Note the issue (what happened, when, which agent)
-2. Pause the batch: `/schedule --cancel <job-id>`
-3. Fix the issue (edit TOMORROW.md, patch the workflow script, etc.)
-4. Re-schedule: `/schedule --interval "0 6 * * *" --workflow batch-agent-squad`
-
-All PRs that opened stay open until you decide to merge/close them.
-
----
-
-## 🎉 Next Steps
-
-1. **Test the workflow:** `/workflow batch-agent-squad` (run once)
-2. **Schedule it:** `/schedule --interval "0 6 * * *" --workflow batch-agent-squad` (every day)
-3. **Monitor:** Check PROGRESS.md after first run
-4. **Iterate:** Reorder TOMORROW.md priorities based on what you see
-5. **Scale up:** Add Max integration when daily batch is smooth
-
-Good luck! 🚀
+# Batch agent squad — how to run, pause, and control it
+
+The squad spawns specialist agents in parallel on the priority queue, each opens a PR, and
+the honesty gate reviews every PR. Agents **never merge** — the human reviews the Vercel
+preview and merges.
+
+## The queue = GitHub Issues (not a markdown file)
+- A priority is an **open Issue** labeled `priority` + `agent:<domain>` (file one with the
+  *Build priority* issue template). Add `paused` to skip it.
+- The workflow reads `gh issue list --label priority --state open` and routes each Issue to its
+  `agent:<domain>`. An empty queue is a valid no-op.
+- An agent PR with `Closes #N` auto-closes the Issue on merge — the queue self-cleans. "What
+  shipped" = closed Issues + git history (no PROGRESS.md to maintain).
+
+See the root `CLAUDE.md` → *Work tracking* for the canonical model.
+
+## Run it
+- One-off, now: `/workflow batch-agent-squad`
+- On a schedule: the `provenance-batch-agents` scheduled task runs it (see
+  `~/.claude/scheduled-tasks/provenance-batch-agents/SKILL.md`). Manage with `/schedule --list`,
+  `/schedule --cancel`.
+
+## Pause / stop
+- Pause one priority: add the `paused` label to its Issue.
+- Pause everything: remove the `priority` label from open Issues, or close them, or disable the
+  scheduled task (`/schedule --list` → cancel).
+
+## What each agent does
+1. Reads its assigned Issue (`gh issue view N`), skips `paused`/already-shipped.
+2. Branches `feat/<domain>/issue-<N>`, implements.
+3. Runs `npm run build` + `npm run honesty` (fixes all errors).
+4. Opens a PR whose body contains `Closes #N`. Does **not** merge.
+5. The honesty gate reviews → APPROVE / BLOCK. The human merges approved PRs.
+
+## Guardrails
+- `main` is protected by the `protect-main` ruleset (PR + honesty/build checks required).
+- GLOBE CONTRACT, design tokens, honesty rules, types-first: all in the root `CLAUDE.md`.

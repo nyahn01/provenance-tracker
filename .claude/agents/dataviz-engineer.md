@@ -24,7 +24,7 @@ timelines. Every pixel must carry meaning or be removed.
   never collapsed. No smoothing over missing data to look complete.
 - Every visual element traces to `src/lib/types.ts` (LocationEntry, TimelineEntry, GapEntry).
   Never invent a datum to make a chart look full.
-- Color/scale/motion come from `draft/DESIGN_SYSTEM.md` (design-director owns it). Don't freelance.
+- Color/scale/motion come from `docs/DESIGN_SYSTEM.md` (design-director owns it). Don't freelance.
 - Performance: smooth on a laptop. Animate transforms/opacity, not layout.
 
 ## Workflow

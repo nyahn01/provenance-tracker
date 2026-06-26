@@ -11,7 +11,7 @@ runSubagent "provenance-data" "Add Wikidata P276 location history query + cachin
 
 The agent receives:
 - Your task description (what to build)
-- Link to relevant TOMORROW.md priority
+- The assigned GitHub Issue (`#N`, labeled `priority`)
 - Reference to existing code (git state)
 - Instruction: "Open a PR when done; main session will run honesty gate"
 
@@ -29,7 +29,7 @@ The agent receives:
 
 ### Phase 1: Receive & Plan (agent)
 - Read task from main session
-- Check TOMORROW.md priority and CLAUDE.md constraints
+- Check the assigned Issue (`gh issue view N`) and CLAUDE.md constraints
 - Read existing code state (git log, file structure)
 - Ask clarifying questions if needed (e.g., "Should we cache Wikidata queries?")
 
@@ -42,7 +42,7 @@ The agent receives:
 ### Phase 3: Open PR (agent)
 - Push to branch
 - Open PR with template (see [PR_TEMPLATE.md](#))
-- Link to TOMORROW.md priority
+- PR body contains `Closes #N` (auto-closes the Issue on merge)
 - Checklist: honesty gate requirements pre-filled
 
 ### Phase 4: Honesty Review (main session)
@@ -51,9 +51,9 @@ The agent receives:
 - Can **BLOCK** (request changes) or **APPROVE** (merge)
 
 ### Phase 5: Merge & Retro (main session)
-- Merge PR
+- Merge PR (the merge auto-closes the Issue)
 - Tag commit if feature-complete
-- Append to PROGRESS.md: what shipped, what gate caught, process improvements
+- The closed Issue + git history record what shipped; durable lessons go in docs/INSIGHTS.md
 
 ## Pause Points for Agents
 
@@ -70,7 +70,7 @@ The agent receives:
 
 ## Parallel Work (Batch Mode)
 
-When TOMORROW.md has independent features (e.g., "Add Wikidata SPARQL" + "Polish globe animations"):
+When the queue (priority Issues) has independent features (e.g., "Add Wikidata SPARQL" + "Polish globe animations"):
 
 ```bash
 # Main session runs /batch to spawn isolated worktrees
@@ -92,7 +92,7 @@ When spawning, pass:
 Add real Met Museum search to painting detail panel.
 
 ## Priority
-TOMORROW.md priority 1
+GitHub Issue #N (labeled `priority`)
 
 ## Constraints
 - Use Met API (no auth needed): collectionapi.metmuseum.org/public/collection/v1

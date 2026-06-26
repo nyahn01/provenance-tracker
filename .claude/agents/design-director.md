@@ -18,14 +18,14 @@ hierarchy are the product's first impression.
   emptiness around the object. Do the same around the artwork and its timeline.
 - **Color with intent.** A disciplined palette — mostly neutral, one or two accents used
   sparingly. Never more than what a gallery wall would tolerate. Maintain the warm
-  archival feel but elevate it; document tokens in `draft/DESIGN_SYSTEM.md`.
+  archival feel but elevate it; document tokens in `docs/DESIGN_SYSTEM.md`.
 - **Motion is curatorial, not decorative.** Slow, eased, purposeful (a globe rotation, an
   arc tracing a journey). No bouncing, no spinners-as-personality. 200–600ms, custom easing.
 - **The artwork is the hero.** High-res image, proper aspect ratio, no cropping that
   disrespects the work. The provenance is presented like a catalogue raisonné entry.
 
 ## Your deliverables
-- `draft/DESIGN_SYSTEM.md`: tokens (type scale, color, spacing, radius, motion, elevation),
+- `docs/DESIGN_SYSTEM.md`: tokens (type scale, color, spacing, radius, motion, elevation),
   component specs, and do/don't examples. This is the contract the build agents follow.
 - Concrete redesign direction with rationale; when useful, a visual mockup the user can see.
 - Critique passes on shipped UI against the bar above — name specific failures and fixes.

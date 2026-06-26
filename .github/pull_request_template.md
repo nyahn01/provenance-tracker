@@ -1,6 +1,6 @@
 ## Task
 
-[Link to TOMORROW.md priority or describe feature]
+[`Closes #<issue>` — the priority Issue this PR resolves — or describe the feature]
 
 ## What changed
 
@@ -42,7 +42,6 @@ Example:
 ## Related Issues
 
 Closes #[issue-number]
-Related-to: TOMORROW.md priority [number]
 
 ---
 

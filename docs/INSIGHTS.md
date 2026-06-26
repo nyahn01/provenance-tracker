@@ -74,7 +74,8 @@ written to a file, it's lost when the context window rolls. This file is the saf
 - `#design` Globe luminosity + responsive layout + gallery palette fix (P0 polish, 2026-06-18).
   Three changes shipped together:
   (1) Globe now shows land masses via `polygonsData` with a vendored GeoJSON (`/public/geo/countries-simple.json`
-  — 33 simplified country/continent polygons). Land fill `#1c1612`, border `#2a2218`, ocean `#111010`.
+  — 33 simplified country/continent polygons). Land fill `#7a5828`, border `#a87848`, ocean `#060504`
+  (the globe trio; source of truth is `src/lib/design-tokens.ts`).
   Atmosphere altitude raised to 0.16 for better glow. Auto-rotation at speed 0.3 (per DESIGN_SYSTEM.md
   spec of 0.4 deg/s — globe.gl's speed unit differs, 0.3 is the closest match). Rotation pauses
   when artwork is selected (selectedResult effect drives `controls.autoRotate`).

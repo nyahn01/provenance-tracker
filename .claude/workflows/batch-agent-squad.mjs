@@ -1,8 +1,8 @@
 export const meta = {
   name: "batch-agent-squad",
-  description: "Batch run: read TOMORROW.md live, spawn agents in parallel by domain, route PRs to honesty gate",
+  description: "Batch run: read priority Issues live, spawn agents in parallel by domain, route PRs to honesty gate",
   phases: [
-    { title: "Plan", detail: "read TOMORROW.md, extract active priorities by agent" },
+    { title: "Plan", detail: "read priority Issues, extract active priorities by agent" },
     { title: "Build", detail: "spawn agents in parallel per domain" },
     { title: "Verify", detail: "run honesty-gate on each PR" },
   ],
@@ -11,10 +11,10 @@ export const meta = {
 // ─── Phase: Plan ─────────────────────────────────────────────────────────────
 phase("Plan");
 
-// Sync local main to origin BEFORE reading the queue. The workflow reads the
-// local working-tree TOMORROW.md and agents branch from local main; if local is
-// stale the squad rebuilds already-merged priorities (happened 2026-06-23: #5
-// was merged as PR #20 on origin but local main lagged, so #5 was duplicated).
+// Sync local main to origin BEFORE building. The queue itself is remote GitHub
+// Issues (always current), but agents BRANCH from local main; if local main is
+// stale the squad rebuilds already-merged work (happened 2026-06-23: #5 was merged
+// as PR #20 on origin but local main lagged, so #5 was duplicated).
 const syncResult = await agent(
   `In the provenance-tracker project at C:\\Users\\Windows11\\Downloads\\provenance-tracker, sync local main to origin so the batch run reads the true remote state.
 

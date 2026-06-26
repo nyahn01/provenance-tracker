@@ -31,8 +31,9 @@ files — done work closes an Issue; a lesson merges into `docs/lessons.md`. Kee
 (~150 lines max) — it loads on every turn of every agent.
 
 ## ⚠️ GLOBE CONTRACT — read before touching StoriesApp.tsx / GlobeContainer.tsx
-The globe init is locked (it has been broken twice). Tokens live in `src/lib/design-tokens.ts`
-(`OBS.globeOcean/globeLand/globeBorder` = `#060504 / #7a5828 / #a87848`). Init pattern:
+The globe init is locked (it has been broken twice). The globe trio lives in
+`src/lib/design-tokens.ts` (`OBS.globeOcean / globeLand / globeBorder`) — don't restate the hexes
+here. The canvas-fill literal below is the ocean value on purpose. Init pattern:
 
 ```typescript
 // ✅ the only approved globe init:

@@ -269,7 +269,7 @@ const SECTIONS: ContentSection[] = [
           </li>
         </ul>
         <p>
-          The batch workflow runs overnight: tasks are queued in <code>draft/TOMORROW.md</code>,
+          The batch workflow runs overnight: tasks are queued as GitHub Issues (labeled <code>priority</code>),
           agents pick them up in parallel, results converge at the honesty gate, and surviving
           changes are committed and deployed to Vercel automatically.
         </p>

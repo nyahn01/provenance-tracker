@@ -7,16 +7,15 @@
  * three docs). This check fails CI if any tracked markdown mentions a GLOBE token
  * (ocean/land/border) with a hex that disagrees with the code.
  *
- * SCOPE: scans *.md repo-wide EXCEPT node_modules/.git/.next and the legacy `draft/`
- * folder, which is quarantined and slated for removal in Phase 2. When draft/ is
- * deleted, remove it from EXCLUDED below so the guard covers everything.
+ * SCOPE: scans *.md repo-wide EXCEPT node_modules/.git/.next/out. Covers all docs
+ * (the legacy draft/ folder was removed in Phase 2).
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 
 const ROOT = process.cwd()
 const TOKENS_FILE = 'src/lib/design-tokens.ts'
-const EXCLUDED = ['node_modules', '.git', '.next', 'out', 'draft'] // draft/: legacy, removed in Phase 2
+const EXCLUDED = ['node_modules', '.git', '.next', 'out']
 
 // 1. Canonical globe trio from the single source of truth.
 const tokensSrc = readFileSync(join(ROOT, TOKENS_FILE), 'utf8')
@@ -26,7 +25,6 @@ const grab = (key) => {
   return m[1].toLowerCase()
 }
 const canonical = { ocean: grab('globeOcean'), land: grab('globeLand'), border: grab('globeBorder') }
-const canonicalSet = new Set(Object.values(canonical))
 
 // 2. Walk markdown files.
 function walk(dir, acc = []) {
@@ -40,20 +38,25 @@ function walk(dir, acc = []) {
   return acc
 }
 
-// 3. Flag any line that mentions a globe token alongside a non-canonical hex.
+// 3. For each `globe<token>` mention (globeOcean / globe-land / globe ocean …),
+//    the nearest hex on that line must equal that token's canonical value.
+//    The (?![a-z]) lookahead rejects words like "landing" / "borderless".
+const TOKEN_RE = /globe[\s_.-]?(ocean|land|border)(?![a-z])/gi
 const violations = []
 for (const file of walk(ROOT)) {
   const rel = relative(ROOT, file).split(sep).join('/')
   const lines = readFileSync(file, 'utf8').split('\n')
   lines.forEach((line, i) => {
-    if (!/globe/i.test(line)) return
-    const hexes = (line.match(/#[0-9a-fA-F]{6}/g) || []).map((h) => h.toLowerCase())
-    for (const hex of hexes) {
-      // Only judge hexes that look like a globe token claim (ocean/land/border context).
-      if (!/ocean|land|border|globe/i.test(line)) continue
-      if (hexes.length && !canonicalSet.has(hex) && /ocean|land|border/i.test(line)) {
-        violations.push({ rel, line: i + 1, hex, text: line.trim() })
-        break
+    let m
+    TOKEN_RE.lastIndex = 0
+    while ((m = TOKEN_RE.exec(line))) {
+      const which = m[1].toLowerCase()
+      const want = canonical[which]
+      const after = line.slice(m.index + m[0].length)
+      const hexM = after.match(/#[0-9a-fA-F]{6}/) || line.match(/#[0-9a-fA-F]{6}/)
+      if (hexM) {
+        const got = hexM[0].toLowerCase()
+        if (got !== want) violations.push({ rel, line: i + 1, which, got, want, text: line.trim() })
       }
     }
   })
@@ -62,8 +65,8 @@ for (const file of walk(ROOT)) {
 if (violations.length) {
   console.error('✗ design-token drift in docs — globe tokens must match', TOKENS_FILE)
   console.error(`  canonical: ocean=${canonical.ocean} land=${canonical.land} border=${canonical.border}`)
-  for (const v of violations) console.error(`  ${v.rel}:${v.line}  ${v.hex}  "${v.text}"`)
+  for (const v of violations) console.error(`  ${v.rel}:${v.line}  globe-${v.which} is ${v.got}, must be ${v.want}  "${v.text}"`)
   console.error('  Fix: reference src/lib/design-tokens.ts; do not restate hex values in markdown.')
   process.exit(1)
 }
-console.log(`✓ doc-token check passed (globe trio ocean/land/border match ${TOKENS_FILE}; draft/ excluded pending Phase 2)`)
+console.log(`✓ doc-token check passed (globe trio ocean/land/border in all docs match ${TOKENS_FILE})`)
