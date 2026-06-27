@@ -15,7 +15,7 @@ import { searchEuropeana } from '@/lib/europeana'
 import { searchWikidata } from '@/lib/wikidata-search'
 import { searchCleveland } from '@/lib/cleveland'
 import { hasGpiCoverage } from '@/lib/getty'
-import type { SearchResult, SearchResponse } from '@/lib/types'
+import type { SearchResult, SearchResponse, SearchByMode } from '@/lib/types'
 
 const SEARCH_TTL_MS = 5 * 60 * 1000 // 5 minutes
 const FETCH_TIMEOUT_MS = 5000 // per-call cap so one slow upstream never stalls search
@@ -140,7 +140,12 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  const cacheKey = `search:${q.toLowerCase()}`
+  // Parse searchBy mode — default 'all'; invalid values fall back to 'all'.
+  const rawMode = request.nextUrl.searchParams.get('searchBy')
+  const searchBy: SearchByMode =
+    rawMode === 'artist' || rawMode === 'title' ? rawMode : 'all'
+
+  const cacheKey = `search:${searchBy}:${q.toLowerCase()}`
   const cached = cacheGet<SearchResponse>(cacheKey)
   if (cached) {
     return NextResponse.json({ ...cached, cached: true })
@@ -196,6 +201,14 @@ export async function GET(request: NextRequest) {
   // Rank by how well the result matches the query, not just "has an image".
   // Title matches outweigh artist matches; exact/prefix beats substring beats
   // per-token; a thumbnail and a provenance-rich source are tie-breakers.
+  //
+  // searchBy mode adjusts the weights:
+  //   'artist' — surname search: artist-field matches are boosted heavily and
+  //              title-only matches are penalised so "Claude" → Claude Lorrain,
+  //              not every work with "Claude" in its title or Monet's first name.
+  //   'title'  — looking for a specific painting: title matches dominate and
+  //              artist matches are demoted to avoid first-name false-positives.
+  //   'all'    — default: both fields contribute; existing balanced weights apply.
   const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
   const qn = norm(q)
   const qTokens = qn.split(' ').filter(t => t.length > 1)
@@ -207,24 +220,36 @@ export async function GET(request: NextRequest) {
   // A whole-word match on the artist field is the strongest signal for a
   // surname query ("Klimt" → works BY Klimt), so weight it near title-exact.
   const wordRe = (t: string) => new RegExp(`\\b${t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
+
+  // Mode-specific multipliers applied to title vs artist score contributions.
+  // 'artist': artist signals tripled, title signals halved — surname query.
+  // 'title':  title signals doubled, artist signals suppressed — title query.
+  // 'all':    equal weight (multiplier = 1) — existing balanced behaviour.
+  const titleMult  = searchBy === 'title' ? 2.0 : searchBy === 'artist' ? 0.5 : 1.0
+  const artistMult = searchBy === 'artist' ? 3.0 : searchBy === 'title' ? 0.3 : 1.0
+
   function score(r: SearchResult): number {
     const title = norm(r.title)
     const artist = norm(r.artist)
     const artistKnown = artist.length > 0 && artist !== 'unknown artist'
     let s = 0
-    if (title === qn) s += 110
-    else if (title.startsWith(qn)) s += 70
-    else if (title.includes(qn)) s += 45
+
+    // Title-field contributions (scaled by titleMult)
+    if (title === qn) s += 110 * titleMult
+    else if (title.startsWith(qn)) s += 70 * titleMult
+    else if (title.includes(qn)) s += 45 * titleMult
+
+    // Artist-field contributions (scaled by artistMult)
     if (artistKnown) {
-      if (artist === qn) s += 115
+      if (artist === qn) s += 115 * artistMult
       // A work BY the queried artist (surname appears as a word in "Gustav
       // Klimt") beats a work merely TITLED that word by someone else.
-      else if (wordRe(qn).test(artist)) s += 115
-      else if (artist.includes(qn)) s += 50
+      else if (wordRe(qn).test(artist)) s += 115 * artistMult
+      else if (artist.includes(qn)) s += 50 * artistMult
     }
     for (const t of qTokens) {
-      if (title.includes(t)) s += 10
-      if (artistKnown && artist.includes(t)) s += 8
+      if (title.includes(t)) s += 10 * titleMult
+      if (artistKnown && artist.includes(t)) s += 8 * artistMult
     }
     // A nameless result (common in aggregator junk) is rarely what's wanted.
     if (!artistKnown) s -= 30
@@ -251,7 +276,7 @@ export async function GET(request: NextRequest) {
   if (wikidataResult.status === 'fulfilled' && (wikidataResult.value as SearchResult[]).length > 0) sources.push('Wikidata')
   if (clevelandResult.status === 'fulfilled' && (clevelandResult.value as SearchResult[]).length > 0) sources.push('Cleveland Museum of Art API')
 
-  const response: SearchResponse = { results, query: q, sources }
+  const response: SearchResponse = { results, query: q, searchBy, sources }
   cacheSet(cacheKey, response, SEARCH_TTL_MS)
 
   return NextResponse.json(response)
