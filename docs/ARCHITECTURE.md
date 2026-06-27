@@ -14,13 +14,16 @@ _Last updated 2026-06-27. A factual inventory of what exists and works today. Fo
 | Route | Purpose |
 |---|---|
 | `/` | Main app — globe + curated gallery + search + provenance detail panel |
+| `/case/[slug]` | Single-case deep dive (documented restitution stories) |
 | `/demo` | Origin-story / pitch page (scroll-reveal) |
 | `/demo/source` | Structured source document (for NotebookLM ingestion) |
 | `/learn` | Provenance glossary |
+| `/pipeline` | On-site explainer for how provenance data is prepared |
 | `/pricing` | Three-tier pricing |
 | `/team` | How the platform + agent team are built |
 | `/workflow` | How the workflow evolved across Stages 1–3 (companion to [docs/WORKFLOW_STAGES.md](WORKFLOW_STAGES.md)) |
 | `/feedback` | In-app feedback form |
+| `/impressum` | Legal notice / operator disclosure |
 
 ## API routes
 

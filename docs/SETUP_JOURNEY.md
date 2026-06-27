@@ -3,8 +3,8 @@
 The notes behind the ~30-minute walkthrough video: how this project was built as an
 agent-run codebase with honesty as its moat. Eight beats, each a slide-able section
 with the exact commands to show on screen. Reconciled to how the repo works *today*
-(GitHub-Issues queue, Vercel previews, deterministic fallback for the unfunded product
-Claude calls) — not the original draft's markdown queue.
+(GitHub-Issues queue, Vercel previews, deterministic fallback when a Claude call fails) — not
+the original draft's markdown queue.
 
 > Tone: tell the *journey* (why these choices), then *demo* the product. Keep claims
 > honest on camera — the same rule the app lives by.

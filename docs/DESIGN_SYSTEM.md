@@ -89,6 +89,7 @@ Cormorant Garamond is used for:
 - Artwork title in the detail view
 - Section headings in the provenance timeline
 - The "Provenance gap" state headline
+- The primary H1/H2 headings on every marketing page (applied consistently site-wide via `var(--font-display)`)
 
 Pretendard is used for everything else: body copy, labels, badges, inputs, buttons.
 
