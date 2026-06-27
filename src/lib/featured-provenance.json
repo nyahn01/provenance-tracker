@@ -5,7 +5,7 @@
       "institution": "Claude Monet",
       "lat": 48.8566,
       "lng": 2.3522,
-      "startDate": null,
+      "startDate": "1906",
       "endDate": "1909",
       "source": "AIC provenance"
     },
@@ -99,7 +99,7 @@
       "institution": "Edgar Degas",
       "lat": 51.5074,
       "lng": -0.1278,
-      "startDate": null,
+      "startDate": "1874",
       "endDate": "1876",
       "source": "AIC provenance"
     },
@@ -155,7 +155,7 @@
       "institution": "Gustave Caillebotte",
       "lat": 48.8566,
       "lng": 2.3522,
-      "startDate": null,
+      "startDate": "1877",
       "endDate": "1894",
       "source": "AIC provenance"
     },
@@ -171,8 +171,8 @@
     {
       "name": "Provins",
       "institution": "Georges Minoret",
-      "lat": null,
-      "lng": null,
+      "lat": 48.5597,
+      "lng": 3.2972,
       "startDate": "1900",
       "endDate": "1950",
       "source": "AIC provenance"
@@ -211,7 +211,7 @@
       "institution": "Vincent van Gogh",
       "lat": 48.8566,
       "lng": 2.3522,
-      "startDate": null,
+      "startDate": "1889",
       "endDate": "1889",
       "source": "AIC provenance"
     },
@@ -285,7 +285,7 @@
       "institution": "Claude Monet",
       "lat": 48.8566,
       "lng": 2.3522,
-      "startDate": null,
+      "startDate": "1890",
       "endDate": "1891",
       "source": "AIC provenance"
     },
@@ -335,10 +335,10 @@
       "source": "AIC provenance"
     },
     {
-      "name": "Lake Forest, Illinois",
+      "name": "Lake Forest",
       "institution": "Arthur M. Wood and Pauline Palmer Wood",
-      "lat": null,
-      "lng": null,
+      "lat": 42.2597,
+      "lng": -87.8398,
       "startDate": null,
       "endDate": "1984",
       "source": "AIC provenance"

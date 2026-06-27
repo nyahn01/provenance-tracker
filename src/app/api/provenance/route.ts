@@ -360,6 +360,35 @@ function deterministicExtract(prose: string, sourceLabel: string): LocationEntry
   return out
 }
 
+/** Loose name match (case/punctuation-insensitive) — mirrors sameName in timeline.ts. */
+function sameName(a: string, b: string): boolean {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+  const na = norm(a), nb = norm(b)
+  if (na.length < 4 || nb.length < 4) return false
+  return na === nb || na.includes(nb) || nb.includes(na)
+}
+
+/**
+ * Post-process an ownership chain: when a custody entry's holder is the artwork's
+ * own artist AND has no startDate, set startDate to the artwork's creation year
+ * (honest: the artist held the work from when it was made). If the creation year
+ * is unknown, startDate stays null — no date is ever invented.
+ */
+function applyArtistOriginFix(
+  entries: LocationEntry[],
+  artist: string,
+  creationYear: number | null,
+): LocationEntry[] {
+  return entries.map(e => {
+    if (e.startDate != null) return e
+    const holder = e.institution ?? e.name
+    if (sameName(holder, artist) && creationYear != null) {
+      return { ...e, startDate: String(creationYear) }
+    }
+    return e
+  })
+}
+
 // ─── Route handler ───────────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
@@ -461,6 +490,12 @@ export async function GET(request: NextRequest) {
   // Parse the artwork's earliest creation year to guard against stray numbers in prose
   // being read as loan dates (e.g. "Gallery 1600" for an 1889 painting).
   const creationYear = (() => { const m = meta.date?.match(/\d{4}/); return m ? parseInt(m[0], 10) : null })()
+
+  // Quality pass on the custody chain:
+  // Artist-origin fix: when the holder is the artwork's own artist and has no startDate,
+  // set startDate to the creation year (honest — the artist held it from when it was made).
+  // Leaves startDate null when creation year is unknown — no date is ever invented.
+  ownership = applyArtistOriginFix(ownership, meta.artist, creationYear)
 
   const exhibitionHistoryLoans = extractExhibitionHistoryLoans(
     exhibitionText,

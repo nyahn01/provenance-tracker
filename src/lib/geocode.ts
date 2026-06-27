@@ -71,6 +71,10 @@ const CITIES: Record<string, GeoPoint> = {
   shanghai: { lat: 31.2304, lng: 121.4737 },
   taipei: { lat: 25.033, lng: 121.5654 },
   'hong kong': { lat: 22.3193, lng: 114.1694 },
+  // French towns that appear in provenance records
+  provins: { lat: 48.5597, lng: 3.2972 },
+  // US towns that appear in provenance records
+  'lake forest': { lat: 42.2597, lng: -87.8398 },
 }
 
 /**
