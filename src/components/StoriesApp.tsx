@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import type { SearchResult, ProvenanceResponse } from '@/lib/types'
+import type { SearchResult, SearchByMode, ProvenanceResponse } from '@/lib/types'
 import { FEATURED_WORKS, type FeaturedWork } from '@/lib/featured'
 import { OBS } from '@/lib/design-tokens'
 import { GlobeContainer } from './provenance/GlobeContainer'
@@ -29,6 +29,7 @@ function useViewport() {
 
 export default function StoriesApp() {
   const [query, setQuery] = useState('')
+  const [searchBy, setSearchBy] = useState<SearchByMode>('all')
   const [results, setResults] = useState<SearchResult[]>([])
   const [searching, setSearching] = useState(false)
   const [searched, setSearched] = useState(false)
@@ -74,11 +75,12 @@ export default function StoriesApp() {
 
   const close = () => { setSelected(null); setProv(null); setHero(null); setCredit(null); setDrawerOpen(false) }
 
-  const runSearch = useCallback(async (q: string) => {
+  const runSearch = useCallback(async (q: string, by: SearchByMode = 'all') => {
     const t = q.trim(); if (t.length < 2) return
     setSearching(true); setSearched(true); setResults([])
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(t)}`)
+      const url = `/api/search?q=${encodeURIComponent(t)}&searchBy=${by}`
+      const res = await fetch(url)
       const data = (await res.json()) as { results: SearchResult[] }
       setResults(data.results ?? [])
     } catch { setResults([]) } finally { setSearching(false) }
@@ -173,19 +175,65 @@ export default function StoriesApp() {
               <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: OBS.textFaint, marginBottom: 12 }}>
                 Explore beyond the collection
               </div>
+
+              {/* Search-by mode toggle */}
+              <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+                {([
+                  { mode: 'all'    as SearchByMode, label: 'All'    },
+                  { mode: 'artist' as SearchByMode, label: 'Artist' },
+                  { mode: 'title'  as SearchByMode, label: 'Title'  },
+                ] as { mode: SearchByMode; label: string }[]).map(({ mode, label }) => {
+                  const active = searchBy === mode
+                  return (
+                    <button
+                      key={mode}
+                      onClick={() => {
+                        setSearchBy(mode)
+                        if (query.trim().length >= 2) runSearch(query, mode)
+                      }}
+                      aria-pressed={active}
+                      style={{
+                        background: active ? OBS.clay : OBS.surface,
+                        color: active ? OBS.bg : OBS.textMuted,
+                        border: `1px solid ${active ? OBS.clay : OBS.border}`,
+                        borderRadius: 6,
+                        padding: '4px 12px',
+                        fontFamily: 'var(--font-ui)',
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        letterSpacing: '0.06em',
+                        cursor: 'pointer',
+                        transition: 'background 150ms, color 150ms, border-color 150ms',
+                      }}
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: OBS.textFaint, alignSelf: 'center', marginLeft: 4 }}>
+                  {searchBy === 'artist' ? 'Searching by artist name' : searchBy === 'title' ? 'Searching by painting title' : 'Searching all fields'}
+                </span>
+              </div>
+
               <div style={{ display: 'flex', gap: 8, maxWidth: 520, flexWrap: 'wrap' }}>
-                <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && runSearch(query)}
-                  placeholder="Search any artist or work — Klimt, Vermeer, Water Lilies…"
+                <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && runSearch(query, searchBy)}
+                  placeholder={
+                    searchBy === 'artist' ? 'Artist surname — Monet, Klimt, Vermeer…' :
+                    searchBy === 'title'  ? 'Painting title — Water Lilies, The Kiss…' :
+                                           'Search any artist or work — Klimt, Vermeer, Water Lilies…'
+                  }
                   style={{ flex: 1, minWidth: 240, background: OBS.surface, border: `1px solid ${OBS.border}`, borderRadius: 8, padding: '10px 14px', color: OBS.text, fontFamily: 'var(--font-ui)', fontSize: '0.875rem', outline: 'none' }} />
-                <button onClick={() => runSearch(query)}
+                <button onClick={() => runSearch(query, searchBy)}
                   style={{ background: OBS.clay, color: OBS.bg, border: 'none', borderRadius: 8, padding: '10px 18px', fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>Search</button>
               </div>
 
               {searching && <div style={{ color: OBS.textMuted, fontFamily: 'var(--font-ui)', fontSize: '0.85rem', marginTop: 16 }}>Searching…</div>}
               {searched && !searching && results.length === 0 && (
                 <div style={{ color: OBS.textMuted, fontFamily: 'var(--font-ui)', fontSize: '0.85rem', marginTop: 16, lineHeight: 1.5, maxWidth: 520 }}>
-                  Nothing found for &quot;{query}&quot;. Search spans the Met, Art Institute of Chicago,
-                  Rijksmuseum, Europeana, and Wikidata — try an artist (e.g. Klimt, Vermeer) or a work title.
+                  Nothing found for &quot;{query}&quot;
+                  {searchBy !== 'all' && <> ({searchBy === 'artist' ? 'artist' : 'title'} search)</>}.{' '}
+                  Search spans the Met, Art Institute of Chicago, Rijksmuseum, Europeana, and Wikidata
+                  {searchBy !== 'all' && <> — try switching to <strong>All</strong> or check spelling</>}.
                 </div>
               )}
               {results.length > 0 && (

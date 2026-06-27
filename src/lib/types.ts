@@ -8,6 +8,17 @@
 
 // ─── Search ──────────────────────────────────────────────────────────────────
 
+/**
+ * Controls which field(s) the scoring logic should prioritise.
+ *
+ * - 'all':    default behaviour — title and artist both contribute equally.
+ * - 'artist': surname / full-name query; artist matches are weighted much
+ *             higher so "Monet" surfaces Monet's works, not works about Monet.
+ * - 'title':  the user is looking for a specific painting title; artist
+ *             matches are demoted so first-name false-positives don't surface.
+ */
+export type SearchByMode = 'all' | 'artist' | 'title'
+
 export interface SearchResult {
   /** Globally unique within this API: "<source>-<raw id>" */
   id: string
@@ -21,6 +32,8 @@ export interface SearchResult {
 export interface SearchResponse {
   results: SearchResult[]
   query: string
+  /** Which field(s) were prioritised when scoring results. */
+  searchBy: SearchByMode
   /** Human-readable list of upstream data sources consulted */
   sources: string[]
   cached?: boolean
