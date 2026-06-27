@@ -294,6 +294,9 @@ export default function PricingPage() {
               <Link href="/team" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
                 How the platform works →
               </Link>
+              <Link href="/impressum" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                Legal notice →
+              </Link>
             </div>
           </div>
 
