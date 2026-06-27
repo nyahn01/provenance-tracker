@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Provenance Tracker · 바사해 — How a human worked less and the agents worked more</title>
+  <title>Provenance Tracker · 바사해 — How the human worked less and the agents worked more</title>
 
   <!-- Reveal.js core (vendored — fully offline, no CDN) -->
   <link rel="stylesheet" href="vendor/reveal/dist/reset.css">
@@ -13,6 +13,13 @@
   <link rel="stylesheet" href="vendor/pretendard/pretendard.css">
   <!-- Shared Observatory theme -->
   <link rel="stylesheet" href="theme.css">
+  <style>
+    /* clean, low-density list — one breath per line */
+    .reveal ul.clean { list-style: none; margin-left: 0; }
+    .reveal ul.clean li { margin: 0.5em 0; font-size: 1.05em; padding-left: 1.1em; position: relative; }
+    .reveal ul.clean li::before { content: '·'; color: var(--gold); position: absolute; left: 0; font-weight: 700; }
+    .chips { margin-top: 0.6em; }
+  </style>
 </head>
 <body>
 <div class="reveal">
@@ -25,8 +32,8 @@
     <div class="full-center">
       <span class="kicker">Provenance Tracker · 바사해 (Hackathon for Busy People)</span>
       <h1>The hidden journeys<br>of masterpieces</h1>
-      <p class="lead muted" style="max-width:24ch">A sourced, gap-honest chain of custody for famous paintings — on a 3D globe.</p>
-      <p class="tiny" style="margin-top:2em">Built solo in ~1.5 days by a team of AI agents · Nayoung Ahn · 2026</p>
+      <p class="lead muted">A masterpiece's chain of custody, on a 3D globe.<br>Every fact sourced; every gap shown honestly.</p>
+      <p class="tiny" style="margin-top:2.4em">Built solo in ~1.5 days by a team of AI agents · Nayoung Ahn · 2026</p>
     </div>
     <aside class="notes">
       Hi everyone. This is Provenance Tracker. I built it for 바사해 — a "hackathon for busy people,"
@@ -35,7 +42,7 @@
       and why it exists; second — and this is the part you actually came for — exactly how I used a
       *team* of AI agents to build it; and third, an honest personal review of doing a hackathon as a
       busy person, solo. The whole story is really one sentence: how I worked less, and the agents
-      worked more. Let's start with a mystery. [~50s]
+      worked more. Let me start with a mystery.
     </aside>
   </section>
 
@@ -44,17 +51,15 @@
     <span class="kicker">The 16-year question</span>
     <p class="serif-quote">When Monet finished <em>Water Lilies</em> in 1906, it was in Paris.<br>
     When the Art Institute of Chicago bought it, it was in Chicago.</p>
-    <p class="lead" style="margin-top:1em">What happened in between?</p>
-    <p class="muted">The museum label says <strong>“provenance unknown before 1922.”</strong>
-    That is a 16-year gap in the custody record of a painting worth tens of millions.</p>
-    <span class="source-tag">Source · docs/PITCH.md</span>
+    <p class="lead" style="margin-top:1.2em">What happened in between?</p>
+    <p class="muted">The museum label says only: <strong>“provenance unknown before 1922.”</strong></p>
     <aside class="notes">
-      When Monet finished Water Lilies in 1906 it was in Paris. When the Art Institute of
-      Chicago acquired it, it was in Chicago. What happened in between? The museum says
-      "provenance unknown before 1922." That's a sixteen-year gap in the ownership history of
-      a painting worth tens of millions of dollars. That gap is the whole reason this project
-      exists. Provenance — the documented chain of who owned a work, where, and when — is real,
-      fascinating, and almost never shown to the public. [~50s]
+      When Monet finished Water Lilies in 1906 it was in Paris. When the Art Institute of Chicago
+      acquired it, it was in Chicago. What happened in between? The museum says "provenance unknown
+      before 1922." That's a sixteen-year gap in the ownership history of a painting worth tens of
+      millions of dollars. That gap is the whole reason this project exists. Provenance — the
+      documented chain of who owned a work, where, and when — is real, fascinating, and almost never
+      shown to the public.
     </aside>
   </section>
 
@@ -65,67 +70,50 @@
     <div class="full-center">
       <span class="act-num">Part One</span>
       <h2>The Project</h2>
-      <p class="muted">What provenance is · why gaps matter · a quick demo</p>
+      <p class="muted">What provenance is · why gaps matter · a demo</p>
     </div>
-    <aside class="notes">Part one: the product itself. [~5s]</aside>
+    <aside class="notes">Part one: the product itself.</aside>
   </section>
 
   <!-- 4 · What is provenance / why it matters -->
   <section data-background-color="#0a0908">
-    <span class="kicker">What is provenance — and why care</span>
-    <h3>Provenance = the documented chain of custody of an artwork.</h3>
-    <div class="cols-3" style="margin-top:0.8em">
-      <div class="card accent-clay">
-        <h3>Legally</h3>
-        <p>~600,000 works were looted in the Nazi era; fewer than 20% identified. A gap between
-        <strong>1933–1945</strong> is a red flag in restitution cases.</p>
-      </div>
-      <div class="card accent-gold">
-        <h3>Commercially</h3>
-        <p>A continuous chain of title commands a real premium at auction. A $2M work needs weeks
-        of manual provenance verification.</p>
-      </div>
-      <div class="card accent-sage">
-        <h3>Intellectually</h3>
-        <p>The gaps hide the most interesting history — wartime movement, private collections,
-        estate sales.</p>
-      </div>
+    <span class="kicker">Provenance — and why it matters</span>
+    <h2>An artwork’s documented chain of custody</h2>
+    <div class="cols-3" style="margin-top:0.9em">
+      <div class="card accent-clay"><h3>Legally</h3><p>~600k works looted in the Nazi era. A 1933–45 gap is a red flag.</p></div>
+      <div class="card accent-gold"><h3>Commercially</h3><p>An unbroken chain of title commands an auction premium.</p></div>
+      <div class="card accent-sage"><h3>Intellectually</h3><p>The most interesting history hides in the gaps.</p></div>
     </div>
-    <span class="source-tag">Source · BUSINESS_CASE.md · vault/concepts/Provenance Gap.md</span>
     <aside class="notes">
-      So what is provenance, and why should anyone care? Provenance is the documented chain of
-      custody of an artwork — every owner, every dealer, every move, with dates. It matters in
-      three ways. Legally: roughly six hundred thousand works were looted during the Nazi era,
-      and fewer than twenty percent have been identified — so a gap between 1933 and 1945 is a
-      red flag in restitution law. Commercially: a clean, continuous chain of title is worth
-      real money at auction. And intellectually, the gaps are where the most interesting history
-      hides. The key insight: the gap is not a failure of the data — it's the most important
-      part of it. [~55s]
+      Provenance is the documented chain of custody of an artwork — every owner, every dealer, every
+      move, with dates. It matters three ways. Legally: roughly six hundred thousand works were looted
+      during the Nazi era, and fewer than twenty percent have been identified — so a gap between 1933
+      and 1945 is a red flag in restitution law. Commercially: a clean, continuous chain of title is
+      worth real money at auction. And intellectually, the gaps are where the most interesting history
+      hides. The key insight: the gap is not a failure of the data — it's the most important part of it.
     </aside>
   </section>
 
   <!-- 5 · The honesty contract -->
   <section data-background-color="#0a0908">
-    <span class="kicker">The one rule everything is built on</span>
+    <span class="kicker">The foundation</span>
     <h2>Honesty is the moat.</h2>
-    <ul>
-      <li>Never claim live “currently on view” — <span class="muted">no public API supports it.</span></li>
-      <li>Every on-screen fact carries a <strong>visible source</strong> (Met / AIC / Rijksmuseum / Wikidata / Getty / RKD).</li>
-      <li>Sparse data is shown as a <span class="c-loan">gap</span> — <strong>never faked.</strong> No invented dates or coordinates.</li>
-      <li>Custody (ownership) is <em>never</em> conflated with exhibition <span class="c-loan">loans</span> — a loan is not a move.</li>
-      <li>Images only for public-domain works, credited to the institution.</li>
+    <ul class="clean">
+      <li>No live “on view” claims</li>
+      <li>Every fact carries a visible source</li>
+      <li>Sparse data shown as a gap — never faked</li>
+      <li>Custody is never confused with loans</li>
+      <li>Images only for public-domain works</li>
     </ul>
-    <p class="tiny" style="margin-top:0.6em">Enforced mechanically by a CI “honesty gate” on every change — more on that in Part Two.</p>
-    <span class="source-tag">Source · CLAUDE.md (operating contract)</span>
+    <p class="tiny" style="margin-top:0.8em">Enforced mechanically on every change.</p>
     <aside class="notes">
-      Anything that shows art data online has a credibility problem: how do you trust it? My
-      answer is a hard honesty contract — five non-negotiable rules. Never claim a live "on view"
-      status, because no public API can actually verify it. Every fact on screen carries a
-      visible source. Sparse data is shown as a gap, never faked — no invented dates, no invented
-      coordinates. Ownership is never mixed up with exhibition loans — a loan is not a change of
-      ownership. And images only appear for public-domain works. The important part: these aren't
-      good intentions. They're enforced mechanically by a check that runs on every single change.
-      I'll show you that gate in part two. [~55s]
+      Anything that shows art data online has a credibility problem: how do you get people to trust it?
+      My answer is a hard honesty contract — five non-negotiable rules. Never claim a live "on view"
+      status, because no public API can verify it. Every fact on screen carries a visible source. Sparse
+      data is shown as a gap, never faked — no invented dates, no invented coordinates. Ownership is
+      never confused with exhibition loans — a loan is not a change of ownership. And images only appear
+      for public-domain works. The important part: these aren't good intentions. They're enforced
+      mechanically by a check that runs on every single change. I'll show you that gate in part two.
     </aside>
   </section>
 
@@ -133,135 +121,110 @@
   <section data-background-color="#0a0908">
     <span class="kicker">Demo · the landing</span>
     <div class="shot-frame">
-      <img class="shot" src="assets/home-globe.png" alt="Provenance Tracker landing — curated masterpieces over a 3D globe">
-      <p class="caption">Eight curated, public-domain masterpieces · a 3D globe · an arc legend (custody / loan / dealer)</p>
+      <img class="shot" src="assets/home-globe.png" alt="Provenance Tracker landing — masterpieces over a 3D globe">
+      <p class="caption">8 masterpieces · a 3D globe · an arc legend</p>
     </div>
     <aside class="notes">
-      Here's the product. You land on a curated set of eight famous, public-domain paintings —
-      Monet, Seurat, Degas, Van Gogh, Cézanne, Cassatt — each chosen because it has deep, dated,
-      scholarly provenance. Behind them, a 3D globe. Bottom-left, the legend that runs through the
-      whole app: gold is custody — a change of ownership; sage-green is an exhibition loan; and
-      amber is a dealer transaction. You pick a masterpiece, and we trace its documented journey.
-      Let me click Monet's Water Lilies. [~45s]
+      Here's the product. You land on a curated set of eight famous, public-domain paintings — Monet,
+      Seurat, Degas, Van Gogh, Cézanne, Cassatt — each chosen because it has deep, dated, scholarly
+      provenance. Behind them, a 3D globe. The legend runs through the whole app: gold is custody — a
+      change of ownership; sage-green is an exhibition loan; amber is a dealer transaction. You pick a
+      masterpiece, and we trace its documented journey. Let me click Monet's Water Lilies.
     </aside>
   </section>
 
-  <!-- 7 · DEMO — the chain (placeholder: live site) -->
+  <!-- 7 · DEMO — the chain -->
   <section data-background-color="#0a0908">
-    <span class="kicker">Demo · the journey, live</span>
-    <div class="cols" style="grid-template-columns:1.1fr 0.9fr">
-      <div class="placeholder">
-        <div class="pl-icon">◷</div>
-        <div class="pl-title">Live demo — populated chain</div>
-        <div class="pl-note">Water Lilies on the live site: globe draws the gold custody arcs Paris → New York → Chicago; sidebar shows the dated timeline. <br><br><strong>Capture from the deployed app</strong> (museum APIs are blocked on localhost). See SHOT_LIST.md.</div>
+    <span class="kicker">Demo · the journey</span>
+    <div class="cols" style="grid-template-columns:1.15fr 0.85fr">
+      <div class="shot-frame">
+        <img class="shot" src="assets/live-water-lilies.png" alt="Water Lilies — populated custody chain with gold globe arcs">
+        <p class="caption">Paris → New York → Chicago</p>
       </div>
       <div>
-        <h3>What you see</h3>
-        <p class="muted">Paris (Monet, 1906) → Durand-Ruel Paris → Durand-Ruel New York →
-        Martin A. Ryerson, Chicago → the Art Institute.</p>
-        <p class="muted">Each stop is <strong>dated</strong>, carries a <strong>source badge</strong>,
-        and a <strong>confidence dot</strong> (green / gold / grey).</p>
-        <span class="chip gold">custody arc</span><span class="chip sage">loan arc</span><span class="chip purple">dealer arc</span>
+        <h3>Each stop is dated and sourced</h3>
+        <p class="muted">Monet in Paris to the Art Institute — a source badge on every step.</p>
+        <div class="chips"><span class="chip gold">custody</span><span class="chip sage">loan</span><span class="chip purple">dealer</span></div>
       </div>
     </div>
-    <span class="source-tag">Data · src/lib/featured-provenance.json (pre-parsed, zero runtime cost)</span>
     <aside class="notes">
-      On the live site, the moment you click, two things happen. The globe draws the gold custody
-      arcs — Paris, to New York, to Chicago — and a warm "gallery" panel slides in with the dated
-      timeline. Monet held it in Paris in 1906. It went to the dealer Durand-Ruel in Paris, then
-      their New York branch, then a Chicago collector named Ryerson, and finally the Art Institute.
-      Every single stop is dated, carries a badge telling you which archive documents it, and a
-      confidence dot — green for high, gold for medium, grey for low. Nothing here is invented;
-      this chain is pre-parsed from the museum's own scholarly provenance text. [I'll show this
-      live / it's in the deployed app — museum APIs are blocked on my laptop sandbox.] [~55s]
+      The moment you click, two things happen. The globe draws the gold custody arcs — Paris, to New
+      York, to Chicago — and a warm gallery panel slides in with the dated timeline. Monet held it in
+      Paris in 1906. It went to the dealer Durand-Ruel in Paris, then their New York branch, then a
+      Chicago collector named Ryerson, and finally the Art Institute. Every stop is dated, carries a
+      badge telling you which archive documents it, and a confidence dot. Nothing here is invented;
+      this chain is pre-parsed from the museum's own scholarly provenance text.
     </aside>
   </section>
 
-  <!-- 8 · DEMO — honesty / gap (real screenshot) -->
+  <!-- 8 · DEMO — honesty / gap -->
   <section data-background-color="#0a0908">
     <span class="kicker">Demo · what makes it different</span>
     <div class="cols" style="grid-template-columns:1.2fr 0.8fr">
       <div class="shot-frame">
-        <img class="shot" src="assets/detail-water-lilies.png" alt="Detail panel showing an honest provenance-gap state with sources">
-        <p class="caption">The honest empty state — a real screenshot, no faked chain</p>
+        <img class="shot" src="assets/detail-water-lilies.png" alt="Detail panel showing an honest provenance-gap state">
+        <p class="caption">Real screen · no faked chain</p>
       </div>
       <div>
         <h3>The gap is a feature.</h3>
-        <p class="muted">When our sources don’t document a period, we say so:
-        <em>“No documented chain of custody found in our sources.”</em></p>
-        <p class="muted">Sources are named (<strong>Met · AIC · Rijksmuseum · Wikidata</strong>),
-        the image is credited, and anyone can <span class="c-clay">“Spot an error.”</span></p>
+        <p class="muted">No record? We say so, name the sources we checked, and let anyone flag an error.</p>
       </div>
     </div>
-    <span class="source-tag">Live screenshot · honest empty-state UI</span>
     <aside class="notes">
-      And this is the part I'm proudest of. This is a real screenshot — not a mockup. When our
-      sources genuinely don't document a period, the app does not invent a chain to look finished.
-      It says, plainly: "No documented chain of custody found in our sources." It still names the
-      sources it checked — the Met, the Art Institute, Rijksmuseum, Wikidata — it still credits the
-      image, and it invites anyone to flag an error. For a restitution lawyer or a historian, an
-      honest gap is exactly the thing you need to investigate. Showing the gap honestly is worth
-      more than a confident lie. [~50s]
+      This is the part I'm proudest of. This is a real screenshot, not a mockup. When our sources don't
+      document a period, the app does not invent a chain to look finished. It says, plainly: "No
+      documented chain of custody found in our sources." It still names the sources it checked — the Met,
+      the Art Institute, Rijksmuseum, Wikidata — it still credits the image, and it invites anyone to
+      flag an error. For a restitution lawyer or a historian, an honest gap is exactly the thing you need
+      to investigate. Showing the gap honestly is worth more than a confident lie.
     </aside>
   </section>
 
-  <!-- 9 · DEMO — dealer receipts (placeholder) -->
+  <!-- 9 · DEMO — dealer records -->
   <section data-background-color="#0a0908">
-    <span class="kicker">Demo · the dealer layer museums don’t show</span>
+    <span class="kicker">Demo · the dealer layer</span>
     <div class="cols">
-      <div class="placeholder">
-        <div class="pl-icon">▤</div>
-        <div class="pl-title">Live demo — Getty GPI record</div>
-        <div class="pl-note">Degas <em>Yellow Dancers</em> → 201 Getty Provenance Index records: seller, buyer, price, date, ledger link. <br><br>Capture the purple <strong>GPI</strong> badge + record card from the live app.</div>
+      <div class="shot-frame">
+        <img class="shot" src="assets/live-getty-degas.png" alt="Degas Yellow Dancers — Getty GPI dealer records">
+        <p class="caption">Seller → buyer · price · date</p>
       </div>
       <div>
-        <h3>4,388 dealer records, public domain.</h3>
-        <p class="muted">The <strong>Getty Provenance Index</strong> — handwritten stock books from
-        M. Knoedler &amp; Co. (1872–1970) and Goupil — seeded into the app.</p>
-        <p class="muted">Each record: who sold it, to whom, for what price, when, where — every one
-        sourced and linked to the original ledger.</p>
-        <span class="chip purple">GPI · tier A</span>
+        <h3>The layer museums don’t show</h3>
+        <p class="muted">The Getty index — 4,388 public-domain dealer ledger records, seeded in.</p>
+        <div class="chips"><span class="chip purple">GPI</span></div>
       </div>
     </div>
-    <span class="source-tag">Source · docs/DATA_SOURCES.md · scripts/seed-goupil.mjs</span>
     <aside class="notes">
-      One more layer. Museums document who *owned* a work — but not the dealers who *sold* it. For
-      that we use the Getty Provenance Index: handwritten stock books from the great American
-      dealer Knoedler, who operated from 1872 to 1970, plus the Goupil house. Forty-three hundred
-      of those records are now public domain, and they're seeded into the app. Degas's Yellow
-      Dancers alone matches over two hundred of them. Each record shows the seller, the buyer, the
-      price, the date — and links back to the original ledger scan. This is the commercial history
-      museums simply don't surface. [~50s]
+      One more layer. Museums document who owned a work — but not the dealers who sold it. For that we
+      use the Getty Provenance Index: handwritten stock books from the great American dealer Knoedler,
+      who operated from 1872 to 1970, plus the Goupil house. Forty-three hundred of those records are now
+      public domain, and they're seeded into the app. Degas's Yellow Dancers alone matches over two
+      hundred of them. Each record shows the seller, the buyer, the price, the date — and links back to
+      the original ledger scan. This is the commercial history museums simply don't surface.
     </aside>
   </section>
 
-  <!-- 10 · Data sources + tiers -->
+  <!-- 10 · Data sources -->
   <section data-background-color="#0a0908">
     <span class="kicker">Where every fact comes from</span>
-    <h3>Eight live sources, ranked by credibility.</h3>
-    <div class="cols">
+    <h2>Eight sources, ranked by credibility</h2>
+    <div class="cols" style="margin-top:0.6em">
       <div>
-        <p><span class="chip gold">Tier A</span> museum-published / catalogue raisonné</p>
-        <p class="muted" style="font-size:0.8em">Met · Art Institute of Chicago · Rijksmuseum · Getty Provenance Index · RKD · Cleveland</p>
-        <p style="margin-top:0.6em"><span class="chip sage">Tier B</span> structured open data</p>
-        <p class="muted" style="font-size:0.8em">Wikidata (P276 location, P580/P582 dates) · Europeana</p>
+        <p><span class="chip gold">Tier A</span> museum-published records</p>
+        <p class="muted" style="font-size:0.82em">Met · AIC · Rijksmuseum · Getty · RKD · Cleveland</p>
+        <p style="margin-top:0.7em"><span class="chip sage">Tier B</span> structured open data</p>
+        <p class="muted" style="font-size:0.82em">Wikidata · Europeana</p>
       </div>
-      <div class="card">
-        <h3>The honest reality</h3>
-        <p>Wikidata gives ~1 location per work (the current museum). It <em>cannot</em> produce a
-        journey. The real chains live in <strong>museum prose</strong> — extracted, geocoded, and
-        merged with dealer records.</p>
-      </div>
+      <div class="card"><h3>The catch</h3><p>Wikidata gives ~1 location. The real chains live in the museums’ own prose.</p></div>
     </div>
-    <span class="source-tag">Source · docs/DATA_SOURCES.md</span>
     <aside class="notes">
-      Quick word on the data, because honesty starts here. We pull from eight live sources, ranked
-      by credibility. Tier A is museum-published, scholarly: the Met, the Art Institute, Rijksmuseum,
-      the Getty index, the Dutch RKD, Cleveland. Tier B is structured open data: Wikidata and
-      Europeana. Here's the honest reality most people get wrong — Wikidata only gives you about one
-      location per work, the current museum. It cannot produce a journey. The real chains live in the
-      museums' own written provenance text. Extracting that prose, geocoding it, and merging it with
-      the dealer records — that's the actual work. [~50s]
+      Quick word on the data, because honesty starts here. We pull from eight live sources, ranked by
+      credibility. Tier A is museum-published, scholarly: the Met, the Art Institute, Rijksmuseum, the
+      Getty index, the Dutch RKD, Cleveland. Tier B is structured open data: Wikidata and Europeana.
+      Here's what most people get wrong — Wikidata only gives you about one location per work, the current
+      museum. It cannot produce a journey. The real chains live in the museums' own written provenance
+      text. Extracting that prose, geocoding it, and merging it with the dealer records — that's the
+      actual work.
     </aside>
   </section>
 
@@ -272,106 +235,79 @@
     <div class="full-center">
       <span class="act-num">Part Two</span>
       <h2>The AI Agent Team</h2>
-      <p class="muted">How a human worked less and the agents worked more</p>
-      <p class="tiny" style="margin-top:0.9em">바사해's brief wasn't "show a product" — it was <em>tell the story of how you made the agents do the work.</em> This is that story.</p>
+      <p class="muted">How the human worked less and the agents worked more</p>
     </div>
     <aside class="notes">
       Part two — the part you actually came for, and honestly the part the hackathon was really about.
       바사해 didn't ask us to show a product; it asked us to tell the story of how the human worked less
       and the agents worked more. When I demoed, the agent *team* was the thing people most wanted to
       copy — so let me show you exactly how to build one. How do you make all of this, solo, in a day
-      and a half, without doing all the work yourself? [~20s]
+      and a half, without doing all the work yourself?
     </aside>
   </section>
 
   <!-- 12 · Origin story -->
   <section data-background-color="#0a0908">
-    <span class="kicker">How it started · honest version</span>
+    <span class="kicker">How it started</span>
     <div class="cols">
       <div>
-        <p class="muted">I keep entering these because I love building good products <strong>with good
-        people.</strong> This year time forced me <em>solo</em> — and I was <strong>tired of AI hype</strong>,
-        I'd stopped following the tools. So I set one goal: build with a <em>team</em> anyway — a team of
-        <em>agents</em>.</p>
-        <p class="muted">Constraints: <strong>minimal idea, minimal tooling, minimal time.</strong>
-        Work meant I started <strong>1.5 days</strong> before the deadline.</p>
+        <h3>Solo this time · minimal idea, tooling, time</h3>
+        <p class="muted">I build for the people — but went solo this year. Tired of AI hype, I still wanted a <em>team</em>: a team of agents. Started 1.5 days out.</p>
       </div>
       <div class="card accent-gold">
         <h3>Phase 1 — just talking</h3>
-        <p>Claude Pro + Sonnet + me, riffing. From my interests — I love flight-trackers and
-        vessel-trackers, open-source map products — it suggested a niche: <strong>art provenance.</strong>
-        Educational, not grim, real value.</p>
+        <p>From my love of flight- and ship-trackers, it suggested a niche: art provenance.</p>
       </div>
     </div>
-    <p class="tiny" style="margin-top:0.5em">I'm not an expert and this isn't “the best way.” It's an honest path from scratch — sharing it so non-technical builders waste fewer tokens than I did.</p>
+    <p class="tiny" style="margin-top:0.8em">Not an expert, not “the best way” — just an honest path from scratch.</p>
     <aside class="notes">
-      Honest origin story. I keep entering these hackathons because I love building good products
-      *with good people* — that's the part I enjoy most. This year, time forced me to go solo. And
-      on top of that, I'd actually grown tired of AI hype — there are so many tools, I'd stopped
-      following. But I still wanted that team feeling, so I set myself one goal for this hackathon:
-      do a single project, but build it with a *team* anyway — a team of agents. My constraints were
-      brutal — minimal idea, minimal tooling, minimal time, and because of my day job I only
-      started a day and a half before the deadline. Phase one was just talking. Claude Pro on
-      Sonnet, and me, riffing on ideas. I mentioned I love flight-trackers and ship-trackers,
-      those beautiful open-source map products — and it suggested the niche: art provenance.
-      Educational, not grim, and genuinely useful. I want to be clear — I'm not an expert, and
-      this is not "the best way." It's an honest path from scratch, and I'm sharing it so people
-      with less technical background waste fewer tokens than I did. [~60s]
+      Honest origin story. I keep entering these hackathons because I love building good products *with good
+      people* — that's the part I enjoy most. This year, time forced me to go solo. And on top of that, I'd
+      grown tired of AI hype — so many tools, I'd stopped following. But I still wanted that team feeling, so
+      I set one goal for this hackathon: do a single project, but build it with a *team* anyway — a team of
+      agents. My constraints were brutal — minimal idea, minimal tooling, minimal time, and because of my day
+      job I only started a day and a half before the deadline. Phase one was just talking. Claude on the Sonnet
+      model, and me, riffing on ideas. I mentioned I love flight-trackers and ship-trackers, those beautiful
+      open-source map products — and it suggested the niche: art provenance. Educational, not grim, genuinely
+      useful. I'm not an expert, and this is not "the best way." It's an honest path from scratch, shared so
+      people with less technical background waste fewer tokens than I did.
     </aside>
   </section>
 
   <!-- 13 · Mistake #1 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">Honest mistake #1</span>
+    <span class="kicker">An honest mistake</span>
     <h2>Too many plugins burned my tokens.</h2>
-    <p class="muted">Early on I had a pile of plugins and MCP connections wired in “just in case.”
-    Every one of them loaded context I wasn’t using — and a rudimentary MVP cost far more than it
-    should have.</p>
-    <div class="card accent-clay" style="margin-top:0.6em">
-      <p style="color:var(--obs-text)"><strong>Lesson:</strong> start lean. Add a tool only when a
-      task needs it. Context you load is context you pay for — on every turn.</p>
+    <div class="card accent-clay" style="margin-top:1em">
+      <p style="color:var(--obs-text)"><strong>Lesson.</strong> Start lean. Add a tool only when a task needs it — context you load is context you pay for, every turn.</p>
     </div>
     <aside class="notes">
-      First honest mistake, and it's a common one. Early on I wired in a pile of plugins and MCP
-      connections — all the integrations, "just in case." The problem: every one of them loads
-      context into every turn, whether you use it or not. My first rough MVP cost far more in tokens
-      than it should have. The lesson is simple: start lean. Add a tool only when a specific task
-      needs it. Context you load is context you pay for, every single turn. If you're new to this,
-      that one habit will save you the most money. [~45s]
+      First honest mistake, a common one. Early on I wired in a pile of plugins and integrations, "just in
+      case." The problem: every one loads context into every turn, whether you use it or not. My first rough
+      prototype cost far more in tokens than it should have. The lesson is simple: start lean. Add a tool only
+      when a specific task needs it. Context you load is context you pay for, every single turn. If you're new
+      to this, that one habit will save you the most money.
     </aside>
   </section>
 
   <!-- 14 · The roster -->
   <section data-background-color="#0a0908">
-    <span class="kicker">The team · 13 specialists + 1 orchestrator</span>
-    <h3>Instead of one generalist, a studio of experts.</h3>
-    <div class="cols-3" style="margin-top:0.5em">
-      <div class="card accent-sage">
-        <h3>Build · Sonnet</h3>
-        <p>provenance-globe (UI/3D)<br>provenance-data (APIs/reconcile)<br>dataviz-engineer (timeline/arcs)</p>
-      </div>
-      <div class="card accent-gold">
-        <h3>Experts · Opus</h3>
-        <p>art-historian (source credibility)<br>art-insurance-advisor<br>provenance-strategy<br>design-director</p>
-      </div>
-      <div class="card accent-clay">
-        <h3>Narrative + Gate · Opus</h3>
-        <p>provenance-story (demo/pitch)<br><strong>provenance-honesty-review</strong> (BLOCKING)</p>
-      </div>
+    <span class="kicker">13 specialists + 1 orchestrator</span>
+    <h2>Not one generalist — a studio of experts</h2>
+    <div class="cols-3" style="margin-top:0.6em">
+      <div class="card accent-sage"><h3>Builders · Sonnet</h3><p>globe · data · dataviz</p></div>
+      <div class="card accent-gold"><h3>Experts · Opus</h3><p>history · insurance · strategy · design</p></div>
+      <div class="card accent-clay"><h3>Narrative · Gate</h3><p>story · honesty-review <strong>(blocking)</strong></p></div>
     </div>
-    <p class="muted" style="font-size:0.74em;margin-top:0.5em"><strong>Operations:</strong> feedback-triage · and four Stage-3 sentinels (data-quality, honesty-regression, retro) — proposed, off by default.</p>
-    <span class="source-tag">Source · .claude/agents/ · AGENTS.md</span>
     <aside class="notes">
-      Here's the team. Instead of one generalist assistant, I set up a studio of specialists —
-      thirteen agent profiles plus me as the orchestrator. Three groups do most of the work. The
-      *builders* run on the cheaper, faster Sonnet model: one owns the 3D globe and front-end, one
-      owns the data and APIs, one owns the information design — the timeline and the arcs. The
-      *domain experts* run on Opus, the smarter model, because their job is judgment: an art
-      historian who ranks how trustworthy each source is, an insurance advisor, a business
-      strategist, a design director. And then narrative and the gate: one agent owns the demo and
-      pitch, and one — the honesty reviewer — can *block* a commit. There are also operations
-      agents for triaging feedback, and some that are wired but switched off. Each one has a written
-      profile defining its domain, so they don't step on each other. [~70s]
+      Here's the team. Instead of one generalist assistant, I set up a studio of specialists — thirteen agent
+      profiles plus me as the orchestrator. Three groups do most of the work. The builders run on the cheaper,
+      faster Sonnet model: one owns the 3D globe and front-end, one owns the data and APIs, one owns the
+      information design. The domain experts run on Opus, the smarter model, because their job is judgment: an
+      art historian who ranks how trustworthy each source is, an insurance advisor, a strategist, a design
+      director. And then narrative and the gate: one agent owns the demo and pitch, and one — the honesty
+      reviewer — can block a commit. Each one has a written profile defining its domain, so they don't step on
+      each other.
     </aside>
   </section>
 
@@ -379,65 +315,58 @@
   <section data-background-color="#0a0908">
     <span class="kicker">…and it’s a real page on the site</span>
     <div class="shot-frame">
-      <img class="shot" src="assets/top-team.png" alt="The /team page: Autonomous by design, 10 agent profiles">
-      <p class="caption">/team — “10 specialized AI agent profiles run this platform on Max. Each owns a domain. Each can block a commit.”</p>
+      <img class="shot" src="assets/top-team.png" alt="The /team page: agent profiles">
+      <p class="caption">Each owns a domain · each can block a commit</p>
     </div>
     <aside class="notes">
-      And this isn't just a config file — the team is documented as a page on the live site. "Ready
-      when you are. Autonomous by design. Ten specialized agent profiles, each owns a domain, each
-      can block a commit, every fact you see passed a credibility review." Transparency about how the
-      thing is built is part of the product. [~25s]
+      This isn't just a config file — the team is documented as a page on the live site. Each agent owns a
+      domain, each can block a commit, and every fact you see passed a credibility review. Being transparent
+      about how the thing is built is part of the product.
     </aside>
   </section>
 
   <!-- 16 · How it saves tokens / effort -->
   <section data-background-color="#0a0908">
-    <span class="kicker">Why a team saves tokens AND human effort</span>
-    <ul>
-      <li><strong>Routing by domain</strong> — the right specialist does each task; no redundant context.</li>
-      <li><strong>Types-first</strong> — the data agent defines the shape in <code>types.ts</code> <em>before</em> any UI is built, so the UI never invents data to look finished.</li>
-      <li><strong>Parallel worktrees</strong> — several agents build at once without colliding.</li>
-      <li><strong>The queue is GitHub Issues</strong> — labels are the grammar:
-        <span class="chip gold">priority + agent:domain</span><span class="chip">proposal</span><span class="chip">paused</span></li>
-      <li><strong>Budget caps</strong> — max tokens &amp; max PRs per run live in one config file.</li>
-    </ul>
-    <span class="source-tag">Source · AGENTS.md · .claude/orchestration.json</span>
+    <span class="kicker">Why a team saves tokens and effort</span>
+    <h2>The right expert, no collisions, on budget</h2>
+    <div class="chips" style="margin-top:1em">
+      <span class="chip gold">domain routing</span>
+      <span class="chip">types-first</span>
+      <span class="chip">parallel work</span>
+      <span class="chip">GitHub queue</span>
+      <span class="chip">budget caps</span>
+    </div>
     <aside class="notes">
-      So why does a team save effort instead of multiplying it? Four reasons. First, routing — each
-      task goes to the one specialist who owns that domain, so I'm not paying to re-explain context.
-      Second, types-first: the data agent defines the exact data shape before any interface is built,
-      which stops the classic failure where the UI invents fake data just to look finished. Third,
-      parallelism — agents work in separate git worktrees, so several can build at once without
-      stepping on each other's files. Fourth, the work queue isn't a markdown to-do list — it's
-      GitHub Issues, where labels are the grammar: "priority plus a domain" means build it,
-      "proposal" means it's just an idea, "paused" means skip it. And there's a hard budget cap —
-      max tokens and max pull requests per run — in a single config file. [~60s]
+      Why does a team save effort instead of multiplying it? Four reasons. First, routing — each task goes to
+      the one specialist who owns that domain, so I'm not paying to re-explain context. Second, types-first:
+      the data agent defines the exact data shape before any interface is built, which stops the classic
+      failure where the UI invents fake data to look finished. Third, parallelism — agents work in separate
+      copies of the repository, so several can build at once without stepping on each other. Fourth, the work
+      queue isn't a to-do list in a file — it's GitHub Issues, where labels are the grammar: "priority plus a
+      domain" means build it, "proposal" means it's just an idea, "paused" means skip it. And there's a hard
+      budget cap — max tokens and max pull requests per run — in a single config file.
     </aside>
   </section>
 
-  <!-- 17 · The ship gate — the key idea -->
+  <!-- 17 · The ship gate -->
   <section data-background-color="#0a0908">
     <span class="kicker">The one idea that makes agents trustworthy</span>
-    <h2>The ship gate.</h2>
-    <div class="flow" style="margin:0.6em 0 0.8em">
+    <h2>The Ship Gate</h2>
+    <div class="flow" style="margin:0.8em 0 1em">
       <span class="step">build</span><span class="arrow">→</span>
       <span class="step">serve</span><span class="arrow">→</span>
       <span class="step gate">verify (contract + honesty)</span><span class="arrow">→</span>
       <span class="step">commit ✓</span>
     </div>
-    <p class="serif-quote" style="font-size:1.2em">“An agent’s prose report — <em>‘I built X’</em> — is a <span class="muted">proposal</span>, not a result.<br>The gate is the result.”</p>
-    <p class="muted">Agents never <code>git commit</code> directly. If <code>ship.mjs</code> is red, the
-    work does not exist — the agent fixes it and re-runs. No human has to read every commit.</p>
-    <span class="source-tag">Source · scripts/ship.mjs · scripts/verify.mjs</span>
+    <p class="serif-quote" style="font-size:1.15em">“An agent’s <em>‘I built it’</em> is a proposal, not a result.<br>The gate is the result.”</p>
     <aside class="notes">
-      This is the single most important idea in the whole system. Agents are confident — they'll
-      happily tell you "I built X, it works great." But an agent's prose report is a *proposal*, not
-      a result. So no agent is ever allowed to commit code directly. Every change goes through one
-      script — the ship gate. It does four things in order: it builds the app, it starts a real
-      server, it runs a verify step that checks both the data contract and the honesty rules against
-      the running app, and only if all of that is green does it commit. If the gate is red, the work
-      simply does not exist — the agent has to fix it and re-run. This is what lets me *not* read
-      every line of every commit. The machine proves the work is real, built, and honest. [~65s]
+      This is the single most important idea in the whole system. Agents are confident — they'll happily tell
+      you "I built X, it works great." But an agent's report is a proposal, not a result. So no agent is ever
+      allowed to commit code directly. Every change goes through one gate. It does four things in order: builds
+      the app, starts a real server, runs a verify step that checks both the data contract and the honesty rules
+      against the running app, and only if all of that is green does it commit. If the gate is red, the work
+      simply does not exist — the agent fixes it and re-runs. This is what lets me not read every line of every
+      commit. The machine proves the work is real, built, and honest.
     </aside>
   </section>
 
@@ -445,109 +374,80 @@
   <section data-background-color="#0a0908">
     <span class="kicker">Protection layers · so it can’t lie or break</span>
     <div class="cols-3">
-      <div class="card accent-gold"><h3>Honesty gate (CI)</h3><p>Greps every PR for forbidden claims: “on view”, “probably owned”, null-island (0,0) coords, placeholders.</p></div>
-      <div class="card accent-sage"><h3>Build + token drift</h3><p>TypeScript strict build must pass; design tokens can’t silently diverge from the source of truth.</p></div>
-      <div class="card accent-clay"><h3>Metrics heartbeat</h3><p>Offline snapshot of data-quality health; warns on regressions (dateless custody, null coords).</p></div>
-      <div class="card accent-purple"><h3>CodeQL + secrets</h3><p>Security &amp; secret scanning — keys never in client code.</p></div>
-      <div class="card"><h3>Branch protection</h3><p><strong>Agents never merge.</strong> A human merges every PR to <code>main</code>.</p></div>
-      <div class="card"><h3>One fact, one home</h3><p>No duplicated state; no dated/dormant docs; lessons merge into INSIGHTS.md.</p></div>
+      <div class="card accent-gold"><h3>Honesty gate</h3><p>scans for forbidden claims</p></div>
+      <div class="card accent-sage"><h3>Build check</h3><p>strict build must pass</p></div>
+      <div class="card accent-clay"><h3>Metrics</h3><p>watches quality decay</p></div>
+      <div class="card accent-purple"><h3>Security scan</h3><p>no leaked keys</p></div>
+      <div class="card"><h3>Branch protection</h3><p>only humans merge</p></div>
+      <div class="card"><h3>One fact, one home</h3><p>no duplication or slop</p></div>
     </div>
-    <span class="source-tag">Source · .github/workflows/ · docs/decisions/0001</span>
     <aside class="notes">
-      Around that gate is a ring of guardrails, because the two risks with agents are that they
-      *lie* — overclaim, invent data — or that they *break* things. So: the honesty gate runs in
-      continuous integration on every pull request, grepping for forbidden phrasings like "on view"
-      or "probably owned by," and for fake zero-zero coordinates. The build must pass under strict
-      TypeScript, and design tokens can't silently drift. A metrics heartbeat takes an offline
-      snapshot of data quality and warns me if it's decaying. CodeQL and secret-scanning keep keys
-      out of the code. And the hard boundary: agents never merge. Branch protection means a human —
-      me — merges every change into main. The agents propose; I dispose. [~60s]
+      Around that gate is a ring of guardrails, because the two risks with agents are that they lie — overclaim,
+      invent data — or that they break things. The honesty gate runs on every pull request, searching for
+      forbidden phrasings and fake coordinates. The build must pass under strict type-checking, and design
+      tokens can't silently drift. A metrics heartbeat snapshots data quality and warns me if it's decaying.
+      Security and secret-scanning keep keys out of the code. And the hard boundary: agents never merge. Branch
+      protection means a human — me — merges every change. The agents propose; I dispose.
     </aside>
   </section>
 
-  <!-- 19 · Phase 2 — batch runs from my phone -->
+  <!-- 19 · Phase 2 -->
   <section data-background-color="#0a0908">
     <span class="kicker">Phase 2 · agents that work while I’m at work</span>
     <div class="cols">
       <div>
-        <h3>I wrote the plans the night before.</h3>
-        <p class="muted">A big list of requests in a file (my <code>TOMORROW.md</code>). In the
-        morning I kicked off a <strong>batch run</strong> — then went to my day job.</p>
-        <p class="muted">The orchestrator triaged the work to expert agents, distributing it to
-        <strong>save tokens</strong>, exactly as I’d instructed.</p>
+        <h3>Plans the night before</h3>
+        <p class="muted">Kick off a batch run in the morning, go to my day job; the orchestrator distributes the work.</p>
       </div>
       <div class="card accent-gold">
         <h3>Tracked from my phone</h3>
-        <p>This only works because it runs in the <strong>cloud, not on my laptop.</strong> I watched
-        PRs land from my phone between meetings.</p>
-        <p style="margin-top:0.4em" class="faint">(For this I paid for Max — token budget over API
-        credits. Worth it to learn.)</p>
+        <p>Only possible because it runs in the cloud, not on my laptop. I watched PRs land between meetings.</p>
       </div>
     </div>
-    <span class="source-tag">Source · .claude/workflows/batch-agent-squad.mjs</span>
     <aside class="notes">
-      Phase two is where it got fun. The night before, I'd write a big list of everything I wanted —
-      I literally had a file I thought of as "tomorrow." In the morning, I'd kick off a batch run,
-      and then I'd go to my actual job. While I was at work, the orchestrator was triaging that list
-      out to the expert agents, distributing the work in a way that saves tokens — because I'd told
-      it to. And here's the crucial detail: this only works because it runs in the cloud, not on my
-      laptop. I tracked the whole thing from my phone, watching pull requests land between meetings.
-      For this I did pay for the Max plan — I wanted the token budget rather than burning API
-      credits, and honestly, paying to learn was worth it. [~60s]
+      Phase two is where it got fun. The night before, I'd write a big list of everything I wanted. In the
+      morning, I'd kick off a batch run, then go to my actual job. While I was at work, the orchestrator was
+      triaging that list out to the expert agents, distributing the work in a way that saves tokens — because I'd
+      told it to. And the crucial detail: this only works because it runs in the cloud, not on my laptop. I
+      tracked the whole thing from my phone, watching pull requests land between meetings. For this I paid for the
+      Max plan — I wanted a fixed token budget rather than burning metered API credits, and paying to learn was
+      worth it.
     </aside>
   </section>
 
   <!-- 20 · The cleanup turn -->
   <section data-background-color="#0a0908">
-    <span class="kicker">Phase 1 ⇄ Phase 2 · and then the mess</span>
-    <div class="cols">
-      <div>
-        <p class="muted">Iterating between hands-on sessions (Phase 1) and batch runs (Phase 2)
-        across multiple devices, I got a great demo — but a <strong>messy repo</strong>: stale
-        features, lost plans, siloed sessions.</p>
-        <h3>GitHub became the backbone.</h3>
-        <p class="muted">Plans → <strong>Issues</strong> (durable, not ephemeral). User feedback →
-        Issues (off my email) → <code>feedback-triage</code> agent → a PR I review.</p>
-      </div>
-      <div class="placeholder" style="min-height:36vh">
-        <div class="pl-icon">⎇</div>
-        <div class="pl-title">Optional · GitHub board</div>
-        <div class="pl-note">Screenshot of the Issues list / Projects board (labels: priority · proposal · feedback). Capture from GitHub if you want a real shot.</div>
-      </div>
-    </div>
-    <span class="source-tag">Source · docs/WORKFLOW_STAGES.md</span>
+    <span class="kicker">…and then the mess</span>
+    <h2>GitHub became the backbone</h2>
+    <p class="lead muted" style="margin-top:0.6em">Chasing goals across many devices left a messy repo.<br>Plans and feedback both moved into GitHub Issues.</p>
     <aside class="notes">
-      For a while I bounced between phase one — hands-on, interactive sessions — and phase two — the
-      batch runs — across my laptop, my phone, my tablet. It produced a great demo, but also a mess:
-      stale half-features, plans I'd lost, sessions siloed on different devices. The fix was GitHub.
-      When you plan inside a chat session, that plan is ephemeral — if you don't finish it, it
-      vanishes, and across devices I lost a lot of them. So plans became GitHub Issues — durable,
-      visible, promotable. And user feedback, which I'd hated getting in my email, also became
-      Issues: a triage agent reviews them, keeps the good ones, and opens a pull request I can
-      review. GitHub turned a pile of siloed sessions into one backbone. [~60s]
+      For a while I bounced between phase one — hands-on sessions — and phase two — the batch runs — across my
+      laptop, phone, and tablet. It produced a great demo, but also a mess: stale half-features, plans I'd lost,
+      sessions siloed on different devices. The fix was GitHub. When you plan inside a chat session, that plan is
+      ephemeral — if you don't finish it, it vanishes, and across devices I lost a lot of them. So plans became
+      GitHub Issues — durable, visible, promotable. And user feedback, which I'd hated getting in my email, also
+      became Issues: a triage agent reviews them, keeps the good ones, and opens a pull request I can review.
+      GitHub turned a pile of siloed sessions into one backbone.
     </aside>
   </section>
 
   <!-- 21 · The autonomy dial -->
   <section data-background-color="#0a0908">
-    <span class="kicker">The model · Stage 1 → 2 → 3</span>
+    <span class="kicker">Stage 1 → 2 → 3</span>
     <div class="shot-frame">
-      <img class="shot" src="assets/top-workflow.png" alt="/workflow page — three stages of autonomy" style="max-height:52vh">
+      <img class="shot" src="assets/top-workflow.png" alt="/workflow page — three stages of autonomy" style="max-height:48vh">
     </div>
-    <p class="serif-quote" style="font-size:1.1em;margin-top:0.5em">“Autonomy is a dial — and the thing it turns up is <em>initiation</em>, never <span class="c-clay">veto</span>.”</p>
-    <p class="muted">Stage 1 manual (now) → Stage 2 scheduled (wired, inert) → Stage 3 event-driven
-    (vision). <strong>A human merges at every stage.</strong> That boundary never moves.</p>
-    <span class="source-tag">Source · /workflow · docs/decisions/0002</span>
+    <p class="serif-quote" style="font-size:1.1em;margin-top:0.6em">“Autonomy turns up <em>initiation</em>, never <span class="c-clay">veto</span>.”</p>
+    <p class="muted">As the stages rise, a human still merges everything.</p>
     <aside class="notes">
-      The whole system is designed to grow along one axis. I think of autonomy as a dial — but the
-      thing the dial turns up is *initiation*: who starts the work. It never turns up *veto*: who
-      gets the final say. Stage one, where I am now, is manual — I open a session, agents build.
-      Stage two is scheduled — a cron job reads the issue queue and runs the batch; it's wired but
-      currently switched off. Stage three is the vision: event-driven, where sentinels notice
-      problems and file their own issues, and a visionary-and-critic pair proposes the next direction.
-      But notice what's constant across all three stages: a
-      human merges every change. The dial turns up how much the agents can *start*; it never touches
-      the human's final word. That's the safety model in one sentence. [~60s]
+      The whole system is designed to grow along one axis. I think of autonomy as a dial — but the thing the dial
+      turns up is initiation: who starts the work. It never turns up veto: who gets the final say. Stage one,
+      where I am now, is manual — I open a session, agents build. Stage two is scheduled — a timer reads the
+      issue queue and runs the batch; it's wired but currently switched off. Stage three is the vision:
+      event-driven, where monitoring agents notice problems and file their own issues, and a visionary-and-critic
+      pair proposes the next direction. But across all three stages, one thing is constant: a human merges every
+      change. The dial turns up how much the agents can start; it never touches the human's final word. That's the
+      safety model in one sentence.
     </aside>
   </section>
 
@@ -558,30 +458,29 @@
     <div class="full-center">
       <span class="act-num">Part Three</span>
       <h2>An honest review,<br>for busy people</h2>
-      <p class="muted">바사해 · what I’d tell the next solo builder</p>
+      <p class="muted">바사해 · for the next solo builder</p>
     </div>
-    <aside class="notes">Part three — the personal review, especially for busy people doing this solo. [~8s]</aside>
+    <aside class="notes">Part three — the personal review, especially for busy people doing this solo.</aside>
   </section>
 
   <!-- 23 · The lesson stack -->
   <section data-background-color="#0a0908">
-    <span class="kicker">What I’d tell the next builder</span>
-    <ul>
-      <li><strong>One session per feature.</strong> Scope tightly; finish it; ship it.</li>
-      <li><strong>A plan you don’t finish is lost.</strong> Move plans into GitHub Issues — durable across devices.</li>
-      <li><strong>GitHub &gt; markdown queues.</strong> Issues, labels, Actions, branch protection do the bookkeeping for you.</li>
-      <li><strong>Guardrails keep agents honest</strong> — and keep clumsy git hands (mine) from breaking <code>main</code>.</li>
-      <li><strong>Start lean. Avoid AI slop</strong> — no thousand throwaway docs; one fact, one home.</li>
+    <span class="kicker">For the next builder</span>
+    <ul class="clean">
+      <li>One session per feature</li>
+      <li>Move plans into GitHub Issues</li>
+      <li>GitHub beats a to-do file</li>
+      <li>Guardrails keep agents honest — and safe</li>
+      <li>Start lean; avoid AI slop</li>
     </ul>
     <aside class="notes">
-      If you take five things away, take these. One: do one session per feature. Scope it tightly,
-      see it through, ship it — don't leave ten things half-built. Two: a plan you don't finish is a
-      plan you lose, so move plans out of the chat and into GitHub Issues where they survive across
-      devices. Three: GitHub beats a markdown to-do list — issues, labels, automated checks, and
-      branch protection do the bookkeeping for you. Four: guardrails don't just stop the agents from
-      lying — they also stopped me, with my clumsy git skills, from breaking the main branch. And
-      five: start lean and avoid AI slop — don't generate a thousand throwaway documents; keep one
-      home for each fact. [~55s]
+      If you take five things away, take these. One: do one session per feature. Scope it tightly, see it
+      through, ship it — don't leave ten things half-built. Two: a plan you don't finish is a plan you lose, so
+      move plans out of the chat and into GitHub Issues where they survive across devices. Three: GitHub beats a
+      to-do list in a file — issues, labels, automated checks, and branch protection do the bookkeeping for you.
+      Four: guardrails don't just stop the agents from lying — they also stopped me, with my clumsy git skills,
+      from breaking the main branch. And five: start lean and avoid AI slop — don't generate a thousand throwaway
+      documents; keep one home for each fact.
     </aside>
   </section>
 
@@ -589,18 +488,17 @@
   <section data-background-color="#0a0908">
     <span class="kicker">Three years · three hackathons</span>
     <div class="cols-3">
-      <div class="card accent-sage"><h3>Year 1</h3><p>An app for seniors. Learned to vibe-code. Great team — inspiration, story, code, design.</p></div>
-      <div class="card accent-gold"><h3>Year 2</h3><p>MCP + Figma + Claude into a witty web app. Same team synergy.</p></div>
-      <div class="card accent-clay"><h3>Year 3 · this one</h3><p>The most “me”: story, philosophy, and verification layers everywhere. Least time. Most complete. <strong>But solo.</strong></p></div>
+      <div class="card accent-sage"><h3>Year 1</h3><p>App for seniors. Vibe-coding. A great team.</p></div>
+      <div class="card accent-gold"><h3>Year 2</h3><p>MCP + Figma + Claude. Team synergy.</p></div>
+      <div class="card accent-clay"><h3>Year 3 · this one</h3><p>The most “me.” But solo.</p></div>
     </div>
     <aside class="notes">
-      A little perspective — this was my third year. Year one, our AI club's hackathon, we built an
-      app for seniors; I learned to vibe-code, and it was a great team — inspiration, story,
-      programming, design, all clicking. Year two, similar synergy, we wired MCP and Figma and
-      Claude together into a web app with a witty touch. This year, year three, is the most "me" —
-      it's full of my taste in story and philosophy, and honestly, all those verification layers
-      grew out of my own lack of knowledge, my need to not trust blindly. It took the least time and
-      it's the most complete thing I've made. But it was solo. [~50s]
+      A little perspective — this was my third year. Year one, our AI club's hackathon, we built an app for
+      seniors; I learned to vibe-code, and it was a great team — inspiration, story, programming, design, all
+      clicking. Year two, similar synergy, we wired several tools together into a web app with a witty touch.
+      This year, year three, is the most "me" — full of my taste in story and philosophy, and honestly, all those
+      verification layers grew out of my own lack of knowledge, my need to not trust blindly. It took the least
+      time and it's the most complete thing I've made. But it was solo.
     </aside>
   </section>
 
@@ -608,40 +506,33 @@
   <section data-background-color="#0a0908">
     <span class="kicker">The honest tension</span>
     <p class="serif-quote">Building with words and thoughts alone is<br>astonishingly productive — and a little addictive.</p>
-    <p class="muted" style="margin-top:0.8em">I watched the product improve from nothing but
-    intent. That’s intoxicating. It’s also <strong>lonely.</strong></p>
-    <p class="lead">Agents are powerful. But there’s an energy and a completeness that
-    <span class="c-gold">only a team of humans</span> gives.</p>
+    <p class="lead" style="margin-top:1.2em">Powerful, but lonely.<br>Only a <span class="c-gold">team of humans</span> gives that energy.</p>
     <aside class="notes">
-      And that brings me to the honest tension at the heart of this. Building a real product out of
-      nothing but words and thoughts is astonishingly productive — and I'll admit, a little
-      addictive. I'd type an idea and watch the thing genuinely improve. That feeling is
-      intoxicating. But it's also lonely. The agents are powerful, they saved me enormous amounts of
-      time, and they enriched this product far beyond what I could have built alone in a day and a
-      half. And yet — there's an energy, and a kind of completeness, that only comes from a team of
-      humans. I started by telling you I keep entering these for the people. This year I proved I can
-      ship without them — and honestly, it only made me more sure that I don't want to. I missed that.
-      [~55s]
+      And that brings me to the honest tension at the heart of this. Building a real product out of nothing but
+      words and thoughts is astonishingly productive — and, I'll admit, a little addictive. I'd type an idea and
+      watch the thing genuinely improve. That feeling is intoxicating. But it's also lonely. The agents are
+      powerful, they saved me enormous time, and they enriched this product far beyond what I could build alone in
+      a day and a half. And yet — there's an energy, and a kind of completeness, that only comes from a team of
+      humans. I started by telling you I keep entering these for the people. This year I proved I can ship without
+      them — and honestly, it only made me more sure that I don't want to. I missed that.
     </aside>
   </section>
 
   <!-- 26 · Where it goes -->
   <section data-background-color="#0a0908">
     <span class="kicker">What’s next</span>
-    <ul>
-      <li><strong>Phase 3</strong> — the event-driven design exists, but it needs API credits to run. Not there yet.</li>
-      <li><strong>Real human feedback</strong> — the hackathon’s over; now I want expert critique.</li>
-      <li><strong>Redesign the agent team</strong> — restructure the roster with what I’ve learned.</li>
-      <li><strong>The real goal</strong> — max out agent loops <em>inside</em> a cooperative human team. Not agents <em>instead of</em> people — agents <em>amplifying</em> them.</li>
+    <ul class="clean">
+      <li>Phase 3 — needs API credits</li>
+      <li>Real human feedback</li>
+      <li>Redesign the agent team</li>
+      <li>Max out agents <em>inside</em> a human team</li>
     </ul>
-    <span class="source-tag">Source · docs/WORKFLOW_STAGES.md (Stage 3)</span>
     <aside class="notes">
-      So where does it go? Phase three — the fully event-driven design — exists on paper, but it
-      needs API credits to actually run, and I'm not there yet. Now that the hackathon is over, what
-      I most want is real human feedback — expert critique, which is partly why I'm standing here. I
-      want to redesign the agent team with everything I've learned. But the real goal, the thing I'm
-      actually chasing, is this: to max out these agent loops *inside* a cooperative team of humans.
-      Not agents instead of people — agents amplifying people. [~50s]
+      So where does it go? Phase three — the fully event-driven design — exists on paper, but it needs API credits
+      to run, and I'm not there yet. Now that the hackathon is over, what I most want is real human feedback —
+      expert critique, which is partly why I'm here. I want to redesign the agent team with everything I've
+      learned. But the real goal, the thing I'm actually chasing, is this: to max out these agent loops inside a
+      cooperative team of humans. Not agents instead of people — agents amplifying people.
     </aside>
   </section>
 
@@ -649,16 +540,15 @@
   <section data-background-color="#0a0908">
     <div class="full-center">
       <h1>Build less.<br>Ship honest.<br>Bring people.</h1>
-      <p class="muted" style="margin-top:0.6em">Provenance Tracker · 바사해</p>
-      <p class="tiny">Live demo &amp; repo — <span class="c-sage">github.com/nyahn01/provenance-tracker</span></p>
-      <p class="lead" style="margin-top:1em">Thank you — I’d love your feedback.</p>
+      <p class="muted" style="margin-top:0.8em">Provenance Tracker · 바사해</p>
+      <p class="tiny">github.com/nyahn01/provenance-tracker</p>
+      <p class="lead" style="margin-top:1.2em">Thank you — I’d love your feedback.</p>
     </div>
     <aside class="notes">
-      I'll leave you with three words that sum up the whole thing. Build less — let a well-designed
-      team of agents do the building. Ship honest — make honesty a mechanical gate, not a good
-      intention, because that's the only moat that lasts. And bring people — because the agents are
-      extraordinary, but they're better with a team around them. That's Provenance Tracker. Thank
-      you — and genuinely, I'd love your feedback. [~40s]
+      Three words to sum it up. Build less — let a well-designed team of agents do the building. Ship honest —
+      make honesty a mechanical gate, not a good intention, because that's the only moat that lasts. And bring
+      people — because the agents are extraordinary, but they're better with a team around them. That's Provenance
+      Tracker. Thank you — and genuinely, I'd love your feedback.
     </aside>
   </section>
 
