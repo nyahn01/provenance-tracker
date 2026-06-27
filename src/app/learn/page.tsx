@@ -169,6 +169,13 @@ const SECTIONS: Section[] = [
           This platform marks any custody gap that overlaps 1933–1945 with elevated visual weight.
           A gap in that window does not prove looting — it proves the need for further research.
         </p>
+        <p>
+          For a worked example, see the{' '}
+          <Link href="/case/adele-bloch-bauer-i" style={{ color: C.gold, borderBottom: `1px solid ${C.border}` }}>
+            restitution case study of Klimt&rsquo;s Portrait of Adele Bloch-Bauer I
+          </Link>{' '}
+          — the full custody chain, the falsified-record gap, and the 2006 return, every fact sourced.
+        </p>
       </>
     ),
   },
