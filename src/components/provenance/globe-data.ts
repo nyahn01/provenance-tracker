@@ -4,8 +4,12 @@
  * passed in by the caller so this module stays presentation-agnostic; the
  * amber dealer-trail constants live here because they are intrinsic to the
  * dealer-arc semantics.
+ *
+ * buildLabels: additive labels layer (issue #52). Deduplicates by lat/lng key
+ * so each geographic node shows exactly one label regardless of how many arc
+ * tiers touch it. Nodes with null coordinates are never emitted.
  */
-import type { LocationEntry, GettyRecord } from '@/lib/types'
+import type { LocationEntry, ExhibitionLoan, GettyRecord } from '@/lib/types'
 
 // ─── City coordinate lookup (for Getty dealer city dots) ─────────────────────
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
@@ -43,6 +47,71 @@ export function buildArcs(locations: LocationEntry[], color: string, altitude: n
     arcs.push({ startLat: a.lat, startLng: a.lng, endLat: b.lat, endLng: b.lng, color, altitude, label: `${a.name} → ${b.name}` })
   }
   return arcs
+}
+
+// ─── Labels layer (issue #52 — additive, does not touch init) ────────────────
+
+/**
+ * A single label entry for globe.gl's labelsData layer.
+ * `text` is the city (and, where parseable, country) from the source datum.
+ * Only nodes with confirmed lat/lng are emitted — null-coord nodes are
+ * silently dropped here so the caller never places a label at (0,0).
+ */
+export interface GlobeLabel {
+  lat: number
+  lng: number
+  text: string
+  color: string
+  size: number
+}
+
+/**
+ * Build a deduplicated set of place labels from all three node tiers:
+ * custody locations, exhibition loans, and Getty dealer cities.
+ *
+ * Priority: custody > exhibition > dealer (first-seen wins on same lat/lng).
+ * The `labelColor` value is passed in from the caller so this module never
+ * hardcodes a hex (design tokens live in design-tokens.ts, not here).
+ */
+export function buildLabels(
+  custodyLocations: LocationEntry[],
+  exhibitions: ExhibitionLoan[],
+  gettyRecords: GettyRecord[],
+  labelColor: string,
+): GlobeLabel[] {
+  const seen = new Set<string>()
+  const labels: GlobeLabel[] = []
+
+  const addLabel = (lat: number, lng: number, name: string) => {
+    const key = `${lat.toFixed(4)},${lng.toFixed(4)}`
+    if (seen.has(key)) return
+    seen.add(key)
+    labels.push({ lat, lng, text: name, color: labelColor, size: 0.45 })
+  }
+
+  // Tier 1: custody locations (owner cities) — highest priority
+  for (const loc of custodyLocations) {
+    if (loc.lat == null || loc.lng == null) continue
+    addLabel(loc.lat, loc.lng, loc.name)
+  }
+
+  // Tier 2: exhibition loan venues
+  for (const ex of exhibitions) {
+    if (ex.lat == null || ex.lng == null) continue
+    addLabel(ex.lat, ex.lng, ex.name)
+  }
+
+  // Tier 3: Getty dealer cities (looked up via CITY_COORDS)
+  for (const r of gettyRecords) {
+    for (const locStr of [r.sellerLocation, r.buyerLocation]) {
+      const coords = cityCoords(locStr)
+      if (!coords) continue
+      const cityName = (locStr ?? '').split(',')[0].trim()
+      addLabel(coords.lat, coords.lng, cityName)
+    }
+  }
+
+  return labels
 }
 
 // Dealer arcs: seller → buyer within each GPI record (lower altitude, dimmer, smaller stroke)
