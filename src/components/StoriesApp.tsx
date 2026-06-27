@@ -5,6 +5,7 @@ import type { SearchResult, ProvenanceResponse } from '@/lib/types'
 import { FEATURED_WORKS, type FeaturedWork } from '@/lib/featured'
 import { OBS } from '@/lib/design-tokens'
 import { GlobeContainer } from './provenance/GlobeContainer'
+import { GlobeArcLegend } from './provenance/GlobeArcLegend'
 import { SourceBadge } from './provenance/SourceBadge'
 import { ProvenanceDetail } from './provenance/ProvenanceDetail'
 
@@ -90,6 +91,10 @@ export default function StoriesApp() {
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: OBS.bg }}>
       {/* Globe — owns its own refs + the locked GLOBE CONTRACT init (see GlobeContainer) */}
       <GlobeContainer prov={prov} globeHeightPct={globeHeightPct} />
+
+      {/* Arc-tier legend — sibling to GlobeContainer, never inside it (GLOBE CONTRACT).
+          Shown in both idle and in-story states; anchored to the bottom-left of the globe zone. */}
+      <GlobeArcLegend globeHeightPct={globeHeightPct} />
 
       {/* Overlay only covers the globe area */}
       {!inStory && (
