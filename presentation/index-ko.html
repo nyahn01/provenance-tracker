@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Provenance Tracker · 바사해 — 사람은 덜 일하고, 에이전트가 더 일하게</title>
+  <title>Provenance Tracker · 바사해 — 사람은 덜, 에이전트는 더</title>
 
   <!-- Reveal.js core (vendored — 완전 오프라인) -->
   <link rel="stylesheet" href="vendor/reveal/dist/reset.css">
@@ -20,6 +20,11 @@
     .reveal h3 { font-family: var(--font-ui); font-weight: 600; }
     .serif-quote { font-family: 'Cormorant Garamond', 'Pretendard', serif; font-weight: 500; }
     .reveal { word-break: keep-all; line-break: strict; }
+    /* 깔끔한 간결 리스트 — 한 줄당 한 호흡 */
+    .reveal ul.clean { list-style: none; margin-left: 0; }
+    .reveal ul.clean li { margin: 0.5em 0; font-size: 1.05em; padding-left: 1.1em; position: relative; }
+    .reveal ul.clean li::before { content: '·'; color: var(--gold); position: absolute; left: 0; font-weight: 700; }
+    .chips { margin-top: 0.6em; }
   </style>
 </head>
 <body>
@@ -31,18 +36,18 @@
   <!-- 1 · 타이틀 -->
   <section data-background-color="#0a0908">
     <div class="full-center">
-      <span class="kicker">Provenance Tracker · 바사해 (바쁜 사람들을 위한 해커톤)</span>
+      <span class="kicker">Provenance Tracker · 바사해</span>
       <h1>명화의 숨겨진 여정</h1>
-      <p class="lead muted" style="max-width:30ch">출처가 분명하고, 빈틈은 솔직하게 — 유명 회화의 소유 이력(chain of custody)을 3D 지구본 위에 그립니다.</p>
-      <p class="tiny" style="margin-top:2em">AI 에이전트 팀과 함께 약 1.5일 만에 혼자 완성 · 안나영 · 2026</p>
+      <p class="lead muted">명화의 소유 이력을 3D 지구본 위에.<br>모든 사실엔 출처를, 빈틈은 있는 그대로.</p>
+      <p class="tiny" style="margin-top:2.4em">AI 에이전트 팀과 약 1.5일, 혼자 · 안나영 · 2026</p>
     </div>
     <aside class="notes">
       안녕하세요. 제 프로젝트 Provenance Tracker를 소개합니다. 이건 "바사해" — 바쁜 사람들을 위한
       해커톤 — 를 위해 만들었어요. 이 해커톤의 핵심은 사실 제품 그 자체가 아니라, "어떻게 에이전트가
-      일을 대신하게 만들었는가"라는 이야기를 푸는 데 있었습니다. 그래서 앞으로 30분 동안 세 가지를
-      보여드릴게요. 첫째, 제품이 무엇이고 왜 만들었는지. 둘째 — 여러분이 가장 궁금해하시는 부분이죠 —
-      AI 에이전트 "팀"을 어떻게 활용했는지. 셋째, 바쁜 직장인이 혼자 해커톤을 한 솔직한 후기입니다.
-      전체 이야기는 사실 한 문장이에요. "어떻게 사람은 덜 일하고, 에이전트가 더 일하게 했는가."
+      일을 대신하게 만들었는가"라는 이야기를 푸는 데 있었습니다. 그래서 오늘 30분 동안 세 가지를
+      말씀드립니다. 첫째, 이 제품이 무엇이고 왜 만들었는지. 둘째 — 여러분이 가장 궁금해하시는 부분이죠 —
+      AI 에이전트 "팀"을 어떻게 활용했는지. 셋째, 바쁜 직장인이 혼자 해커톤을 해 본 솔직한 후기입니다.
+      핵심은 한 문장입니다. 사람은 덜 일하고, 에이전트가 더 일하게 만드는 것.
       한 가지 미스터리로 시작하겠습니다.
     </aside>
   </section>
@@ -50,18 +55,16 @@
   <!-- 2 · 훅 -->
   <section data-background-color="#0a0908">
     <span class="kicker">16년의 공백</span>
-    <p class="serif-quote">모네가 1906년 <em>수련(Water Lilies)</em>을 완성했을 때, 그림은 파리에 있었습니다.<br>
-    시카고 미술관이 그 그림을 샀을 때, 그림은 시카고에 있었고요.</p>
-    <p class="lead" style="margin-top:1em">그 사이에는 무슨 일이 있었을까요?</p>
-    <p class="muted">미술관 설명은 <strong>“1922년 이전 출처 불명”</strong>이라고만 적혀 있습니다.
-    수천만 달러짜리 그림의 소유 기록에 <strong>16년의 공백(gap)</strong>이 있는 거죠.</p>
-    <span class="source-tag">출처 · docs/PITCH.md</span>
+    <p class="serif-quote">1906년, 모네의 〈수련〉은 파리에 있었습니다.<br>
+    시카고 미술관이 사들였을 땐, 시카고에 있었고요.</p>
+    <p class="lead" style="margin-top:1.2em">그 사이 16년은, 어디에 있었을까요?</p>
+    <p class="muted">미술관 기록은 “1922년 이전 출처 불명”. 그게 전부입니다.</p>
     <aside class="notes">
-      모네가 1906년 수련을 완성했을 때 그림은 파리에 있었습니다. 시카고 미술관이 이 그림을 손에 넣었을 때는
-      시카고에 있었죠. 그 사이엔 무슨 일이 있었을까요? 미술관은 "1922년 이전은 출처 불명"이라고만 적어
-      놓았습니다. 수천만 달러짜리 그림의 소유 이력에 16년이라는 공백이 있는 거예요. 바로 이 공백이 이
-      프로젝트를 시작한 이유입니다. 프로방스(provenance), 즉 누가, 언제, 어디서 소유했는지에 대한 기록은
-      실재하고 매혹적인데도, 대중에게는 거의 보여지지 않습니다.
+      1906년 모네가 〈수련〉을 완성했을 때 그림은 파리에 있었습니다. 시카고 미술관이 이 그림을 사들였을
+      때는 시카고에 있었고요. 그 사이 16년 동안 그림은 어디에 있었을까요? 미술관 기록에는 “1922년 이전은
+      출처 불명”이라고만 적혀 있습니다. 수천만 달러짜리 그림인데, 소유 기록에 16년이나 비어 있는 겁니다.
+      바로 이 공백이 이 프로젝트의 출발점입니다. 누가, 언제, 어디서 소유했는지에 대한 기록은 분명히
+      존재하는데도, 대중은 그걸 거의 볼 수 없습니다.
     </aside>
   </section>
 
@@ -72,62 +75,49 @@
     <div class="full-center">
       <span class="act-num">Part One</span>
       <h2>프로젝트</h2>
-      <p class="muted">프로방스란 무엇인가 · 공백이 왜 중요한가 · 짧은 데모</p>
+      <p class="muted">프로방스란 · 공백이 중요한 이유 · 데모</p>
     </div>
-    <aside class="notes">파트 1, 제품 자체입니다.</aside>
+    <aside class="notes">먼저 제품 자체입니다.</aside>
   </section>
 
   <!-- 4 · 프로방스란 / 왜 중요한가 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">프로방스란, 그리고 왜 중요한가</span>
-    <h3>Provenance(프로방스) = 작품의 기록된 소유 이력입니다.</h3>
-    <div class="cols-3" style="margin-top:0.8em">
-      <div class="card accent-clay">
-        <h3>법적으로</h3>
-        <p>나치 시기 약 60만 점이 약탈됐고, 그중 20% 미만만 신원이 확인됐습니다.
-        <strong>1933–1945년</strong> 사이의 공백은 환수 소송에서 결정적 단서입니다.</p>
-      </div>
-      <div class="card accent-gold">
-        <h3>상업적으로</h3>
-        <p>끊김 없는 소유 이력은 경매에서 실제 프리미엄으로 이어집니다.
-        200만 달러짜리 작품은 수 주간의 수작업 검증이 필요하죠.</p>
-      </div>
-      <div class="card accent-sage">
-        <h3>지적으로</h3>
-        <p>가장 흥미로운 역사는 바로 그 공백 속에 숨어 있습니다 — 전시(戰時) 이동, 개인 소장, 유산 매각.</p>
-      </div>
+    <span class="kicker">프로방스, 왜 중요한가</span>
+    <h2>작품의 기록된 소유 이력</h2>
+    <div class="cols-3" style="margin-top:0.9em">
+      <div class="card accent-clay"><h3>법적으로</h3><p>나치 약탈 60만 점. 1933–45년 공백은 환수의 단서.</p></div>
+      <div class="card accent-gold"><h3>상업적으로</h3><p>끊김 없는 이력은 경매에서 프리미엄.</p></div>
+      <div class="card accent-sage"><h3>지적으로</h3><p>가장 흥미로운 역사는 공백 속에 숨어 있다.</p></div>
     </div>
-    <span class="source-tag">출처 · BUSINESS_CASE.md · vault/concepts/Provenance Gap.md</span>
     <aside class="notes">
-      프로방스가 뭐고 왜 중요할까요. 프로방스는 작품의 기록된 소유 이력입니다. 모든 소유자, 모든 화상,
-      모든 이동을 날짜와 함께 담은 거죠. 세 가지 측면에서 중요합니다. 법적으로 — 나치 시기에 약 60만 점이
-      약탈됐는데 그중 20%도 신원이 확인되지 않았어요. 그래서 1933년에서 1945년 사이의 공백은 환수법에서
-      위험 신호입니다. 상업적으로 — 깨끗하게 이어지는 소유 이력은 경매에서 실제 돈이 됩니다. 그리고
-      지적으로 — 가장 흥미로운 역사가 바로 그 공백에 숨어 있어요. 핵심 통찰은 이겁니다. 공백은 데이터의
-      실패가 아니라, 가장 중요한 부분이라는 것.
+      프로방스는 작품의 기록된 소유 이력입니다. 모든 소유자와 화상, 모든 이동을 날짜와 함께 담은 거죠.
+      세 가지 면에서 중요합니다. 법적으로, 나치 시기에 약 60만 점이 약탈됐는데 그중 20%도 신원이 확인되지
+      않았습니다. 그래서 1933년에서 45년 사이의 공백은 환수 소송에서 결정적인 단서가 됩니다. 상업적으로,
+      끊김 없이 이어지는 소유 이력은 경매에서 곧 돈입니다. 그리고 지적으로, 가장 흥미로운 역사가 바로 그
+      공백 속에 숨어 있습니다. 핵심은 이겁니다. 공백은 데이터의 결함이 아니라, 가장 중요한 부분입니다.
     </aside>
   </section>
 
   <!-- 5 · 정직성 계약 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">모든 것이 세워진 단 하나의 원칙</span>
-    <h2>정직함이 곧 해자(moat)다.</h2>
-    <ul>
-      <li>실시간 “현재 전시 중(on view)” 주장 금지 — <span class="muted">이를 검증할 공개 API는 없습니다.</span></li>
-      <li>화면의 모든 사실에는 <strong>보이는 출처</strong>가 붙습니다 (Met / AIC / Rijksmuseum / Wikidata / Getty / RKD).</li>
-      <li>데이터가 부족하면 <span class="c-loan">공백(gap)</span>으로 표시 — <strong>절대 지어내지 않습니다.</strong></li>
-      <li>소유(custody)와 전시 <span class="c-loan">대여(loan)</span>를 <em>절대</em> 혼동하지 않습니다 — 대여는 이동이 아닙니다.</li>
-      <li>이미지는 퍼블릭 도메인 작품만, 기관 크레딧과 함께.</li>
+    <span class="kicker">모든 것의 토대</span>
+    <h2>정직함이 가장 큰 경쟁력입니다.</h2>
+    <ul class="clean">
+      <li>‘현재 전시 중’ 같은 실시간 주장은 하지 않습니다</li>
+      <li>모든 사실에 보이는 출처를 답니다</li>
+      <li>빈틈은 공백으로 — 절대 지어내지 않습니다</li>
+      <li>소유와 전시 대여를 섞지 않습니다</li>
+      <li>이미지는 퍼블릭 도메인만 씁니다</li>
     </ul>
-    <p class="tiny" style="margin-top:0.6em">이 규칙은 모든 변경마다 CI의 “정직성 게이트(honesty gate)”가 기계적으로 강제합니다 — 파트 2에서 자세히.</p>
-    <span class="source-tag">출처 · CLAUDE.md (운영 계약)</span>
+    <p class="tiny" style="margin-top:0.8em">이 규칙은 모든 변경마다 자동 검사로 강제됩니다.</p>
     <aside class="notes">
-      온라인에서 미술 데이터를 다루면 늘 신뢰 문제가 생깁니다. 어떻게 믿게 만들까? 제 답은 단단한 정직성
-      계약이에요. 타협하지 않는 다섯 가지 규칙. 첫째, 실시간 "전시 중" 주장은 안 합니다. 공개 API로 검증이
-      안 되니까요. 둘째, 화면의 모든 사실엔 보이는 출처가 붙습니다. 셋째, 데이터가 부족하면 공백으로 보여주고
-      절대 지어내지 않아요. 날짜도, 좌표도. 넷째, 소유와 전시 대여를 절대 섞지 않습니다. 대여는 소유권 이동이
-      아니니까요. 다섯째, 이미지는 퍼블릭 도메인만. 중요한 건, 이게 좋은 의도가 아니라 모든 변경마다 자동으로
-      돌아가는 검사로 강제된다는 점입니다. 그 게이트는 파트 2에서 보여드릴게요.
+      온라인에서 미술 데이터를 다루면 늘 신뢰 문제가 생깁니다. 어떻게 믿게 만들 것인가. 제 답은 단단한
+      정직성 원칙입니다. 타협하지 않는 다섯 가지. 첫째, ‘현재 전시 중’ 같은 실시간 주장은 하지 않습니다.
+      공개 API로 검증할 수 없으니까요. 둘째, 화면의 모든 사실에 보이는 출처를 답니다. 셋째, 데이터가
+      없으면 공백으로 보여주고 절대 지어내지 않습니다. 날짜도 좌표도요. 넷째, 소유와 전시 대여를 절대
+      섞지 않습니다. 대여는 소유권이 넘어간 게 아니니까요. 다섯째, 이미지는 퍼블릭 도메인만 씁니다.
+      중요한 건, 이게 좋은 의도가 아니라 모든 변경마다 자동으로 돌아가는 검사로 강제된다는 점입니다.
+      그 검사는 잠시 뒤에 보여드리겠습니다.
     </aside>
   </section>
 
@@ -136,123 +126,104 @@
     <span class="kicker">데모 · 첫 화면</span>
     <div class="shot-frame">
       <img class="shot" src="assets/home-globe.png" alt="Provenance Tracker 랜딩 — 3D 지구본 위의 명화">
-      <p class="caption">엄선된 퍼블릭 도메인 명화 8점 · 3D 지구본 · 아크 범례(소유 / 대여 / 화상)</p>
+      <p class="caption">명화 8점 · 3D 지구본 · 아크 범례</p>
     </div>
     <aside class="notes">
-      이게 제품입니다. 첫 화면에는 엄선된 유명 퍼블릭 도메인 회화 8점이 보여요 — 모네, 쇠라, 드가, 반 고흐,
-      세잔, 커샛. 모두 깊고 날짜가 분명한 학술적 출처가 있어서 골랐습니다. 그 뒤로 3D 지구본이 있고요.
-      왼쪽 아래엔 앱 전체를 관통하는 범례가 있습니다. 금색은 소유권 이동, 세이지 초록은 전시 대여, 호박색은
-      화상(딜러) 거래예요. 명화를 하나 고르면 그 작품의 기록된 여정을 따라갑니다. 모네의 수련을 클릭해 볼게요.
+      이게 제품입니다. 첫 화면에는 엄선한 퍼블릭 도메인 명화 여덟 점이 있습니다. 모네, 쇠라, 드가, 반
+      고흐, 세잔, 커샛. 모두 날짜가 분명한 학술 출처가 있어서 골랐습니다. 뒤로는 3D 지구본이 있고요.
+      왼쪽 아래 범례가 앱 전체를 관통합니다. 금색은 소유권 이동, 초록은 전시 대여, 호박색은 화상 거래입니다.
+      명화를 하나 고르면 그 작품의 여정을 따라갑니다. 모네의 〈수련〉을 눌러 보겠습니다.
     </aside>
   </section>
 
-  <!-- 7 · 데모 — 소유 이력 (플레이스홀더: 라이브) -->
+  <!-- 7 · 데모 — 소유 이력 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">데모 · 여정, 라이브로</span>
-    <div class="cols" style="grid-template-columns:1.1fr 0.9fr">
+    <span class="kicker">데모 · 여정</span>
+    <div class="cols" style="grid-template-columns:1.15fr 0.85fr">
       <div class="shot-frame">
-        <img class="shot" src="assets/live-water-lilies.png" alt="수련 — 채워진 소유 이력과 금색 지구본 아크, 날짜가 붙은 AIC 타임라인">
-        <p class="caption">금색 소유 아크 파리 → 뉴욕 → 시카고 · AIC 배지 + 신뢰도 점이 붙은 타임라인</p>
+        <img class="shot" src="assets/live-water-lilies.png" alt="수련 — 채워진 소유 이력과 금색 지구본 아크">
+        <p class="caption">파리 → 뉴욕 → 시카고</p>
       </div>
       <div>
-        <h3>화면에 보이는 것</h3>
-        <p class="muted">파리(모네, 1906) → Durand-Ruel 파리 → Durand-Ruel 뉴욕 →
-        Martin A. Ryerson(시카고) → 시카고 미술관.</p>
-        <p class="muted">각 단계마다 <strong>날짜</strong>, <strong>출처 배지</strong>,
-        그리고 <strong>신뢰도 점(confidence dot)</strong>(초록/금색/회색)이 붙습니다.</p>
-        <span class="chip gold">소유 아크</span><span class="chip sage">대여 아크</span><span class="chip purple">화상 아크</span>
+        <h3>소유자마다 날짜와 출처</h3>
+        <p class="muted">파리의 모네에서 시카고 미술관까지, 단계마다 출처가 붙습니다.</p>
+        <div class="chips"><span class="chip gold">소유</span><span class="chip sage">대여</span><span class="chip purple">화상</span></div>
       </div>
     </div>
-    <span class="source-tag">데이터 · src/lib/featured-provenance.json (사전 파싱, 런타임 비용 0)</span>
     <aside class="notes">
-      라이브 사이트에서는 클릭하는 순간 두 가지가 일어납니다. 지구본에 금색 소유 아크가 그려져요 — 파리에서
-      뉴욕, 그리고 시카고로. 동시에 따뜻한 "갤러리" 패널이 슬라이드되며 날짜가 붙은 타임라인이 뜹니다. 모네가
-      1906년 파리에서 소장했고, 화상 Durand-Ruel의 파리 지점, 그다음 뉴욕 지점, 그다음 Ryerson이라는
-      시카고 수집가, 마지막으로 시카고 미술관으로 갔어요. 모든 단계에 날짜가 있고, 어느 아카이브가 그 사실을
-      기록했는지 배지가 붙고, 신뢰도 점이 찍힙니다. 초록은 높음, 금색은 중간, 회색은 낮음. 지어낸 건 하나도
-      없어요. 이 이력은 미술관 자체의 학술 텍스트에서 사전 파싱한 겁니다. [화면은 실제 이력이고, 배포된
-      사이트에서 라이브로 보여드리면 더 좋습니다.]
+      누르는 순간 두 가지가 일어납니다. 지구본에 금색 소유 아크가 그려집니다. 파리에서 뉴욕, 시카고로요.
+      동시에 따뜻한 색의 패널이 열리며 날짜가 붙은 타임라인이 뜹니다. 모네가 1906년 파리에서 소장했고,
+      화상 뒤랑뤼엘의 파리 지점, 뉴욕 지점, 시카고의 수집가 라이어슨, 마지막으로 시카고 미술관으로
+      이어집니다. 모든 단계에 날짜가 있고, 어느 기록에서 나온 사실인지 출처가 붙고, 신뢰도가 표시됩니다.
+      지어낸 건 하나도 없습니다. 모두 미술관 자체의 학술 기록에서 가져온 겁니다.
     </aside>
   </section>
 
-  <!-- 8 · 데모 — 정직성 / 공백 (실제 스크린샷) -->
+  <!-- 8 · 데모 — 정직성 / 공백 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">데모 · 무엇이 다른가</span>
+    <span class="kicker">데모 · 차별점</span>
     <div class="cols" style="grid-template-columns:1.2fr 0.8fr">
       <div class="shot-frame">
         <img class="shot" src="assets/detail-water-lilies.png" alt="정직한 공백 상태를 보여주는 상세 패널">
-        <p class="caption">정직한 빈 상태(empty state) — 실제 스크린샷, 지어낸 이력 없음</p>
+        <p class="caption">실제 화면 · 지어낸 이력 없음</p>
       </div>
       <div>
-        <h3>공백은 결함이 아니라 기능이다.</h3>
-        <p class="muted">출처에 그 기간의 기록이 없으면, 솔직히 그렇게 말합니다:
-        <em>“출처에서 기록된 소유 이력을 찾지 못했습니다.”</em></p>
-        <p class="muted">검토한 출처를 명시하고(<strong>Met · AIC · Rijksmuseum · Wikidata</strong>),
-        이미지에 크레딧을 달고, 누구나 <span class="c-clay">“오류 신고(Spot an error)”</span>를 할 수 있습니다.</p>
+        <h3>공백은 결함이 아니라 기능</h3>
+        <p class="muted">기록이 없으면, 없다고 말합니다. 확인한 출처를 밝히고, 누구나 오류를 신고할 수 있습니다.</p>
       </div>
     </div>
-    <span class="source-tag">라이브 스크린샷 · 정직한 빈 상태 UI</span>
     <aside class="notes">
-      이 부분을 가장 자랑스럽게 생각합니다. 이건 실제 스크린샷이에요, 목업이 아니라. 출처에 정말로 그 기간
-      기록이 없으면, 앱은 완성된 척하려고 이력을 지어내지 않습니다. 그냥 솔직하게 말해요. "출처에서 기록된
-      소유 이력을 찾지 못했습니다." 그러면서도 어떤 출처를 확인했는지 밝히고 — Met, 시카고 미술관,
-      Rijksmuseum, Wikidata — 이미지 크레딧도 달고, 누구나 오류를 신고하도록 권합니다. 환수 소송 변호사나
-      역사학자에게는 솔직한 공백이야말로 조사해야 할 바로 그 지점이거든요. 자신 있게 거짓말하는 것보다,
-      공백을 솔직하게 보여주는 게 더 가치 있습니다.
+      이 부분이 제일 자랑스럽습니다. 이건 실제 화면이지 목업이 아닙니다. 출처에 그 기간 기록이 정말 없으면,
+      앱은 완성된 척 이력을 지어내지 않습니다. 그냥 솔직하게 말합니다. “기록된 소유 이력을 찾지 못했습니다.”
+      그러면서 어떤 출처를 확인했는지 밝히고, 이미지 출처를 표기하고, 누구나 오류를 신고하도록 합니다.
+      환수 소송 변호사나 역사학자에게는, 솔직하게 드러난 공백이야말로 조사해야 할 바로 그 지점입니다.
+      자신 있게 거짓말하는 것보다, 공백을 솔직하게 보여주는 게 더 가치 있습니다.
     </aside>
   </section>
 
-  <!-- 9 · 데모 — 화상 영수증 (플레이스홀더) -->
+  <!-- 9 · 데모 — 화상 기록 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">데모 · 미술관이 보여주지 않는 화상 계층</span>
+    <span class="kicker">데모 · 화상 기록</span>
     <div class="cols">
       <div class="shot-frame">
-        <img class="shot" src="assets/live-getty-degas.png" alt="드가 노란 무용수들 — Getty GPI 화상 레코드: 판매자, 구매자, 가격, 날짜">
-        <p class="caption">보라색 <span class="c-dealer">GPI</span> 화상 카드: 판매자 → 구매자, 가격, 날짜 — 1963년 미술관 취득으로 마무리</p>
+        <img class="shot" src="assets/live-getty-degas.png" alt="드가 노란 무용수들 — Getty GPI 화상 레코드">
+        <p class="caption">판매자 → 구매자 · 가격 · 날짜</p>
       </div>
       <div>
-        <h3>퍼블릭 도메인 화상 레코드 4,388건.</h3>
-        <p class="muted"><strong>Getty Provenance Index</strong> — 미국 최대 화상 M. Knoedler &amp; Co.(1872–1970)와
-        Goupil의 손글씨 장부를 앱에 심었습니다.</p>
-        <p class="muted">각 레코드: 누가, 누구에게, 얼마에, 언제, 어디서 — 모두 출처가 있고 원본 원장에 링크됩니다.</p>
-        <span class="chip purple">GPI · Tier A</span>
+        <h3>미술관이 안 보여주는 층</h3>
+        <p class="muted">Getty 인덱스 — 19세기 화상들의 손글씨 장부 4,388건을 담았습니다.</p>
+        <div class="chips"><span class="chip purple">GPI</span></div>
       </div>
     </div>
-    <span class="source-tag">출처 · docs/DATA_SOURCES.md · scripts/seed-goupil.mjs</span>
     <aside class="notes">
-      계층이 하나 더 있습니다. 미술관은 누가 작품을 "소유"했는지 기록하지만, 그걸 "판" 화상은 기록하지
-      않아요. 그래서 Getty Provenance Index를 씁니다. 1872년부터 1970년까지 활동한 미국의 거대 화상
-      Knoedler, 그리고 Goupil의 손글씨 장부예요. 그중 4,388건이 이제 퍼블릭 도메인이고, 앱에 심어
-      놨습니다. 드가의 노란 무용수들 한 작품만 해도 200건 넘게 매칭돼요. 각 레코드는 판매자, 구매자,
-      가격, 날짜를 보여주고 원본 원장 스캔으로 링크됩니다. 미술관이 잘 드러내지 않는 상업적 역사죠.
+      층이 하나 더 있습니다. 미술관은 누가 작품을 소유했는지는 기록하지만, 그걸 판 화상은 기록하지
+      않습니다. 그래서 Getty Provenance Index를 씁니다. 19세기 후반부터 활동한 미국의 거대 화상 크뇌들러,
+      그리고 구필의 손글씨 장부입니다. 그중 4,388건이 퍼블릭 도메인으로 풀려서 앱에 담았습니다. 드가의
+      이 작품 하나만 해도 200건 넘게 매칭됩니다. 각 기록은 판매자, 구매자, 가격, 날짜를 보여주고 원본
+      장부로 링크됩니다. 미술관이 잘 드러내지 않는 시장의 역사죠.
     </aside>
   </section>
 
-  <!-- 10 · 데이터 출처 + 등급 -->
+  <!-- 10 · 데이터 출처 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">모든 사실은 어디서 오는가</span>
-    <h3>신뢰도로 등급을 매긴 8개의 라이브 출처.</h3>
-    <div class="cols">
+    <span class="kicker">사실은 어디서 오는가</span>
+    <h2>출처 8곳, 신뢰도로 등급화</h2>
+    <div class="cols" style="margin-top:0.6em">
       <div>
-        <p><span class="chip gold">Tier A</span> 미술관 공식 / 카탈로그 레조네</p>
-        <p class="muted" style="font-size:0.8em">Met · 시카고 미술관 · Rijksmuseum · Getty Provenance Index · RKD · Cleveland</p>
-        <p style="margin-top:0.6em"><span class="chip sage">Tier B</span> 구조화된 공개 데이터</p>
-        <p class="muted" style="font-size:0.8em">Wikidata (P276 위치, P580/P582 날짜) · Europeana</p>
+        <p><span class="chip gold">Tier A</span> 미술관 공식 기록</p>
+        <p class="muted" style="font-size:0.82em">Met · 시카고 미술관 · Rijksmuseum · Getty · RKD · Cleveland</p>
+        <p style="margin-top:0.7em"><span class="chip sage">Tier B</span> 구조화된 공개 데이터</p>
+        <p class="muted" style="font-size:0.82em">Wikidata · Europeana</p>
       </div>
-      <div class="card">
-        <h3>솔직한 현실</h3>
-        <p>Wikidata는 작품당 위치를 약 1개(현재 미술관)만 줍니다. <em>여정을 만들 수 없어요.</em>
-        진짜 이력은 <strong>미술관 산문(prose)</strong>에 있습니다 — 추출하고, 지오코딩하고, 화상 레코드와 병합하죠.</p>
-      </div>
+      <div class="card"><h3>핵심</h3><p>Wikidata는 위치 하나만 줍니다. 진짜 이력은 미술관이 직접 쓴 기록 안에 있습니다.</p></div>
     </div>
-    <span class="source-tag">출처 · docs/DATA_SOURCES.md</span>
     <aside class="notes">
-      데이터에 대해 잠깐. 정직함은 여기서 시작되니까요. 우리는 신뢰도로 등급을 매긴 8개의 라이브 출처에서
-      가져옵니다. Tier A는 미술관 공식이고 학술적이에요. Met, 시카고 미술관, Rijksmuseum, Getty 인덱스,
-      네덜란드 RKD, 클리블랜드. Tier B는 구조화된 공개 데이터, Wikidata와 Europeana고요. 사람들이 가장
-      많이 오해하는 솔직한 현실은 이겁니다. Wikidata는 작품당 위치를 약 하나, 현재 미술관만 줘요. 여정을
-      만들 수가 없습니다. 진짜 이력은 미술관이 직접 쓴 출처 텍스트 안에 있어요. 그 산문을 추출하고,
-      좌표로 변환하고, 화상 레코드와 병합하는 것 — 그게 진짜 작업입니다.
+      데이터 이야기를 잠깐. 정직함은 여기서 시작되니까요. 신뢰도로 등급을 매긴 여덟 곳에서 가져옵니다.
+      Tier A는 미술관 공식 기록입니다. Met, 시카고 미술관, Rijksmuseum, Getty, 네덜란드 RKD, 클리블랜드.
+      Tier B는 구조화된 공개 데이터, Wikidata와 Europeana입니다. 사람들이 가장 오해하는 부분은 이겁니다.
+      Wikidata는 작품당 위치를 하나, 현재 미술관만 줍니다. 그걸로는 여정을 만들 수 없습니다. 진짜 이력은
+      미술관이 직접 쓴 기록 안에 있습니다. 그 글을 뽑아내고, 좌표로 바꾸고, 화상 기록과 합치는 것. 그게
+      진짜 작업입니다.
     </aside>
   </section>
 
@@ -263,262 +234,211 @@
     <div class="full-center">
       <span class="act-num">Part Two</span>
       <h2>AI 에이전트 팀</h2>
-      <p class="muted">사람은 덜 일하고, 에이전트가 더 일하게 한 방법</p>
-      <p class="tiny" style="margin-top:0.9em">바사해의 과제는 "제품을 보여줘라"가 아니라 <em>"어떻게 에이전트가 일하게 만들었는지 이야기하라"</em>였습니다. 지금부터가 그 이야기예요.</p>
+      <p class="muted">사람은 덜, 에이전트는 더</p>
     </div>
     <aside class="notes">
-      파트 2 — 사실 여러분이 가장 듣고 싶어 하신 부분이고, 솔직히 이번 해커톤의 진짜 핵심이었어요.
+      파트 2 — 사실 여러분이 가장 궁금해하시는 부분이고, 솔직히 이번 해커톤의 진짜 핵심이었어요.
       바사해는 "제품을 보여줘라"가 아니라 "사람은 덜 일하고 에이전트가 더 일하게 한 이야기를 풀어라"가
       과제였거든요. 데모 때도 사람들이 가장 따라 하고 싶어 한 게 바로 이 에이전트 "팀"이었어요. 그래서
       어떻게 만드는지 정확히 보여드릴게요. 이 모든 걸 혼자서, 하루 반 만에, 내가 모든 일을 직접 하지
-      않으면서 어떻게 만들까?
+      않으면서 어떻게 만들 수 있었을까요.
     </aside>
   </section>
 
   <!-- 12 · 시작 이야기 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">어떻게 시작했나 · 솔직한 버전</span>
+    <span class="kicker">어떻게 시작했나</span>
     <div class="cols">
       <div>
-        <p class="muted">저는 늘 <strong>좋은 사람들과 함께</strong> 좋은 제품 만드는 게 좋아서 해커톤에 나가요.
-        그런데 올해는 시간이 없어 <em>혼자</em> 해야 했고, 게다가 <strong>AI 과열에 지쳐</strong> 도구를
-        따라가는 것도 멈춘 상태였죠. 그래서 목표를 정했어요: 그래도 <em>팀</em>과 함께 하자 — <em>에이전트</em> 팀과.</p>
-        <p class="muted">제약: <strong>최소한의 아이디어, 최소한의 도구, 최소한의 시간.</strong>
-        본업 때문에 마감 <strong>1.5일 전</strong>에야 시작했습니다.</p>
+        <h3>올해는 혼자 · 최소한의 아이디어·도구·시간</h3>
+        <p class="muted">늘 사람들과 함께 만드는 게 좋지만, 올해는 혼자. AI 과열에 지쳤어도 <em>팀</em>은 원했어요 — 에이전트 팀. 마감 1.5일 전에 시작했습니다.</p>
       </div>
       <div class="card accent-gold">
-        <h3>Phase 1 — 그냥 대화</h3>
-        <p>Claude Pro + Sonnet + 나, 아이디어를 주고받았어요. 제 관심사 — 항공기·선박 트래커, 오픈소스 지도
-        제품을 좋아한다 — 에서 출발해 니치를 제안받았죠: <strong>미술 프로방스.</strong> 교육적이고, 우울하지 않고, 실제 가치가 있는.</p>
+        <h3>Phase 1 — 대화</h3>
+        <p>제 관심사인 항공기·선박 트래커에서 출발해, 니치를 찾았습니다. 미술 프로방스.</p>
       </div>
     </div>
-    <p class="tiny" style="margin-top:0.5em">저는 전문가가 아니고, 이게 “정답”도 아닙니다. 맨바닥에서 시작한 솔직한 경로를 공유하는 거예요 — 비전공자분들이 저보다 토큰을 덜 낭비하시도록.</p>
+    <p class="tiny" style="margin-top:0.8em">전문가도 아니고 정답도 아닙니다. 맨바닥에서 시작한 경험을 나눌 뿐입니다.</p>
     <aside class="notes">
-      솔직한 시작 이야기. 제가 해커톤에 계속 나가는 건, 좋은 사람들과 함께 좋은 제품을 만드는 그
-      과정이 제일 좋아서예요. 그런데 올해는 시간이 없어 혼자 해야 했습니다. 게다가 저는 AI 과열에 좀
-      지쳐 있었어요. 도구가 너무 많아서 따라가길 그만뒀죠. 그래도 그 "팀"으로 일하는 느낌이 좋아서,
-      이번 해커톤엔 목표를 하나 세웠습니다. 프로젝트 하나를, 그래도 팀과 함께 해보자 — 에이전트 팀과.
-      제약은 가혹했어요. 최소한의 아이디어, 최소한의 도구, 최소한의
-      시간. 본업 때문에 마감 하루 반 전에야 시작했고요. Phase 1은 그냥 대화였습니다. Sonnet 모델의
-      Claude Pro와 제가 아이디어를 주고받았어요. 제가 항공기 트래커, 선박 트래커 같은 아름다운 오픈소스
-      지도 제품을 좋아한다고 했더니 — 니치를 제안해 줬죠. 미술 프로방스. 교육적이고, 우울하지 않고,
-      진짜로 쓸모 있는. 분명히 말씀드릴게요. 저는 전문가가 아니고 이게 정답도 아닙니다. 맨바닥에서 시작한
-      솔직한 경로고, 비전공자분들이 저보다 토큰을 덜 낭비하시라고 공유하는 거예요.
+      솔직한 시작 이야기입니다. 제가 해커톤에 계속 나가는 건, 좋은 사람들과 함께 좋은 제품을 만드는 그
+      과정이 제일 좋아서예요. 그런데 올해는 시간이 없어 혼자 해야 했습니다. 게다가 저는 AI 과열에 좀 지쳐
+      있었어요. 도구가 너무 많아서 따라가길 그만뒀죠. 그래도 그 "팀"으로 일하는 느낌이 좋아서, 이번
+      해커톤에 목표를 하나 세웠습니다. 프로젝트 하나를, 그래도 팀과 함께 해보자 — 에이전트 팀과. 제약은
+      가혹했습니다. 최소한의 아이디어, 최소한의 도구, 최소한의 시간. 본업 때문에 마감 하루 반 전에야
+      시작했고요. Phase 1은 그냥 대화였습니다. Claude와 아이디어를 주고받았어요. 제가 항공기 트래커, 선박
+      트래커 같은 오픈소스 지도 제품을 좋아한다고 했더니 니치를 제안해 줬습니다. 미술 프로방스. 교육적이고,
+      우울하지 않고, 진짜로 쓸모 있는 주제였죠. 분명히 말씀드리면, 저는 전문가가 아니고 이게 정답도
+      아닙니다. 맨바닥에서 시작한 경험을, 여러분이 저보다 덜 헤매시도록 나누는 겁니다.
     </aside>
   </section>
 
   <!-- 13 · 실수 #1 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">솔직한 실수 #1</span>
-    <h2>플러그인을 너무 많이 깔아 토큰을 태웠다.</h2>
-    <p class="muted">초반에 “혹시 몰라서” 플러그인과 MCP 연결을 잔뜩 붙여 놨어요.
-    하나하나가 쓰지도 않는 컨텍스트를 불러왔고 — 보잘것없는 MVP 하나에 쓸데없이 많은 비용이 들었습니다.</p>
-    <div class="card accent-clay" style="margin-top:0.6em">
-      <p style="color:var(--obs-text)"><strong>교훈:</strong> 가볍게 시작하세요. 도구는 그 작업에 필요할 때만 추가합니다.
-      불러온 컨텍스트는 매 턴마다 비용으로 돌아옵니다.</p>
+    <span class="kicker">솔직한 실수 하나</span>
+    <h2>플러그인 과잉 = 토큰 낭비</h2>
+    <div class="card accent-clay" style="margin-top:1em">
+      <p style="color:var(--obs-text)"><strong>교훈.</strong> 가볍게 시작하세요. 도구는 필요할 때만 추가합니다. 불러온 컨텍스트는 매 턴 비용으로 돌아옵니다.</p>
     </div>
     <aside class="notes">
-      첫 번째 솔직한 실수, 흔한 거예요. 초반에 플러그인과 MCP 연결을 "혹시 몰라서" 잔뜩 붙였습니다.
-      문제는, 그것들이 쓰든 안 쓰든 매 턴마다 컨텍스트를 불러온다는 거예요. 첫 번째 거친 MVP가 토큰으로
-      따지면 말도 안 되게 비쌌습니다. 교훈은 단순해요. 가볍게 시작하라. 도구는 특정 작업에 필요할 때만
-      추가하라. 불러온 컨텍스트는 매 턴마다 내는 비용입니다. 입문자라면, 이 습관 하나가 돈을 가장 많이
-      아껴 줄 거예요.
+      흔한 실수 하나를 고백합니다. 초반에 “혹시 몰라서” 플러그인과 연결을 잔뜩 붙여 놨습니다. 문제는,
+      그것들이 쓰든 안 쓰든 매 턴마다 컨텍스트를 불러온다는 겁니다. 첫 시제품 하나에 토큰이 말도 안 되게
+      많이 들었어요. 교훈은 간단합니다. 가볍게 시작하라. 도구는 그 작업에 필요할 때만 추가하라. 불러온
+      컨텍스트는 매 턴마다 내는 비용입니다. 입문자라면 이 습관 하나가 돈을 가장 많이 아껴 줄 겁니다.
     </aside>
   </section>
 
   <!-- 14 · 팀 명단 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">팀 · 전문가 13 + 오케스트레이터 1</span>
-    <h3>한 명의 만능 비서가 아니라, 전문가들의 스튜디오.</h3>
-    <div class="cols-3" style="margin-top:0.5em">
-      <div class="card accent-sage">
-        <h3>빌더 · Sonnet</h3>
-        <p>provenance-globe (UI/3D)<br>provenance-data (API/병합)<br>dataviz-engineer (타임라인/아크)</p>
-      </div>
-      <div class="card accent-gold">
-        <h3>도메인 전문가 · Opus</h3>
-        <p>art-historian (출처 신뢰도)<br>art-insurance-advisor<br>provenance-strategy<br>design-director</p>
-      </div>
-      <div class="card accent-clay">
-        <h3>내러티브 + 게이트 · Opus</h3>
-        <p>provenance-story (데모/피치)<br><strong>provenance-honesty-review</strong> (차단 권한)</p>
-      </div>
+    <span class="kicker">전문가 13 + 오케스트레이터 1</span>
+    <h2>만능 비서가 아니라, 전문가 스튜디오</h2>
+    <div class="cols-3" style="margin-top:0.6em">
+      <div class="card accent-sage"><h3>빌더 · Sonnet</h3><p>globe · data · dataviz</p></div>
+      <div class="card accent-gold"><h3>전문가 · Opus</h3><p>미술사 · 보험 · 전략 · 디자인</p></div>
+      <div class="card accent-clay"><h3>내러티브 · 게이트</h3><p>story · honesty-review <strong>(차단)</strong></p></div>
     </div>
-    <p class="muted" style="font-size:0.74em;margin-top:0.5em"><strong>운영:</strong> feedback-triage · 그리고 Stage 3 센티넬 4종(데이터 품질·정직성 회귀·retro) — 제안 상태, 기본 비활성.</p>
-    <span class="source-tag">출처 · .claude/agents/ · AGENTS.md</span>
     <aside class="notes">
-      팀을 소개합니다. 만능 비서 한 명 대신, 전문가들의 스튜디오를 꾸렸어요 — 에이전트 프로필 13개 + 저,
-      오케스트레이터. 세 그룹이 일의 대부분을 합니다. 빌더들은 더 싸고 빠른 Sonnet 모델로 돌아가요. 하나는
-      3D 지구본과 프론트엔드, 하나는 데이터와 API, 하나는 정보 디자인 — 타임라인과 아크를 맡습니다.
-      도메인 전문가들은 더 똑똑한 Opus 모델로 돌려요. 이들의 일은 판단이거든요. 각 출처가 얼마나 믿을
-      만한지 등급을 매기는 미술사학자, 보험 자문, 비즈니스 전략가, 디자인 디렉터. 그리고 내러티브와 게이트.
-      한 에이전트는 데모와 피치를 맡고, 다른 하나 — 정직성 검토자 — 는 커밋을 "차단"할 수 있습니다.
-      피드백을 분류하는 운영 에이전트도 있고, 연결은 돼 있지만 꺼 둔 것들도 있어요. 각자 도메인을 정의한
-      프로필이 있어서 서로 일을 밟지 않습니다.
+      팀을 소개합니다. 만능 비서 한 명 대신, 전문가들의 스튜디오를 꾸렸습니다. 에이전트 13명에, 저는
+      오케스트레이터입니다. 세 그룹이 일의 대부분을 합니다. 빌더들은 더 빠르고 저렴한 Sonnet 모델로
+      돌아갑니다. 하나는 3D 지구본과 화면, 하나는 데이터와 API, 하나는 타임라인과 아크 같은 정보 디자인을
+      맡습니다. 도메인 전문가들은 더 똑똑한 Opus 모델로 돌립니다. 이들의 일은 판단이니까요. 출처가 얼마나
+      믿을 만한지 따지는 미술사학자, 보험 자문, 전략가, 디자인 디렉터. 마지막으로 내러티브와 게이트.
+      한 명은 데모와 발표를 맡고, 다른 한 명, 정직성 검토자는 커밋을 막을 권한이 있습니다. 각자 자기
+      영역을 정의한 프로필이 있어서 서로 일을 밟지 않습니다.
     </aside>
   </section>
 
   <!-- 15 · 명단 증명 스크린샷 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">…그리고 이건 사이트의 실제 페이지입니다</span>
+    <span class="kicker">사이트의 실제 페이지</span>
     <div class="shot-frame">
-      <img class="shot" src="assets/top-team.png" alt="/team 페이지: Autonomous by design, 에이전트 프로필 10개">
-      <p class="caption">/team — “10개의 전문 AI 에이전트 프로필이 Max로 이 플랫폼을 운영합니다. 각자 도메인을 갖고, 각자 커밋을 차단할 수 있습니다.”</p>
+      <img class="shot" src="assets/top-team.png" alt="/team 페이지: 에이전트 프로필">
+      <p class="caption">각자 도메인, 각자 커밋 차단권</p>
     </div>
     <aside class="notes">
-      이건 단순한 설정 파일이 아니라 라이브 사이트의 페이지로 문서화돼 있어요. "준비되면 언제든. 설계상
-      자율적. 10개의 전문 에이전트 프로필, 각자 도메인을 갖고, 각자 커밋을 차단할 수 있고, 여러분이 보는
-      모든 사실은 신뢰도 검토를 통과했습니다." 어떻게 만들어졌는지 투명하게 밝히는 것도 제품의 일부입니다.
+      이건 단순한 설정 파일이 아니라, 사이트의 한 페이지로 공개돼 있습니다. 전문 에이전트들이 각자 영역을
+      맡고, 각자 커밋을 막을 수 있고, 화면의 모든 사실이 신뢰도 검토를 통과했다는 걸 밝혀 둡니다. 어떻게
+      만들어졌는지 투명하게 보여 주는 것도 제품의 일부입니다.
     </aside>
   </section>
 
   <!-- 16 · 토큰 / 노력 절약 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">팀이 토큰 AND 사람 노력을 아끼는 이유</span>
-    <ul>
-      <li><strong>도메인별 라우팅</strong> — 작업마다 맞는 전문가가 처리, 중복 컨텍스트 없음.</li>
-      <li><strong>타입 우선(types-first)</strong> — 데이터 에이전트가 UI보다 <em>먼저</em> <code>types.ts</code>에 형태를 정의 → UI가 완성된 척 데이터를 지어내지 못함.</li>
-      <li><strong>병렬 워크트리(worktree)</strong> — 여러 에이전트가 충돌 없이 동시에 작업.</li>
-      <li><strong>작업 큐는 GitHub Issues</strong> — 라벨이 문법:
-        <span class="chip gold">priority + agent:domain</span><span class="chip">proposal</span><span class="chip">paused</span></li>
-      <li><strong>예산 상한</strong> — 실행당 최대 토큰·최대 PR 수를 설정 파일 하나에서 관리.</li>
-    </ul>
-    <span class="source-tag">출처 · AGENTS.md · .claude/orchestration.json</span>
+    <span class="kicker">왜 팀이 토큰과 노력을 아끼나</span>
+    <h2>맞는 전문가에게, 충돌 없이, 예산 안에서</h2>
+    <div class="chips" style="margin-top:1em">
+      <span class="chip gold">전문가 라우팅</span>
+      <span class="chip">타입 우선</span>
+      <span class="chip">병렬 작업</span>
+      <span class="chip">GitHub 작업 큐</span>
+      <span class="chip">예산 상한</span>
+    </div>
     <aside class="notes">
-      팀이 왜 노력을 늘리지 않고 줄일까요. 네 가지 이유. 첫째, 라우팅. 각 작업은 그 도메인을 가진 단 한 명의
-      전문가에게 가요. 컨텍스트를 다시 설명하는 비용을 안 냅니다. 둘째, 타입 우선. 데이터 에이전트가 UI보다
-      먼저 데이터 형태를 정의해요. 그러면 UI가 완성된 척하려고 가짜 데이터를 지어내는 전형적 실패가 막힙니다.
-      셋째, 병렬성. 에이전트들이 각자 별도의 git 워크트리에서 작업해서, 파일을 밟지 않고 여럿이 동시에
-      만들 수 있어요. 넷째, 작업 큐가 마크다운 할 일 목록이 아니라 GitHub Issues입니다. 라벨이 문법이에요.
-      "priority + 도메인"은 만들라는 뜻, "proposal"은 아이디어일 뿐, "paused"는 건너뛰라는 뜻. 그리고
-      실행당 최대 토큰과 최대 PR 수라는 단단한 예산 상한이 설정 파일 하나에 있습니다.
+      팀이 왜 노력을 늘리지 않고 줄일까요. 네 가지입니다. 첫째, 라우팅. 각 작업은 그 영역을 맡은 전문가
+      한 명에게 갑니다. 맥락을 다시 설명하는 비용이 들지 않죠. 둘째, 타입 우선. 데이터 담당이 화면보다
+      먼저 데이터의 모양을 정의합니다. 그러면 화면이 완성된 척 가짜 데이터를 지어내는 흔한 실패가 막힙니다.
+      셋째, 병렬 작업. 에이전트들이 저장소의 별도 복사본에서 일해서, 서로 부딪히지 않고 동시에 만들 수
+      있습니다. 넷째, 작업 큐가 메모장이 아니라 GitHub Issues입니다. 라벨이 곧 규칙이에요. ‘우선순위에
+      담당 영역’은 만들라는 뜻, ‘제안’은 아이디어일 뿐, ‘보류’는 건너뛰라는 뜻입니다. 그리고 실행당 최대
+      토큰과 최대 PR 수, 예산 상한이 설정 파일 하나에 있습니다.
     </aside>
   </section>
 
-  <!-- 17 · 십 게이트 — 핵심 아이디어 -->
+  <!-- 17 · Ship Gate — 핵심 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">에이전트를 신뢰할 수 있게 만드는 단 하나의 아이디어</span>
-    <h2>십 게이트(ship gate).</h2>
-    <div class="flow" style="margin:0.6em 0 0.8em">
-      <span class="step">build</span><span class="arrow">→</span>
-      <span class="step">serve</span><span class="arrow">→</span>
-      <span class="step gate">verify (계약 + 정직성)</span><span class="arrow">→</span>
-      <span class="step">commit ✓</span>
+    <span class="kicker">에이전트를 믿게 만드는 단 하나</span>
+    <h2>Ship Gate</h2>
+    <div class="flow" style="margin:0.8em 0 1em">
+      <span class="step">빌드</span><span class="arrow">→</span>
+      <span class="step">서버 실행</span><span class="arrow">→</span>
+      <span class="step gate">검증 (계약 + 정직성)</span><span class="arrow">→</span>
+      <span class="step">커밋 ✓</span>
     </div>
-    <p class="serif-quote" style="font-size:1.2em">“에이전트의 보고서 — <em>‘제가 X를 만들었어요’</em> — 는 결과가 아니라 <span class="muted">제안</span>이다.<br>게이트가 결과다.”</p>
-    <p class="muted">에이전트는 절대 직접 <code>git commit</code>하지 않습니다. <code>ship.mjs</code>가 빨간불이면
-    그 작업은 존재하지 않아요 — 고치고 다시 돌립니다. 사람이 모든 커밋을 읽지 않아도 됩니다.</p>
-    <span class="source-tag">출처 · scripts/ship.mjs · scripts/verify.mjs</span>
+    <p class="serif-quote" style="font-size:1.15em">“에이전트의 ‘다 만들었어요’는 결과가 아니라 제안입니다.<br>게이트를 통과해야 결과가 됩니다.”</p>
     <aside class="notes">
-      이게 전체 시스템에서 가장 중요한 아이디어입니다. 에이전트는 자신만만해요. "X 만들었고 잘 돌아갑니다"라고
-      기꺼이 말하죠. 하지만 에이전트의 보고서는 결과가 아니라 제안입니다. 그래서 어떤 에이전트도 코드를 직접
-      커밋하지 못해요. 모든 변경은 단 하나의 스크립트, 십 게이트를 통과합니다. 네 가지를 순서대로 해요.
-      앱을 빌드하고, 진짜 서버를 띄우고, 돌아가는 앱에 대해 데이터 계약과 정직성 규칙을 둘 다 검증하고,
-      그 모두가 초록불일 때만 커밋합니다. 게이트가 빨간불이면 그 작업은 그냥 존재하지 않아요. 고치고 다시
-      돌려야 합니다. 바로 이게 제가 모든 줄, 모든 커밋을 읽지 "않아도" 되게 해 줍니다. 기계가 그 작업이
-      진짜이고, 빌드되고, 정직함을 증명하니까요.
+      이게 전체 시스템에서 가장 중요한 아이디어입니다. 에이전트는 자신만만합니다. “다 만들었고 잘
+      돌아갑니다”라고 말하죠. 하지만 그 말은 결과가 아니라 제안입니다. 그래서 어떤 에이전트도 코드를 직접
+      커밋하지 못합니다. 모든 변경은 단 하나의 관문, Ship Gate를 거칩니다. 네 단계예요. 빌드하고, 진짜
+      서버를 띄우고, 돌아가는 앱에 대해 데이터 계약과 정직성 규칙을 검증하고, 전부 통과할 때만 커밋합니다.
+      게이트가 막히면 그 작업은 없는 겁니다. 고쳐서 다시 돌려야 해요. 바로 이것 덕분에 제가 모든 커밋을
+      일일이 읽지 않아도 됩니다. 기계가 그 작업이 진짜이고, 빌드되고, 정직하다는 걸 증명하니까요.
     </aside>
   </section>
 
   <!-- 18 · 가드레일 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">보호 계층 · 거짓말도 고장도 못 내게</span>
+    <span class="kicker">보호 장치 · 거짓말도 고장도 못 내게</span>
     <div class="cols-3">
-      <div class="card accent-gold"><h3>정직성 게이트 (CI)</h3><p>모든 PR을 grep으로 검사: “on view”, “probably owned”, (0,0) 좌표, 플레이스홀더 금지.</p></div>
-      <div class="card accent-sage"><h3>빌드 + 토큰 드리프트</h3><p>TypeScript strict 빌드 통과 필수; 디자인 토큰이 원본에서 몰래 어긋날 수 없음.</p></div>
-      <div class="card accent-clay"><h3>메트릭 하트비트</h3><p>데이터 품질의 오프라인 스냅샷; 회귀(날짜 없는 소유, null 좌표) 시 경고.</p></div>
-      <div class="card accent-purple"><h3>CodeQL + 시크릿</h3><p>보안 · 시크릿 스캔 — 키는 절대 클라이언트 코드에 없음.</p></div>
-      <div class="card"><h3>브랜치 보호</h3><p><strong>에이전트는 절대 머지하지 않음.</strong> <code>main</code>으로의 모든 PR은 사람이 머지.</p></div>
-      <div class="card"><h3>One fact, one home</h3><p>상태 중복 없음; 날짜 박힌 죽은 문서 없음; 교훈은 INSIGHTS.md로 병합.</p></div>
+      <div class="card accent-gold"><h3>정직성 게이트</h3><p>금지 표현 검사</p></div>
+      <div class="card accent-sage"><h3>빌드 검사</h3><p>strict 통과 필수</p></div>
+      <div class="card accent-clay"><h3>메트릭</h3><p>품질 회귀 감시</p></div>
+      <div class="card accent-purple"><h3>보안 스캔</h3><p>키 유출 차단</p></div>
+      <div class="card"><h3>브랜치 보호</h3><p>사람만 머지</p></div>
+      <div class="card"><h3>단일 출처</h3><p>중복·슬롭 방지</p></div>
     </div>
-    <span class="source-tag">출처 · .github/workflows/ · docs/decisions/0001</span>
     <aside class="notes">
-      그 게이트 둘레에 가드레일의 고리가 있습니다. 에이전트의 두 가지 위험은 "거짓말" — 과장하고 데이터를
-      지어내는 것 — 과 "고장"이거든요. 그래서, 정직성 게이트가 모든 PR마다 CI에서 돌며 "on view"나 "probably
-      owned by" 같은 금지 표현, 그리고 가짜 0,0 좌표를 grep으로 잡습니다. 빌드는 엄격한 TypeScript에서
-      통과해야 하고, 디자인 토큰은 몰래 어긋날 수 없어요. 메트릭 하트비트가 데이터 품질의 오프라인 스냅샷을
-      찍어 품질이 나빠지면 알려 줍니다. CodeQL과 시크릿 스캔이 키를 코드 밖에 둬요. 그리고 단단한 경계 —
-      에이전트는 절대 머지하지 않습니다. 브랜치 보호 덕분에 사람이, 즉 제가, 모든 변경을 main으로 머지해요.
-      에이전트는 제안하고, 저는 처분합니다.
+      그 관문 둘레에 보호 장치가 둘러쳐 있습니다. 에이전트의 두 가지 위험은 거짓말, 즉 과장하거나 데이터를
+      지어내는 것, 그리고 고장이거든요. 그래서 정직성 게이트가 모든 PR마다 돌면서 금지된 표현과 가짜 좌표를
+      잡습니다. 빌드는 엄격한 타입 검사를 통과해야 하고, 디자인 값이 몰래 어긋날 수 없습니다. 메트릭이
+      데이터 품질을 주기적으로 찍어 나빠지면 알려 줍니다. 보안 스캔이 키를 코드 밖에 둡니다. 그리고 가장
+      단단한 경계, 에이전트는 절대 머지하지 않습니다. 모든 변경은 사람이, 즉 제가 직접 합칩니다. 에이전트는
+      제안하고, 결정은 제가 합니다.
     </aside>
   </section>
 
-  <!-- 19 · Phase 2 — 폰으로 추적하는 배치 런 -->
+  <!-- 19 · Phase 2 — 폰으로 추적 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">Phase 2 · 내가 출근한 사이 일하는 에이전트</span>
+    <span class="kicker">Phase 2 · 출근한 사이 일하는 에이전트</span>
     <div class="cols">
       <div>
-        <h3>전날 밤에 계획을 다 적었습니다.</h3>
-        <p class="muted">요청 목록을 파일 하나에 잔뜩(제 <code>TOMORROW.md</code>). 아침에 <strong>배치 런(batch run)</strong>을
-        켜고 — 본업으로 출근했어요.</p>
-        <p class="muted">오케스트레이터가 전문 에이전트들에게 작업을 분류·분배했죠. 제가 시킨 대로 <strong>토큰을 아끼게</strong>요.</p>
+        <h3>전날 밤 계획, 아침에 실행</h3>
+        <p class="muted">배치 작업을 켜 두고 출근하면, 오케스트레이터가 전문가들에게 일을 나눠 줍니다.</p>
       </div>
       <div class="card accent-gold">
         <h3>폰으로 추적</h3>
-        <p>이건 <strong>로컬이 아니라 클라우드</strong>에서 돌기 때문에 가능합니다. 회의 사이사이 폰으로 PR이
-        올라오는 걸 지켜봤어요.</p>
-        <p style="margin-top:0.4em" class="faint">(이걸 위해 Max를 결제 — API 크레딧보다 토큰 예산. 배우려고 쓴 값으로 충분.)</p>
+        <p>로컬이 아니라 클라우드라서 가능했습니다. 회의 사이사이 PR이 올라오는 걸 지켜봤어요.</p>
       </div>
     </div>
-    <span class="source-tag">출처 · .claude/workflows/batch-agent-squad.mjs</span>
     <aside class="notes">
-      Phase 2가 재밌어진 지점이에요. 전날 밤, 원하는 걸 큰 목록으로 적어 둡니다 — 말 그대로 "내일"이라고
-      생각한 파일이 있었어요. 아침에 배치 런을 켜고, 진짜 직장으로 출근합니다. 제가 일하는 동안
-      오케스트레이터가 그 목록을 전문 에이전트들에게 분류해서, 토큰을 아끼는 방식으로 분배했어요. 제가
-      그렇게 시켰으니까요. 그리고 결정적인 디테일 — 이건 제 노트북이 아니라 클라우드에서 돌기 때문에
-      가능합니다. 회의 사이사이 폰으로 PR이 올라오는 걸 전부 지켜봤어요. 이걸 위해 Max 요금제를 결제했고요.
-      API 크레딧을 태우기보다 토큰 예산이 필요했고, 솔직히 배우려고 낸 값으로는 충분했습니다.
+      Phase 2가 재미있어진 지점입니다. 전날 밤 원하는 걸 큰 목록으로 적어 둡니다. 아침에 배치 작업을 켜고
+      진짜 직장으로 출근합니다. 제가 일하는 동안 오케스트레이터가 그 목록을 전문가들에게 나눠 주는데,
+      제가 시킨 대로 토큰을 아끼는 방식으로 분배합니다. 결정적인 건, 이게 제 노트북이 아니라 클라우드에서
+      돌기 때문에 가능하다는 점입니다. 회의 사이사이 폰으로 PR이 올라오는 걸 다 지켜봤습니다. 이걸 위해
+      Max 요금제를 결제했는데, API 크레딧을 태우기보다 정해진 예산이 필요했고, 배우는 값으로는 충분했습니다.
     </aside>
   </section>
 
   <!-- 20 · 정리 국면 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">Phase 1 ⇄ Phase 2 · 그리고 찾아온 혼돈</span>
-    <div class="cols">
-      <div>
-        <p class="muted">손으로 하는 세션(Phase 1)과 배치 런(Phase 2)을 여러 기기에서 오가며 좋은 데모를
-        얻었지만 — <strong>지저분한 저장소</strong>가 남았습니다: 죽은 기능, 잃어버린 계획, 흩어진 세션.</p>
-        <h3>GitHub이 중추가 됐습니다.</h3>
-        <p class="muted">계획 → <strong>Issues</strong>(휘발되지 않고 지속). 사용자 피드백 → Issues(이메일에서 분리) →
-        <code>feedback-triage</code> 에이전트 → 내가 검토하는 PR.</p>
-      </div>
-      <div class="placeholder" style="min-height:36vh">
-        <div class="pl-icon">⎇</div>
-        <div class="pl-title">선택 · GitHub 보드</div>
-        <div class="pl-note">Issues 목록 / Projects 보드(라벨: priority · proposal · feedback) 스크린샷. 원하면 GitHub에서 실제 캡처.</div>
-      </div>
-    </div>
-    <span class="source-tag">출처 · docs/WORKFLOW_STAGES.md</span>
+    <span class="kicker">그리고 찾아온 혼돈</span>
+    <h2>GitHub이 중추가 됐습니다</h2>
+    <p class="lead muted" style="margin-top:0.6em">여러 기기에서 목표만 좇다 보니 저장소가 지저분해졌습니다.<br>계획도 피드백도, 모두 GitHub Issues로 옮겼습니다.</p>
     <aside class="notes">
-      한동안 저는 Phase 1 — 손으로 하는 대화형 세션 — 과 Phase 2 — 배치 런 — 을 노트북, 폰, 태블릿을
-      오가며 했어요. 좋은 데모가 나왔지만 동시에 혼돈도 남았죠. 반쯤 만든 죽은 기능들, 잃어버린 계획들,
-      기기마다 흩어진 세션들. 해결책은 GitHub이었습니다. 채팅 세션 안에서 계획을 세우면 그 계획은
-      휘발돼요. 끝내지 않으면 사라지고, 여러 기기를 오가며 저는 많이 잃었습니다. 그래서 계획을 GitHub
-      Issues로 옮겼어요 — 지속되고, 보이고, 승격할 수 있는. 그리고 이메일로 받기 싫었던 사용자 피드백도
-      Issues가 됐습니다. 분류 에이전트가 검토해서 좋은 것만 남기고, 제가 검토할 PR을 엽니다. GitHub이
-      흩어진 세션 더미를 하나의 중추로 바꿨어요.
+      한동안 저는 손으로 하는 세션과 배치 작업을 노트북, 폰, 태블릿을 오가며 했습니다. 좋은 데모가 나왔지만
+      혼돈도 남았어요. 반쯤 만든 죽은 기능들, 잃어버린 계획들, 기기마다 흩어진 세션들. 해결책은 GitHub
+      이었습니다. 채팅 안에서 세운 계획은 휘발됩니다. 끝내지 않으면 사라지고, 여러 기기를 오가며 저는 많이
+      잃었어요. 그래서 계획을 GitHub Issues로 옮겼습니다. 지속되고, 보이고, 우선순위를 올릴 수 있죠.
+      이메일로 받기 싫던 사용자 피드백도 Issues가 됐습니다. 분류 에이전트가 검토해 좋은 것만 남기고, 제가
+      확인할 PR을 엽니다. GitHub이 흩어진 세션 더미를 하나의 중추로 바꿔 줬습니다.
     </aside>
   </section>
 
   <!-- 21 · 자율성 다이얼 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">모델 · Stage 1 → 2 → 3</span>
+    <span class="kicker">Stage 1 → 2 → 3</span>
     <div class="shot-frame">
-      <img class="shot" src="assets/top-workflow.png" alt="/workflow 페이지 — 자율성의 세 단계" style="max-height:52vh">
+      <img class="shot" src="assets/top-workflow.png" alt="/workflow 페이지 — 자율성의 세 단계" style="max-height:48vh">
     </div>
-    <p class="serif-quote" style="font-size:1.1em;margin-top:0.5em">“자율성은 다이얼이고, 그것이 키우는 것은 <em>시작(initiation)</em>이지 <span class="c-clay">거부권(veto)</span>이 아니다.”</p>
-    <p class="muted">Stage 1 수동(현재) → Stage 2 예약(연결됨, 비활성) → Stage 3 이벤트 기반(비전).
-    <strong>모든 단계에서 사람이 머지합니다.</strong> 그 경계는 움직이지 않아요.</p>
-    <span class="source-tag">출처 · /workflow · docs/decisions/0002</span>
+    <p class="serif-quote" style="font-size:1.1em;margin-top:0.6em">“자율성이 키우는 건 ‘시작’이지, ‘거부권’이 아닙니다.”</p>
+    <p class="muted">단계가 올라가도, 머지는 언제나 사람이 합니다.</p>
     <aside class="notes">
-      전체 시스템은 하나의 축을 따라 자라도록 설계됐습니다. 저는 자율성을 다이얼로 생각해요. 그런데 그
-      다이얼이 키우는 건 "시작" — 누가 일을 개시하느냐 — 입니다. 절대 "거부권" — 누가 최종 결정권을
-      갖느냐 — 을 키우지 않아요. 지금 제가 있는 Stage 1은 수동입니다. 제가 세션을 열면 에이전트가 만들어요.
-      Stage 2는 예약 — cron이 이슈 큐를 읽고 배치를 돌립니다. 연결은 돼 있지만 지금은 꺼 뒀어요. Stage 3는
-      비전입니다. 이벤트 기반으로, 센티넬이 문제를 발견해 스스로 이슈를 열고, 비저너리와 비평가가 다음
-      방향을 제안합니다. 하지만 세 단계 내내
-      변하지 않는 게 있어요. 모든 변경은 사람이 머지합니다. 다이얼은 에이전트가 얼마나 "시작"할 수 있는지를
-      키울 뿐, 사람의 최종 결정권은 절대 건드리지 않아요. 그게 한 문장으로 된 안전 모델입니다.
+      전체 시스템은 하나의 축을 따라 자라도록 설계했습니다. 저는 자율성을 다이얼로 생각합니다. 그런데 그
+      다이얼이 키우는 건 ‘시작’입니다. 누가 일을 개시하느냐. 절대 ‘거부권’을, 즉 최종 결정권을 키우지
+      않습니다. 지금의 Stage 1은 수동입니다. 제가 세션을 열면 에이전트가 만들죠. Stage 2는 예약입니다.
+      정해진 시각에 큐를 읽고 배치를 돌립니다. 연결은 돼 있지만 지금은 꺼 뒀어요. Stage 3는 비전입니다.
+      에이전트가 문제를 발견해 스스로 이슈를 열고, 비저너리와 비평가가 다음 방향을 제안합니다. 하지만 세
+      단계 내내 변하지 않는 게 있습니다. 모든 변경은 사람이 머지합니다. 다이얼은 에이전트가 얼마나
+      ‘시작’할 수 있는지를 키울 뿐, 사람의 최종 결정권은 절대 건드리지 않습니다. 그게 한 문장으로 된
+      안전 모델입니다.
     </aside>
   </section>
 
@@ -529,28 +449,28 @@
     <div class="full-center">
       <span class="act-num">Part Three</span>
       <h2>바쁜 사람을 위한<br>솔직한 후기</h2>
-      <p class="muted">바사해 · 다음 1인 빌더에게 해 주고 싶은 말</p>
+      <p class="muted">바사해 · 다음 1인 빌더에게</p>
     </div>
-    <aside class="notes">파트 3 — 개인 후기, 특히 혼자 하는 바쁜 분들을 위한.</aside>
+    <aside class="notes">파트 3, 개인 후기입니다. 특히 혼자 하는 바쁜 분들을 위한.</aside>
   </section>
 
-  <!-- 23 · 교훈 스택 -->
+  <!-- 23 · 교훈 -->
   <section data-background-color="#0a0908">
-    <span class="kicker">다음 빌더에게 해 주고 싶은 말</span>
-    <ul>
-      <li><strong>기능 하나당 세션 하나.</strong> 좁게 잡고, 끝내고, 배포하세요.</li>
-      <li><strong>끝내지 않은 계획은 잃어버린 계획.</strong> 계획은 GitHub Issues로 — 기기 간에 지속됩니다.</li>
-      <li><strong>GitHub &gt; 마크다운 큐.</strong> Issues·라벨·Actions·브랜치 보호가 사무를 대신 봐 줍니다.</li>
-      <li><strong>가드레일은 에이전트를 정직하게</strong> — 그리고 서툰 제 git 손에서 <code>main</code>을 지켜 줍니다.</li>
-      <li><strong>가볍게 시작하고, AI 슬롭을 피하세요</strong> — 일회용 문서 천 개 금지; one fact, one home.</li>
+    <span class="kicker">다음 빌더에게</span>
+    <ul class="clean">
+      <li>기능 하나당 세션 하나</li>
+      <li>계획은 GitHub Issues로</li>
+      <li>메모장보다 GitHub</li>
+      <li>가드레일이 정직성과 안전을 지킨다</li>
+      <li>가볍게 시작하고, AI 슬롭을 피하라</li>
     </ul>
     <aside class="notes">
       다섯 가지만 가져가신다면 이것들입니다. 하나, 기능 하나당 세션 하나. 좁게 잡고 끝까지 보고 배포하세요.
-      열 가지를 반쯤 만들어 두지 말고요. 둘, 끝내지 않은 계획은 잃어버린 계획이니, 계획을 채팅 밖 GitHub
-      Issues로 옮겨 기기 간에 살아남게 하세요. 셋, GitHub이 마크다운 할 일 목록보다 낫습니다. 이슈, 라벨,
-      자동 검사, 브랜치 보호가 사무를 대신 봐 줘요. 넷, 가드레일은 에이전트가 거짓말 못 하게 막을 뿐
-      아니라, 서툰 git 실력의 저로부터 main 브랜치도 지켜 줬습니다. 다섯, 가볍게 시작하고 AI 슬롭을
-      피하세요. 일회용 문서를 천 개씩 만들지 말고, 사실 하나엔 집 하나만 두세요.
+      열 가지를 반쯤 만들어 두지 마시고요. 둘, 끝내지 않은 계획은 잃어버린 계획입니다. 계획을 채팅 밖
+      GitHub Issues로 옮겨 기기 사이에서 살아남게 하세요. 셋, GitHub이 메모장보다 낫습니다. 이슈, 라벨,
+      자동 검사, 브랜치 보호가 잡일을 대신 해 줍니다. 넷, 가드레일은 에이전트가 거짓말 못 하게 막을 뿐
+      아니라, 서툰 제 실력으로부터 메인 브랜치도 지켜 줬습니다. 다섯, 가볍게 시작하고 AI 슬롭을 피하세요.
+      일회용 문서를 천 개씩 만들지 말고, 사실 하나엔 자리 하나만 두세요.
     </aside>
   </section>
 
@@ -558,69 +478,66 @@
   <section data-background-color="#0a0908">
     <span class="kicker">3년 · 세 번의 해커톤</span>
     <div class="cols-3">
-      <div class="card accent-sage"><h3>1년차</h3><p>시니어를 위한 앱. 바이브 코딩을 배움. 영감·스토리·코드·디자인이 맞물린 좋은 팀.</p></div>
-      <div class="card accent-gold"><h3>2년차</h3><p>MCP + Figma + Claude로 위트 있는 웹앱. 같은 팀 시너지.</p></div>
-      <div class="card accent-clay"><h3>3년차 · 이번</h3><p>가장 “나다운” 것: 스토리, 철학, 곳곳의 검증 계층. 가장 적은 시간, 가장 완성도 높음. <strong>그러나 혼자.</strong></p></div>
+      <div class="card accent-sage"><h3>1년차</h3><p>시니어 앱. 바이브 코딩. 좋은 팀.</p></div>
+      <div class="card accent-gold"><h3>2년차</h3><p>MCP+Figma+Claude. 팀 시너지.</p></div>
+      <div class="card accent-clay"><h3>3년차 · 이번</h3><p>가장 나다운 작업. 그러나 혼자.</p></div>
     </div>
     <aside class="notes">
-      약간의 관점을 더하면 — 이번이 제 세 번째 해였어요. 1년차, 저희 AI 동아리 해커톤에서 시니어를 위한
-      앱을 만들었습니다. 바이브 코딩을 배웠고, 영감·스토리·프로그래밍·디자인이 다 맞물린 좋은 팀이었어요.
-      2년차엔 비슷한 시너지로 MCP와 Figma와 Claude를 엮어 위트 있는 웹앱을 만들었고요. 3년차인 이번이
-      가장 "나다운" 작업입니다. 제 스토리와 철학 취향이 가득하고, 솔직히 그 모든 검증 계층은 제 지식
-      부족에서, 무작정 믿지 않으려는 마음에서 나왔어요. 가장 적은 시간이 들었고 제가 만든 것 중 가장
-      완성도가 높습니다. 그런데 혼자였어요.
+      관점을 조금 더하면, 이번이 세 번째 해였습니다. 1년차엔 동아리 해커톤에서 시니어를 위한 앱을 만들었어요.
+      바이브 코딩을 배웠고, 영감과 스토리, 코드와 디자인이 다 맞물린 좋은 팀이었습니다. 2년차엔 비슷한
+      시너지로 여러 도구를 엮어 위트 있는 웹앱을 만들었고요. 3년차인 이번이 가장 ‘나다운’ 작업입니다. 제
+      스토리와 철학이 가득하고, 솔직히 그 많은 검증 장치는 제 지식 부족에서, 무작정 믿지 않으려는 마음에서
+      나왔습니다. 가장 적은 시간이 들었고, 제가 만든 것 중 가장 완성도가 높습니다. 그런데 혼자였어요.
     </aside>
   </section>
 
   <!-- 25 · 솔직한 긴장 -->
   <section data-background-color="#0a0908">
     <span class="kicker">솔직한 긴장</span>
-    <p class="serif-quote">말과 생각만으로 만드는 일은<br>놀랍도록 생산적이고 — 약간 중독적입니다.</p>
-    <p class="muted" style="margin-top:0.8em">의도만으로 제품이 좋아지는 걸 지켜봤어요. 짜릿하죠. 동시에 <strong>외롭습니다.</strong></p>
-    <p class="lead">에이전트는 강력합니다. 하지만 <span class="c-gold">사람들로 이뤄진 팀만이</span> 주는 에너지와 완결감이 있어요.</p>
+    <p class="serif-quote">말과 생각만으로 만드는 일은<br>놀랍도록 생산적이고, 조금 중독적입니다.</p>
+    <p class="lead" style="margin-top:1.2em">강력하지만, 외롭습니다.<br><span class="c-gold">사람으로 이뤄진 팀만이</span> 주는 에너지가 있습니다.</p>
     <aside class="notes">
       그리고 이게 이 모든 일의 핵심에 있는 솔직한 긴장입니다. 말과 생각만으로 진짜 제품을 만드는 건 놀랍도록
-      생산적이고 — 인정하건대, 약간 중독적이에요. 아이디어를 타이핑하면 그게 진짜로 좋아지는 걸 봤습니다.
-      그 느낌은 짜릿해요. 하지만 동시에 외롭습니다. 에이전트는 강력하고, 제 시간을 엄청나게 아껴 줬고,
-      혼자 하루 반 만에 만들 수 있는 것보다 훨씬 풍부하게 제품을 키워 줬어요. 그런데도 — 사람들로 이뤄진
-      팀만이 주는 에너지, 일종의 완결감이 있습니다. 제가 이 발표를 시작하며, 사람들 때문에 해커톤에
-      나간다고 말씀드렸죠. 올해 저는 사람들 없이도 만들 수 있다는 걸 증명했어요 — 그런데 그게 오히려,
-      그러고 싶지 않다는 걸 더 분명하게 만들었습니다. 그게 그리웠어요.
+      생산적이고, 인정하건대 조금 중독적입니다. 아이디어를 적으면 제품이 진짜로 좋아지는 걸 봤어요. 그
+      느낌은 짜릿합니다. 하지만 동시에 외롭습니다. 에이전트는 강력하고, 제 시간을 엄청나게 아껴 줬고, 혼자
+      하루 반 만에 만들 수 있는 것보다 훨씬 풍부하게 키워 줬습니다. 그런데도, 사람으로 이뤄진 팀만이 주는
+      에너지와 완결감이 있습니다. 제가 이 발표를 시작하며, 사람들 때문에 해커톤에 나간다고 말씀드렸죠.
+      올해 저는 사람들 없이도 만들 수 있다는 걸 증명했어요 — 그런데 그게 오히려, 그러고 싶지 않다는 걸 더
+      분명하게 만들었습니다. 그게 그리웠어요.
     </aside>
   </section>
 
   <!-- 26 · 다음 -->
   <section data-background-color="#0a0908">
     <span class="kicker">다음은</span>
-    <ul>
-      <li><strong>Phase 3</strong> — 이벤트 기반 설계는 있지만 실행에 API 크레딧이 필요. 아직 못 갔습니다.</li>
-      <li><strong>진짜 사람의 피드백</strong> — 해커톤은 끝났고, 이제 전문가의 비평을 원합니다.</li>
-      <li><strong>에이전트 팀 재설계</strong> — 배운 것으로 명단을 다시 짜기.</li>
-      <li><strong>진짜 목표</strong> — 협력하는 사람 팀 <em>안에서</em> 에이전트 루프를 극대화. 사람 <em>대신</em>이 아니라, 사람을 <em>증폭</em>하는.</li>
+    <ul class="clean">
+      <li>Phase 3 — API 크레딧이 필요</li>
+      <li>진짜 사람의 피드백</li>
+      <li>에이전트 팀 재설계</li>
+      <li>사람 팀 안에서 에이전트를 극대화</li>
     </ul>
-    <span class="source-tag">출처 · docs/WORKFLOW_STAGES.md (Stage 3)</span>
     <aside class="notes">
-      그래서 다음은요. Phase 3 — 완전히 이벤트 기반인 설계 — 는 종이 위엔 있지만 실제로 돌리려면 API
-      크레딧이 필요하고, 아직 거기까진 못 갔습니다. 해커톤이 끝난 지금 제가 가장 원하는 건 진짜 사람의
-      피드백, 전문가의 비평이에요. 제가 지금 여기 선 이유이기도 하고요. 배운 모든 걸로 에이전트 팀을 다시
-      설계하고 싶습니다. 하지만 진짜 목표, 제가 실제로 좇는 건 이겁니다. 협력하는 사람들의 팀 "안에서" 이
-      에이전트 루프를 극대화하는 것. 사람 대신 에이전트가 아니라, 사람을 증폭하는 에이전트.
+      그래서 다음은요. Phase 3, 완전히 이벤트 기반인 설계는 종이 위엔 있지만 실제로 돌리려면 API 크레딧이
+      필요해서, 아직 거기까진 못 갔습니다. 해커톤이 끝난 지금 제가 가장 원하는 건 진짜 사람의 피드백,
+      전문가의 비평입니다. 제가 오늘 여기 선 이유이기도 하고요. 배운 걸로 에이전트 팀을 다시 설계하고
+      싶습니다. 하지만 진짜 목표는 이겁니다. 협력하는 사람들의 팀 안에서 이 에이전트 루프를 극대화하는 것.
+      사람 대신 에이전트가 아니라, 사람을 키워 주는 에이전트요.
     </aside>
   </section>
 
   <!-- 27 · 클로징 -->
   <section data-background-color="#0a0908">
     <div class="full-center">
-      <h1>덜 만들고.<br>정직하게 배포하고.<br>사람을 데려오자.</h1>
-      <p class="muted" style="margin-top:0.6em">Provenance Tracker · 바사해</p>
-      <p class="tiny">라이브 데모 &amp; 저장소 — <span class="c-sage">github.com/nyahn01/provenance-tracker</span></p>
-      <p class="lead" style="margin-top:1em">감사합니다 — 여러분의 피드백을 듣고 싶어요.</p>
+      <h1>덜 만들고.<br>정직하게 배포하고.<br>사람과 함께.</h1>
+      <p class="muted" style="margin-top:0.8em">Provenance Tracker · 바사해</p>
+      <p class="tiny">github.com/nyahn01/provenance-tracker</p>
+      <p class="lead" style="margin-top:1.2em">감사합니다. 여러분의 피드백을 듣고 싶습니다.</p>
     </div>
     <aside class="notes">
-      세 마디로 전체를 정리하며 마치겠습니다. 덜 만들자 — 잘 설계된 에이전트 팀이 만들게 하자. 정직하게
-      배포하자 — 정직함을 좋은 의도가 아니라 기계적 게이트로 만들자. 그게 유일하게 오래가는 해자니까요.
-      그리고 사람을 데려오자 — 에이전트는 놀랍지만, 사람 팀이 곁에 있을 때 더 좋으니까요. 이것이
-      Provenance Tracker입니다. 감사합니다 — 그리고 진심으로, 여러분의 피드백을 듣고 싶습니다.
+      세 마디로 정리하며 마치겠습니다. 덜 만들자. 잘 설계된 에이전트 팀이 만들게 하자. 정직하게 배포하자.
+      정직함을 좋은 의도가 아니라 기계적인 관문으로 만들자. 그게 유일하게 오래가는 경쟁력이니까요. 그리고
+      사람과 함께하자. 에이전트는 놀랍지만, 곁에 사람 팀이 있을 때 더 좋으니까요. 이것이 Provenance
+      Tracker입니다. 감사합니다. 그리고 진심으로, 여러분의 피드백을 듣고 싶습니다.
     </aside>
   </section>
 
