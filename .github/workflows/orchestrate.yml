@@ -1,0 +1,76 @@
+name: Orchestrate (Stage-3 scaffold)
+
+# Stage-3 autonomy scaffold — WIRING ONLY, inert by default.
+#
+# Reads .claude/orchestration.json and does nothing unless `mode` is
+# `scheduled` or `event-driven` AND `paused` is false. Even then, the
+# orchestrate job is a STUB that only logs intent — no agents run, no
+# secrets are used, nothing is written or merged.
+#
+# To go live (Stage 2/3): flip `mode` in .claude/orchestration.json and
+# replace the STUB step with a real Claude runner (needs an Anthropic-API
+# budget + the token/PR caps from the config).
+# See docs/decisions/0002-stage3-autonomy-model.md.
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Why this manual run"
+        required: false
+  schedule:
+    # Daily, off-peak. Inert while mode=manual (the guard exits early).
+    - cron: "17 6 * * *"
+  # Event-driven (Stage 3): uncomment to fan out on new/labeled issues.
+  # issues:
+  #   types: [opened, labeled]
+
+permissions:
+  contents: read
+  issues: read
+
+concurrency:
+  group: orchestrate
+  cancel-in-progress: false
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+      mode: ${{ steps.decide.outputs.mode }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: decide
+        shell: bash
+        run: |
+          cfg=.claude/orchestration.json
+          mode=$(jq -r '.mode' "$cfg")
+          paused=$(jq -r '.paused' "$cfg")
+          echo "event=${{ github.event_name }} mode=$mode paused=$paused"
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          if [ "$paused" = "true" ]; then
+            echo "::notice::Orchestration paused — no-op."
+            echo "run=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          case "$mode" in
+            scheduled|event-driven) echo "run=true"  >> "$GITHUB_OUTPUT" ;;
+            *)                       echo "::notice::mode=$mode (manual) — no-op."
+                                     echo "run=false" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+  orchestrate:
+    needs: guard
+    if: needs.guard.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: STUB — would orchestrate (no agents run here)
+        shell: bash
+        run: |
+          echo "::notice::Stage-3 orchestration would run (mode=${{ needs.guard.outputs.mode }})."
+          echo "Implement here: read the GitHub-Issues queue (label: priority),"
+          echo "route each to its specialist agent, build, run the blocking honesty"
+          echo "gate, and open PRs — respecting max_token_budget_per_run and"
+          echo "max_prs_per_run from .claude/orchestration.json. A human still merges"
+          echo "(except auto-on-green tiers). This scaffold executes no agents."

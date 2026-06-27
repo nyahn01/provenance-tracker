@@ -51,3 +51,15 @@ without running away with it:
 
 This reuses today's GitHub-Issues queue — no separate proposal file, no automation that
 can build unreviewed work.
+
+### Toward Stage 3 — supervised autonomy
+
+The end state is a self-sustaining, improving system that *initiates* its own work (feedback
+auto-triage, scheduled self-audit sentinels, a visionary→critic proposal engine) while the
+human stays the **gate, not the initiator**. Autonomy is a dial — turned up on *initiation*,
+never on *veto*. The invariant holds: agents may do anything except cross an irreversible or
+outward-facing line (merge to `main`, close a user's issue, publish) without a human.
+
+The mode is one switch — `.claude/orchestration.json` (`manual` / `scheduled` / `event-driven`,
+plus a `paused` kill-switch and per-tier merge autonomy), read by
+`.github/workflows/orchestrate.yml`. Full design + rollout: `docs/decisions/0002-stage3-autonomy-model.md`.

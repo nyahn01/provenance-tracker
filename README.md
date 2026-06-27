@@ -87,6 +87,7 @@ npm run build        # production build + type check
 npm run ship         # build → verify → honesty check → commit gate
 npm run honesty      # static honesty check on git diff
 npm run honesty:full # honesty check across all source files
+npm run metrics      # Outcome-loop snapshot → metrics/latest.json (offline)
 ```
 
 ## Docs

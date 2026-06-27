@@ -1,0 +1,49 @@
+{
+  "scope": "featured custody chains — offline, from src/lib/featured-provenance.json",
+  "featuredWorks": 6,
+  "custodyEntries": 38,
+  "datedStartCoveragePct": 84.2,
+  "aTierEntries": 38,
+  "nullCoordinateEntries": 3,
+  "worksWithTrailingDatelessCustody": 5,
+  "worksWithDeepChain": 6,
+  "perWork": [
+    {
+      "work": "aic:16568",
+      "entries": 5,
+      "datedStart": 4,
+      "trailingDatelessCustody": true
+    },
+    {
+      "work": "aic:27992",
+      "entries": 5,
+      "datedStart": 5,
+      "trailingDatelessCustody": false
+    },
+    {
+      "work": "aic:18951",
+      "entries": 6,
+      "datedStart": 5,
+      "trailingDatelessCustody": true
+    },
+    {
+      "work": "aic:20684",
+      "entries": 6,
+      "datedStart": 5,
+      "trailingDatelessCustody": true
+    },
+    {
+      "work": "aic:28560",
+      "entries": 8,
+      "datedStart": 7,
+      "trailingDatelessCustody": true
+    },
+    {
+      "work": "aic:64818",
+      "entries": 8,
+      "datedStart": 6,
+      "trailingDatelessCustody": true
+    }
+  ],
+  "measuredElsewhere": "Getty/RKD/exhibition coverage (runtime) and honesty-gate status (npm run honesty:full)."
+}
