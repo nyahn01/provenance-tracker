@@ -37,7 +37,7 @@ export default function FeedbackPage() {
         select:focus, textarea:focus, input:focus { border-color: ${C.gold} !important; }
       ` }} />
 
-      <main style={{ minHeight: '100vh', background: C.bg, fontFamily: "'Pretendard Variable', Pretendard, system-ui, sans-serif", color: C.text }}>
+      <main style={{ minHeight: '100vh', background: C.bg, fontFamily: 'var(--font-ui)', color: C.text }}>
 
         {/* Nav */}
         <nav style={{ position: 'sticky', top: 0, zIndex: 10, background: C.bg, borderBottom: `1px solid ${C.border}`, padding: '14px 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -57,7 +57,7 @@ export default function FeedbackPage() {
             <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 16 }}>
               Public Beta
             </div>
-            <h1 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', fontWeight: 300, color: C.text, lineHeight: 1.15, marginBottom: 18, letterSpacing: '-0.01em' }}>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', fontWeight: 400, color: C.text, lineHeight: 1.15, marginBottom: 18, letterSpacing: '-0.01em' }}>
               Help shape Provenance Tracker
             </h1>
             <p style={{ fontSize: '0.95rem', color: C.textMuted, lineHeight: 1.7 }}>

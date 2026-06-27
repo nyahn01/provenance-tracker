@@ -124,7 +124,7 @@ export default function WorkflowPage() {
         a { text-decoration: none; }
       ` }} />
 
-      <main style={{ minHeight: '100vh', background: C.bg, fontFamily: "'Pretendard Variable', Pretendard, system-ui, sans-serif", color: C.text }}>
+      <main style={{ minHeight: '100vh', background: C.bg, fontFamily: 'var(--font-ui)', color: C.text }}>
 
         {/* Nav */}
         <nav style={{ position: 'sticky', top: 0, zIndex: 10, background: C.bg, borderBottom: `1px solid ${C.border}`, padding: '14px 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -140,7 +140,7 @@ export default function WorkflowPage() {
             <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 16 }}>
               How it works
             </div>
-            <h1 style={{ fontFamily: "'Pretendard Variable', serif", fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: 300, color: C.text, lineHeight: 1.1, marginBottom: 20 }}>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: 400, color: C.text, lineHeight: 1.1, marginBottom: 20 }}>
               From a session you run<br />to a system that runs itself.
             </h1>
             <p style={{ fontSize: '1rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 600, marginBottom: 12 }}>
@@ -194,7 +194,7 @@ export default function WorkflowPage() {
             <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>
               The one dial
             </div>
-            <h2 style={{ fontFamily: "'Pretendard Variable', serif", fontSize: 'clamp(1.4rem, 3vw, 1.9rem)', fontWeight: 300, color: C.text, marginBottom: 12 }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.4rem, 3vw, 1.9rem)', fontWeight: 400, color: C.text, marginBottom: 12 }}>
               One config file switches the stage.
             </h2>
             <p style={{ fontSize: '0.88rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 620, marginBottom: 28 }}>
@@ -235,7 +235,7 @@ export default function WorkflowPage() {
             <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>
               The four loops
             </div>
-            <h2 style={{ fontFamily: "'Pretendard Variable', serif", fontSize: 'clamp(1.4rem, 3vw, 1.9rem)', fontWeight: 300, color: C.text, marginBottom: 12 }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.4rem, 3vw, 1.9rem)', fontWeight: 400, color: C.text, marginBottom: 12 }}>
               What makes Stage 3 <em>improve</em>, not just change.
             </h2>
             <p style={{ fontSize: '0.88rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 620, marginBottom: 32 }}>
@@ -284,7 +284,7 @@ export default function WorkflowPage() {
             <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>
               GitHub as the project partner
             </div>
-            <h2 style={{ fontFamily: "'Pretendard Variable', serif", fontSize: 'clamp(1.4rem, 3vw, 1.9rem)', fontWeight: 300, color: C.text, marginBottom: 12 }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.4rem, 3vw, 1.9rem)', fontWeight: 400, color: C.text, marginBottom: 12 }}>
               No side tools. GitHub is the backbone.
             </h2>
             <p style={{ fontSize: '0.88rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 620, marginBottom: 28 }}>

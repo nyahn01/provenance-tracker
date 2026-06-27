@@ -98,8 +98,7 @@ export default async function CaseStudyPage({
         style={{
           minHeight: '100vh',
           background: C.bg,
-          fontFamily:
-            "'Pretendard Variable', Pretendard, system-ui, sans-serif",
+          fontFamily: 'var(--font-ui)',
           color: C.text,
         }}
       >
@@ -153,8 +152,9 @@ export default async function CaseStudyPage({
             </div>
             <h1
               style={{
+                fontFamily: 'var(--font-display)',
                 fontSize: 'clamp(1.9rem, 5vw, 3rem)',
-                fontWeight: 300,
+                fontWeight: 400,
                 color: C.text,
                 lineHeight: 1.12,
                 marginBottom: 14,
