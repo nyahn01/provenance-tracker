@@ -12,6 +12,7 @@ A 30-minute talk in two versions, built to match the project's own Observatory d
 | `index-en.html` | **English deck** (Reveal.js). Also the cleanest narration for NotebookLM visuals. |
 | `index-ko.html` | **Korean deck** — fluent KR, English terms glossed inline. The live-stage version. |
 | `notebooklm-script-en.md` | Flat English narration (one block per slide). **Feed this to NotebookLM** to generate the Audio/Video Overview. |
+| `script-ko.md` | Flat Korean narration — the live-stage read-through (and an optional source for a Korean NotebookLM). |
 | `SHOT_LIST.md` | What's already captured vs. what to shoot live from the deployed site. |
 | `theme.css` | Shared Observatory theme (mirrors `src/lib/design-tokens.ts`). |
 | `assets/` | Real screenshots (auto-captured via Playwright). |

@@ -15,11 +15,12 @@ how the human worked less and the agents worked more.
 
 ## Opening — the hook
 
-Hi everyone. This is Provenance Tracker. In the next thirty minutes I'll do three things: first,
-show you the product and why it exists; second — and this is the part people most want — exactly
-how I used a *team* of AI agents to build it; and third, an honest personal review of doing a
-hackathon as a busy person, solo. The whole story is really one sentence: how I worked less, and
-the agents worked more.
+Hi everyone. This is Provenance Tracker. I built it for 바사해 — a "hackathon for busy people," where
+the whole point wasn't really the product; it was the story of how you got the agents to do the work
+for you. So in the next thirty minutes I'll do three things: first, show you the product and why it
+exists; second — and this is the part people most want — exactly how I used a *team* of AI agents to
+build it; and third, an honest personal review of doing a hackathon as a busy person, solo. The whole
+story is really one sentence: how I worked less, and the agents worked more.
 
 Let me start with a mystery. When Monet finished *Water Lilies* in 1906, it was in Paris. When the
 Art Institute of Chicago acquired it, it was in Chicago. What happened in between? The museum label
@@ -84,12 +85,16 @@ the actual work.
 
 ## Part Two — the AI agent team
 
-Now the part you actually came for. How do you build all of this, solo, in a day and a half, without
-doing all the work yourself?
+Now the part you actually came for — and honestly, the part the hackathon was really about. 바사해
+didn't ask us to show a product; it asked us to tell the story of how the human worked less and the
+agents worked more. When I demoed, the agent *team* was the thing people most wanted to copy. So: how
+do you build all of this, solo, in a day and a half, without doing all the work yourself?
 
-Honest origin story. I'd actually grown tired of AI hype — there are so many tools, I'd stopped
-following. But I always enjoy building a good product, so I set myself one goal for this hackathon: do
-a single project, ideally with a *team* of agents. My constraints were brutal — minimal idea, minimal
+Honest origin story. I keep entering these hackathons because I love building good products *with good
+people* — that's the part I enjoy most. This year, time forced me to go solo. And on top of that, I'd
+grown tired of AI hype — there are so many tools, I'd stopped following. But I still wanted that team
+feeling, so I set myself one goal for this hackathon: do a single project, but build it with a *team*
+anyway — a team of agents. My constraints were brutal — minimal idea, minimal
 tooling, minimal time, and because of my day job I only started a day and a half before the deadline.
 Phase one was just talking. Claude Pro on the Sonnet model, and me, riffing on ideas. I mentioned I
 love flight-trackers and ship-trackers, those beautiful open-source map products — and it suggested
@@ -164,7 +169,8 @@ The whole system is designed to grow along one axis. I think of autonomy as a di
 dial turns up is *initiation*: who starts the work. It never turns up *veto*: who gets the final say.
 Stage one, where I am now, is manual — I open a session, agents build. Stage two is scheduled — a timer
 reads the issue queue and runs the batch; it's wired but currently switched off. Stage three is the
-vision: event-driven, where monitoring agents notice problems and file their own issues. But notice
+vision: event-driven, where monitoring agents notice problems and file their own issues, and a
+visionary-and-critic pair proposes the next direction. But notice
 what's constant across all three stages: a human merges every change. The dial turns up how much the
 agents can *start*; it never touches the human's final word. That's the safety model in one sentence.
 
@@ -190,7 +196,9 @@ but words and thoughts is astonishingly productive — and I'll admit, a little 
 idea and watch the thing genuinely improve. That feeling is intoxicating. But it's also lonely. The
 agents are powerful, they saved me enormous amounts of time, and they enriched this product far beyond
 what I could have built alone in a day and a half. And yet — there's an energy, and a kind of
-completeness, that only comes from a team of humans. I missed that.
+completeness, that only comes from a team of humans. I started by telling you I keep entering these for
+the people. This year I proved I can ship without them — and honestly, it only made me more sure that I
+don't want to. I missed that.
 
 So where does it go? Phase three — the fully event-driven design — exists on paper, but it needs API
 credits to actually run, and I'm not there yet. Now that the hackathon is over, what I most want is
