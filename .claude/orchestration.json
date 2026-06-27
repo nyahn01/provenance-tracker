@@ -1,0 +1,25 @@
+{
+  "$schema_note": "Stage-3 orchestration dial. Read by .github/workflows/orchestrate.yml. Flipping `mode` switches Stage 1/2/3. SAFE DEFAULT: manual = no autonomous runs. See docs/decisions/0002-stage3-autonomy-model.md.",
+  "mode": "manual",
+  "paused": false,
+  "cadence": {
+    "scheduled_cron": "17 6 * * *",
+    "max_token_budget_per_run": 500000,
+    "max_prs_per_run": 3
+  },
+  "autonomy": {
+    "_doc": "Per risk tier, who may merge a green PR. 'auto-on-green' = may auto-merge when every gate passes. 'human' = always human-merged (the credibility moat — never spent for convenience).",
+    "docs": "auto-on-green",
+    "deps": "auto-on-green",
+    "a11y": "human",
+    "frontend": "human",
+    "provenance_data": "human",
+    "globe": "human",
+    "honesty_surface": "human"
+  },
+  "sentinels": {
+    "_doc": "Scheduled self-audit agents that file issues (never build/merge). Enable per the ADR rollout. 'files' = label they apply to the issue they open.",
+    "data-quality-sentinel": { "enabled": false, "files": "proposal" },
+    "honesty-regression-sentinel": { "enabled": false, "files": "priority" }
+  }
+}
