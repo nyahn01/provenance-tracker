@@ -10,7 +10,7 @@ import { MARKETING } from '@/lib/design-tokens'
 
 export const metadata: Metadata = {
   title: 'How it\'s built — Provenance Tracker',
-  description: '7 specialized AI agent profiles, a blocking honesty gate, and an automated ship gate. Invoked per session today, autonomous tomorrow.',
+  description: '10 specialized AI agent profiles, two intake lanes (visitor feedback vs the build queue), a blocking honesty gate, and an automated ship gate. Invoked per session today, autonomous tomorrow.',
 }
 
 // OBS palette — marketing base with /team's sage override (#4a7a6a, drift preserved)
@@ -72,6 +72,12 @@ const AGENTS: Agent[] = [
     role: 'Demo narrative & pitch',
     owns: 'DEMO_SCRIPT.md, the 5-minute video flow, hero-work selection, judging-criteria fit.',
     model: 'OPUS',
+  },
+  {
+    name: 'feedback-triage',
+    role: 'Visitor feedback intake',
+    owns: 'Reviews feedback issues, writes a sourced triage note, tags them. Reads only — never edits product code, never closes your issue.',
+    model: 'SONNET',
   },
   {
     name: 'provenance-honesty-review',
@@ -141,7 +147,7 @@ export default function TeamPage() {
               Ready when you are.<br />Autonomous by design.
             </h1>
             <p style={{ fontSize: '1rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 560, marginBottom: 16 }}>
-              9 specialized AI agent profiles run this platform on Max. Each owns a domain.
+              10 specialized AI agent profiles run this platform on Max. Each owns a domain.
               Each can block a commit. Every fact you see passed a credibility review.
             </p>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
@@ -161,11 +167,113 @@ export default function TeamPage() {
             </div>
           </div>
 
+          {/* How work enters — two intake lanes */}
+          <div style={{ marginBottom: 80 }}>
+            <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>
+              How work enters
+            </div>
+            <h2 style={{ fontFamily: "'Pretendard Variable', serif", fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 300, color: C.text, lineHeight: 1.2, marginBottom: 12 }}>
+              Two ways in. One gate out.
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 600, marginBottom: 32 }}>
+              Every change starts as a GitHub issue — but the two kinds of issue travel different roads.
+              Your <strong style={{ color: C.sage, fontWeight: 600 }}>feedback</strong> is heard and
+              triaged; a <strong style={{ color: C.gold, fontWeight: 600 }}>plan</strong> is built. Both
+              meet the same honesty gate, and a human always has the last word.
+            </p>
+
+            {/* Two lanes */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 18 }}>
+              {[
+                {
+                  accent: C.sage,
+                  tag: 'Lane A',
+                  title: 'Visitor feedback',
+                  chip: 'feedback',
+                  steps: [
+                    <>You send the in-app <Link href="/feedback" style={{ color: C.sage, borderBottom: `1px solid ${C.border}` }}>feedback form</Link> (email fallback if the service is down).</>,
+                    <>It opens a GitHub issue, tagged <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.78em', color: C.sage }}>feedback</code>.</>,
+                    <>The <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.78em', color: C.textMuted }}>feedback-triage</code> agent reviews and documents it, tagging it <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.78em', color: C.sage }}>triaged</code>. It <em>reads only</em> — never edits the product, never closes your issue.</>,
+                    <>A human decides. Genuine bugs and ideas are <strong style={{ color: C.text }}>promoted into the build queue&nbsp;→</strong></>,
+                  ],
+                  foot: <>Listened to. A human closes it; a fix references it with <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.78em', color: C.sage }}>Addresses&nbsp;#N</code> — never an auto-close.</>,
+                },
+                {
+                  accent: C.gold,
+                  tag: 'Lane B',
+                  title: 'Build queue · plans & priorities',
+                  chip: 'priority',
+                  steps: [
+                    <>A maintainer — or a Claude Code planning session — writes an issue, tagged <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.78em', color: C.gold }}>priority</code> + <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.78em', color: C.gold }}>agent:&lt;domain&gt;</code>. (Early ideas start as <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.78em', color: C.textMuted }}>proposal</code>; a human promotes them.)</>,
+                    <>The batch workflow routes it to the matching <strong style={{ color: C.text }}>specialist agent</strong>.</>,
+                    <>It runs the <strong style={{ color: C.text }}>build pipeline</strong> below.</>,
+                    <>The agent opens a PR that says <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.78em', color: C.gold }}>Closes&nbsp;#N</code> — merging auto-closes the issue.</>,
+                  ],
+                  foot: <>Acted on. The agent builds; the PR auto-closes the issue on merge — and a human always merges.</>,
+                },
+              ].map(lane => (
+                <div key={lane.tag} style={{ background: C.surface, border: `1px solid ${C.border}`, borderTop: `2px solid ${lane.accent}`, borderRadius: 10, padding: '20px 22px', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <div>
+                      <div style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: lane.accent, marginBottom: 4 }}>{lane.tag}</div>
+                      <div style={{ fontSize: '1rem', fontWeight: 500, color: C.text }}>{lane.title}</div>
+                    </div>
+                    <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.04em', color: lane.accent, background: `${lane.accent}1a`, border: `1px solid ${lane.accent}40`, borderRadius: 4, padding: '2px 7px', flexShrink: 0 }}>{lane.chip}</code>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                    {lane.steps.map((step, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                          <span style={{ width: 22, height: 22, borderRadius: '50%', border: `1px solid ${lane.accent}66`, background: `${lane.accent}14`, color: lane.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.66rem', fontWeight: 700 }}>{i + 1}</span>
+                          {i < lane.steps.length - 1 && <span style={{ width: 1, flex: 1, minHeight: 16, background: C.border, margin: '4px 0' }} />}
+                        </div>
+                        <div style={{ fontSize: '0.82rem', color: C.textMuted, lineHeight: 1.5, paddingBottom: i < lane.steps.length - 1 ? 14 : 6 }}>{step}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 'auto', paddingTop: 14, borderTop: `1px solid ${C.border}`, fontSize: '0.72rem', color: C.textFaint, lineHeight: 1.55 }}>
+                    {lane.foot}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Converge */}
+            <div style={{ marginTop: 18, padding: '14px 20px', background: 'rgba(212,168,83,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '1rem', color: C.gold, flexShrink: 0 }}>⇣</span>
+              <span style={{ fontSize: '0.82rem', color: C.textMuted, lineHeight: 1.6 }}>
+                Both lanes meet at the same <strong style={{ color: C.gold }}>blocking honesty gate</strong>, and
+                a human always merges. Nothing reaches the site without that merge.
+              </span>
+            </div>
+
+            {/* The explicit difference */}
+            <div style={{ marginTop: 28, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden' }}>
+              <div style={{ padding: '12px 20px', borderBottom: `1px solid ${C.border}`, fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textFaint, background: C.surface }}>
+                Feedback vs. plan issues — the one difference that matters
+              </div>
+              {[
+                { accent: C.sage, label: 'A feedback issue', body: <>is an <strong style={{ color: C.text }}>inbound report</strong> from a visitor. Agents triage it — document and tag <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.78em', color: C.sage }}>triaged</code> — but <strong style={{ color: C.text }}>only a human closes it</strong>. Fixes reference it with <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.78em', color: C.sage }}>Addresses #N</code>, never <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.78em', color: C.textFaint }}>Closes</code>, so it can&apos;t be auto-closed before a human has verified the fix.</> },
+                { accent: C.gold, label: 'A plan / priority issue', body: <>is a <strong style={{ color: C.text }}>unit of work</strong> the team builds. An agent implements it and opens a PR that <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.78em', color: C.gold }}>Closes #N</code> — auto-closing the issue the moment it merges. The queue self-cleans.</> },
+              ].map(row => (
+                <div key={row.label} style={{ padding: '16px 20px', display: 'flex', gap: 14, alignItems: 'flex-start', background: C.surface, borderBottom: `1px solid ${C.border}` }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: row.accent, flexShrink: 0, marginTop: 6 }} />
+                  <div style={{ fontSize: '0.84rem', color: C.textMuted, lineHeight: 1.6 }}>
+                    <strong style={{ color: row.accent, fontWeight: 600 }}>{row.label}</strong> {row.body}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Pipeline */}
           <div style={{ marginBottom: 80 }}>
-            <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 28 }}>
+            <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>
               Build pipeline
             </div>
+            <p style={{ fontSize: '0.85rem', color: C.textMuted, lineHeight: 1.6, maxWidth: 560, marginBottom: 28 }}>
+              What happens once a task is in the queue — where both lanes above converge.
+            </p>
 
             {/* SVG pipeline diagram */}
             <div style={{ overflowX: 'auto' }}>
