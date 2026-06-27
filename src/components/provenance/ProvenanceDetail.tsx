@@ -18,7 +18,7 @@ import { ConfidenceDot } from './ConfidenceDot'
 import { PriceSparkline } from './PriceSparkline'
 import { EventIcon } from './EventIcon'
 import { useFocusTrap } from './useFocusTrap'
-import { buildUnifiedTimeline, detectWWIIGap, EV_STYLES, sourceRecordUrl } from './timeline'
+import { buildUnifiedTimeline, detectWWIIGap, EV_STYLES, sourceRecordUrl, tierLabel } from './timeline'
 
 interface ProvenanceDetailProps {
   selected: SearchResult
@@ -338,10 +338,92 @@ export function ProvenanceDetail({
                         </div>
                       )}
 
-                      {(extraExh > 0 || extraGPI > 0) && (
-                        <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textFaint, padding: '6px 12px', lineHeight: 1.6 }}>
-                          {extraExh > 0 && <div>+ {extraExh} more exhibition loan{extraExh !== 1 ? 's' : ''} not shown</div>}
-                          {extraGPI > 0 && <div>+ {extraGPI} more dealer record{extraGPI !== 1 ? 's' : ''} in Getty GPI (artist-level)</div>}
+                      {/* ── Expandable: all Getty GPI dealer records (artist-level) ── */}
+                      {extraGPI > 0 && (
+                        <div style={{ marginTop: 6 }}>
+                          <details>
+                            <summary style={{ cursor: 'pointer', fontFamily: 'var(--font-ui)', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: GAL.textFaint, userSelect: 'none', listStyle: 'none', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px' }}>
+                              <span style={{ fontSize: '0.6rem' }}>▶</span>
+                              + {extraGPI} more dealer record{extraGPI !== 1 ? 's' : ''} in Getty GPI (artist-level)
+                            </summary>
+                            <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 0 4px' }}>
+                              <div style={{ padding: '6px 12px', fontFamily: 'var(--font-ui)', fontSize: '0.65rem', color: GAL.textFaint, fontStyle: 'italic', borderLeft: `3px solid rgba(124,92,191,0.25)`, marginLeft: 0 }}>
+                                Artist-level dealer transactions — these document the commercial history of the artist&apos;s work in the Knoedler stock books, not custody of this specific painting.
+                              </div>
+                              {(prov.gettyRecords ?? []).slice(4).map((rec, i) => {
+                                const dateStr = rec.saleDate ?? rec.entryDate ?? undefined
+                                const seller = rec.seller ?? ''
+                                const buyer = rec.buyer ?? ''
+                                const via = [seller, buyer].filter(Boolean).join(' → ')
+                                const price = [rec.purchasePrice, rec.salePrice].filter(Boolean).join(' / ') || undefined
+                                return (
+                                  <div key={i} style={{ display: 'flex', gap: 10, padding: '8px 12px', background: 'rgba(124,92,191,0.05)', borderRadius: 6, borderLeft: '3px solid rgba(124,92,191,0.22)', fontFamily: 'var(--font-ui)' }}>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6, marginBottom: 1 }}>
+                                        <span style={{ fontSize: '0.68rem', color: '#7c5cbf', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                                          dealer
+                                        </span>
+                                        <span style={{ fontSize: '0.68rem', color: GAL.textFaint, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{dateStr ? dateStr.slice(0, 4) : '?'}</span>
+                                      </div>
+                                      <div style={{ fontSize: '0.82rem', color: GAL.text, fontWeight: 500, lineHeight: 1.3 }}>{buyer || seller || 'Knoedler & Co.'}</div>
+                                      {via && <div style={{ fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1, lineHeight: 1.4 }}>{via}</div>}
+                                      {rec.buyerLocation && <div style={{ fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1 }}>{rec.buyerLocation}</div>}
+                                      {price && <div style={{ fontSize: '0.68rem', color: GAL.textFaint, marginTop: 2 }}>{price}</div>}
+                                      <div style={{ marginTop: 5 }}>
+                                        <SourceCard source="GPI" recordUrl={rec.sourceUrl ?? null} />
+                                      </div>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </details>
+                        </div>
+                      )}
+
+                      {/* ── Expandable: all exhibition loans ── */}
+                      {extraExh > 0 && (
+                        <div style={{ marginTop: 6 }}>
+                          <details>
+                            <summary style={{ cursor: 'pointer', fontFamily: 'var(--font-ui)', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: GAL.textFaint, userSelect: 'none', listStyle: 'none', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px' }}>
+                              <span style={{ fontSize: '0.6rem' }}>▶</span>
+                              + {extraExh} more exhibition loan{extraExh !== 1 ? 's' : ''} (not custody changes)
+                            </summary>
+                            <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 0 4px' }}>
+                              <div style={{ padding: '6px 12px', fontFamily: 'var(--font-ui)', fontSize: '0.65rem', color: GAL.textFaint, fontStyle: 'italic', borderLeft: `3px solid rgba(74,122,106,0.22)`, marginLeft: 0 }}>
+                                Exhibition loans — the work was shown here and returned. Loans are not custody changes.
+                              </div>
+                              {prov.exhibitions.slice(4).map((ex, i) => {
+                                const label = tierLabel(ex.source)
+                                return (
+                                  <div key={i} style={{ display: 'flex', gap: 10, padding: '8px 12px', background: 'rgba(74,122,106,0.04)', borderRadius: 6, borderLeft: `3px solid rgba(74,122,106,0.14)`, opacity: 0.82, fontFamily: 'var(--font-ui)' }}>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6, marginBottom: 1 }}>
+                                        <span style={{ fontSize: '0.68rem', color: GAL.sage, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                                          exhibition loan
+                                        </span>
+                                        <span style={{ fontSize: '0.68rem', color: GAL.textFaint, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{ex.startDate ? ex.startDate.slice(0, 4) : '?'}</span>
+                                      </div>
+                                      <div style={{ fontSize: '0.82rem', color: GAL.text, fontWeight: 500, lineHeight: 1.3 }}>
+                                        {(ex.institution && ex.institution !== ex.name) ? ex.institution : ex.name}
+                                      </div>
+                                      {ex.institution && ex.institution !== ex.name && (
+                                        <div style={{ fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1 }}>{ex.name}</div>
+                                      )}
+                                      {ex.excerpt && (
+                                        <div style={{ fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1, lineHeight: 1.4, fontStyle: 'italic' }}>
+                                          &ldquo;{ex.excerpt.slice(0, 120)}{ex.excerpt.length > 120 ? '…' : ''}&rdquo;
+                                        </div>
+                                      )}
+                                      <div style={{ marginTop: 5 }}>
+                                        <SourceCard source={label} recordUrl={sourceRecordUrl(undefined, ex.source, selected)} />
+                                      </div>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </details>
                         </div>
                       )}
                     </div>
