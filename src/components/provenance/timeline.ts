@@ -147,10 +147,20 @@ export function sourceConfidence(source: string, hasExplicitDate: boolean): Prov
   return 'low'
 }
 
+/** Loose name match (case/punctuation-insensitive) used to spot artist-origin entries. */
+function sameName(a: string, b: string): boolean {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+  const na = norm(a), nb = norm(b)
+  if (na.length < 4 || nb.length < 4) return false
+  return na === nb || na.includes(nb) || nb.includes(na)
+}
+
 export function buildUnifiedTimeline(
   locations: LocationEntry[],
   exhibitions: ExhibitionLoan[],
   gettyRecords: GettyRecord[],
+  artist?: string | null,
+  creationYear?: number | null,
 ): ProvenanceEvent[] {
   const events: ProvenanceEvent[] = []
 
@@ -163,12 +173,21 @@ export function buildUnifiedTimeline(
       : (combined.includes('museum') || combined.includes('institute') || combined.includes('gallery') || combined.includes('acqui')) ? 'acquisition'
       : 'custody'
     const label = tierLabel(loc.source)
+    const who = (loc.institution && loc.institution !== loc.name) ? loc.institution : loc.name
+    const where = (loc.institution && loc.institution !== loc.name) ? loc.name : undefined
+    // An UNDATED entry whose holder is the artwork's own artist is the ORIGIN — the
+    // artist is by definition the first owner. Without this, extractYear(null) buckets
+    // it to 9999 and it dangles at the chronological END of the timeline showing a "?"
+    // (feedback #43 / #48). Order it first. We invent no date: the year stays "?" unless
+    // the creation year is known (the artist held the work from the moment it was made).
+    const isArtistOrigin = !loc.startDate && !!artist && sameName(who, artist)
     events.push({
-      year: fmtYear(loc.startDate ?? undefined),
-      sortKey: extractYear(loc.startDate ?? undefined),
+      year: isArtistOrigin && creationYear ? String(creationYear) : fmtYear(loc.startDate ?? undefined),
+      sortKey: isArtistOrigin ? (creationYear ?? -1) : extractYear(loc.startDate ?? undefined),
       type,
-      who: (loc.institution && loc.institution !== loc.name) ? loc.institution : loc.name,
-      where: (loc.institution && loc.institution !== loc.name) ? loc.name : undefined,
+      who,
+      where,
+      detail: isArtistOrigin ? 'Origin — the artist' : undefined,
       source: label,
       confidence: loc.confidence ?? sourceConfidence(label, loc.startDate != null),
     })
