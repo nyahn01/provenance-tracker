@@ -332,6 +332,33 @@ The invariant that holds even at maximum autonomy: branch protection + the block
 a human merge always stand between an agent and `main`. The safe resting state of the dial is
 `mode: manual`, `paused: false` — which is exactly where it sits today.
 
+### Batch-day routine (the recurring Stage-2 cadence)
+
+Stage-2 batches run **interactively** (covered by the Max plan). There is **no unattended scheduler**
+until a funded headless runner exists (Drill B) — and Claude Code's own scheduled tasks only fire
+while a session is alive, so they can't run an overnight batch. The recurring cadence is therefore a
+**ritual you trigger**, with the reminder living _outside_ Claude (phone/calendar) so it fires even
+when no session is open.
+
+**Cadence:** trigger a batch when **≥2–3 ready priorities** have stacked up, or on a fixed day (e.g.
+weekly) — not per issue.
+
+**Pre-flight (before each batch):**
+1. **Queue hygiene** — every `priority` issue has an `agent:<domain>` label (no label → silently
+   skipped) and a real "Done when". Add `paused` to anything you want held.
+2. **Close finished issues** so they leave the queue.
+3. **Sync local main to origin** (the batch does this first; a stale main rebuilds already-merged work).
+
+**Run:** open a session and run `/workflow batch-agent-squad` (or ask it to run a scoped batch). It
+fans out one agent per domain → branch → build → honesty → PR `Closes #N` → honesty-gate review.
+
+**Post-run:** review each PR's Vercel preview, merge the approved ones; blocked PRs stay open for the
+agent to re-push; close the originating `feedback` issue by hand.
+
+**Reminder to set in your phone/calendar (not Claude):**
+> _Weekly — Provenance Tracker batch day:_ check the `priority` queue (≥2 ready?), run
+> `/workflow batch-agent-squad`, review the Vercel previews, merge the approved PRs.
+
 ---
 
 ## 7. Using this as the project grows
