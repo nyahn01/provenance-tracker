@@ -14,7 +14,7 @@
 import { useEffect, useRef } from 'react'
 import type { ProvenanceResponse } from '@/lib/types'
 import { OBS } from '@/lib/design-tokens'
-import { buildArcs, buildDealerArcs, cityCoords, AMBER_DOT } from './globe-data'
+import { buildArcs, buildDealerArcs, buildLabels, cityCoords, AMBER_DOT } from './globe-data'
 
 interface GlobeContainerProps {
   prov: ProvenanceResponse | null
@@ -60,6 +60,16 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
       globe.pointsData([]).pointLat((d: any) => d.lat).pointLng((d: any) => d.lng)
         .pointAltitude(0.006).pointRadius((d: any) => d.r ?? 0.28)
         .pointColor((d: any) => d.color ?? 'rgba(212,168,83,0.8)')
+      // Labels layer (issue #52) — additive data layer, no init settings changed
+      globe.labelsData([])
+        .labelLat((d: any) => d.lat)
+        .labelLng((d: any) => d.lng)
+        .labelText((d: any) => d.text)
+        .labelSize((d: any) => d.size ?? 0.45)
+        .labelColor((d: any) => d.color)
+        .labelAltitude(0.012)
+        .labelIncludeDot(false)
+        .labelsTransitionDuration(600)
       setTimeout(() => { const c = globe.controls?.(); if (c) { c.autoRotate = true; c.autoRotateSpeed = 0.25; c.enableZoom = true; c.zoomSpeed = 1.2 } }, 100)
       const fit = () => { const el = containerRef.current; if (el) globe.width(el.clientWidth).height(el.clientHeight) }
       fit(); onResize = fit; window.addEventListener('resize', fit)
@@ -73,7 +83,7 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
     const g = globeRef.current
     if (!g) return
     if (!prov) {
-      g.arcsData([]).pointsData([])
+      g.arcsData([]).pointsData([]).labelsData([])
       const c = g.controls?.(); if (c) c.autoRotate = true
       return
     }
@@ -104,6 +114,12 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
       return dots
     })
     g.pointsData([...custodyDots, ...exhibDots, ...dealerDots])
+
+    // City labels (issue #52) — deduplicated across all three tiers; null-coord nodes excluded
+    // Label color uses OBS.text at reduced opacity so it reads against the dark globe surface
+    // without competing with the arc/dot colors.
+    const labels = buildLabels(prov.locations, prov.exhibitions, prov.gettyRecords ?? [], 'rgba(246,241,232,0.80)')
+    g.labelsData(labels)
 
     const custodyPts = prov.locations.filter(l => l.lat != null && l.lng != null)
     const dealerPts = [...seenDots].map(k => { const [lat, lng] = k.split(',').map(Number); return { lat, lng } })
