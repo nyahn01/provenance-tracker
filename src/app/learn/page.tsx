@@ -7,6 +7,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { MARKETING as C } from '@/lib/design-tokens'
+import { LearnAccordion, type AccordionSection } from './LearnAccordion'
 
 export const metadata: Metadata = {
   title: 'Provenance Glossary — Provenance Tracker',
@@ -14,14 +15,7 @@ export const metadata: Metadata = {
     'Learn what provenance means, why gaps matter, and how the Getty Provenance Index, WWII-era records, and Korean cultural heritage fit into the story of art ownership.',
 }
 
-interface Section {
-  id: string
-  label: string
-  title: string
-  body: React.ReactNode
-}
-
-const SECTIONS: Section[] = [
+const SECTIONS: AccordionSection[] = [
   {
     id: 'what-is-provenance',
     label: '01',
@@ -275,41 +269,9 @@ export default function LearnPage() {
               {/* Desktop TOC is hidden on mobile; content is the primary nav */}
             </nav>
 
-            {/* Sections */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {SECTIONS.map((section, idx) => (
-                <div
-                  key={section.id}
-                  id={section.id}
-                  className="section-card learn-section"
-                  style={{
-                    padding: '32px 36px',
-                    background: C.surface,
-                    border: `1px solid ${C.border}`,
-                    borderRadius: 12,
-                    transition: 'border-color 0.2s',
-                    marginBottom: idx < SECTIONS.length - 1 ? 16 : 0,
-                  }}
-                >
-                  {/* Section header */}
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 20 }}>
-                    <span style={{ fontFamily: "'Courier New', monospace", fontSize: '0.65rem', color: C.textFaint, letterSpacing: '0.08em', flexShrink: 0 }}>
-                      {section.label}
-                    </span>
-                    <h2 style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.45rem)', fontWeight: 400, color: C.text, lineHeight: 1.2 }}>
-                      {section.title}
-                    </h2>
-                  </div>
-
-                  {/* Divider */}
-                  <div style={{ width: 40, height: 1, background: C.border, marginBottom: 20 }} />
-
-                  {/* Body */}
-                  <div>
-                    {section.body}
-                  </div>
-                </div>
-              ))}
+            {/* Sections — collapsible accordion (client component) */}
+            <div>
+              <LearnAccordion sections={SECTIONS} />
 
               {/* Quick-reference legend */}
               <div style={{
