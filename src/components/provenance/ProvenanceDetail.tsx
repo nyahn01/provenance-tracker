@@ -13,10 +13,10 @@ import type { Dispatch, SetStateAction } from 'react'
 import type { SearchResult, ProvenanceResponse } from '@/lib/types'
 import type { RkdRecord } from '@/lib/rkd'
 import { OBS, GAL } from '@/lib/design-tokens'
-import { SourceBadge } from './SourceBadge'
+import { SourceCard } from './SourceCard'
 import { ConfidenceDot } from './ConfidenceDot'
 import { PriceSparkline } from './PriceSparkline'
-import { buildUnifiedTimeline, detectWWIIGap, EV_STYLES } from './timeline'
+import { buildUnifiedTimeline, detectWWIIGap, EV_STYLES, sourceRecordUrl } from './timeline'
 
 interface ProvenanceDetailProps {
   selected: SearchResult
@@ -242,7 +242,7 @@ export function ProvenanceDetail({
                                 {ev.where && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1 }}>{ev.where}</div>}
                                 {ev.detail && !isExh && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1, lineHeight: 1.4 }}>{ev.detail}</div>}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5 }}>
-                                  <SourceBadge source={ev.source} />
+                                  <SourceCard source={ev.source} recordUrl={sourceRecordUrl(ev.sourceUrl, ev.source, selected)} />
                                 </div>
                               </div>
                             </div>
@@ -280,14 +280,8 @@ export function ProvenanceDetail({
                               {ev.detail && !isExh && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1, lineHeight: 1.4 }}>{ev.detail}</div>}
                               {ev.price && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textFaint, marginTop: 2 }}>{ev.price}</div>}
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5 }}>
-                                <SourceBadge source={ev.source} />
+                                <SourceCard source={ev.source} recordUrl={sourceRecordUrl(ev.sourceUrl, ev.source, selected)} />
                                 <ConfidenceDot confidence={ev.confidence} />
-                                {ev.sourceUrl && (
-                                  <a href={ev.sourceUrl} target="_blank" rel="noopener noreferrer"
-                                    style={{ fontFamily: 'var(--font-ui)', fontSize: '0.6rem', color: 'rgba(124,92,191,0.55)', textDecoration: 'none' }}>
-                                    Getty ↗
-                                  </a>
-                                )}
                               </div>
                             </div>
                           </div>
