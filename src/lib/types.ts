@@ -130,6 +130,80 @@ export interface ProvenanceResponse {
   rkdRecords?: import('./rkd').RkdRecord[]
 }
 
+// ─── Case study (restitution deep-dive) ──────────────────────────────────────
+
+/**
+ * A single source citation rendered as a visible line beneath every case-study
+ * fact. Honesty rule: no fact ships without one of these. `url` links to the
+ * primary record (court ruling, museum page, archive) — never a paraphrase
+ * without attribution.
+ */
+export interface CaseSource {
+  /** Short label shown on screen, e.g. "U.S. Supreme Court, 03-1136 (2004)". */
+  label: string
+  /** Link to the primary record. Null only when the source is offline/print. */
+  url: string | null
+}
+
+/**
+ * One dated link in a restitution custody chain. This is OWNERSHIP only —
+ * exhibition loans live in `CaseExhibition` and are never mixed in here.
+ *
+ * `kind` drives the visual treatment:
+ *  - custody:   legal title held by a named party
+ *  - coerced:   title transfer under Nazi-era duress / confiscation (flagged)
+ *  - gap:       no documented legitimate ownership for this span — shown as a gap
+ *  - restitution: a ruling/transfer that returned title to the rightful heirs
+ */
+export interface CaseCustodyEntry {
+  /** Display date or span, e.g. "1907", "1938–1945", verbatim from sources. */
+  date: string
+  /** Who held (or was found to rightfully hold) the work. */
+  holder: string
+  /** Where the work physically was, if documented. Null when unknown. */
+  place: string | null
+  kind: 'custody' | 'coerced' | 'gap' | 'restitution'
+  /** Plain-language description of what happened — sourced, never speculative. */
+  detail: string
+  /** Citations backing this entry. At least one is required. */
+  sources: CaseSource[]
+}
+
+/**
+ * An exhibition loan in the case study — shown separately so a loan is never
+ * read as a change of custody.
+ */
+export interface CaseExhibition {
+  date: string
+  venue: string
+  detail: string
+  sources: CaseSource[]
+}
+
+/** A documented provenance gap in the case (the honest "we don't / didn't know"). */
+export interface CaseGap {
+  span: string
+  note: string
+  sources: CaseSource[]
+}
+
+/** Top-level shape for one restitution case-study page. */
+export interface RestitutionCase {
+  slug: string
+  title: string
+  artist: string
+  created: string
+  medium: string
+  /** One-line standing of the work today, with a dated source (no live claims). */
+  currentStatusAsOf: string
+  summary: string
+  custody: CaseCustodyEntry[]
+  exhibitions: CaseExhibition[]
+  gaps: CaseGap[]
+  /** Sources for the case as a whole (further reading / primary archives). */
+  references: CaseSource[]
+}
+
 // ─── Reconcile (Claude) ──────────────────────────────────────────────────────
 
 export interface TimelineEntry {
