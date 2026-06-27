@@ -1,0 +1,208 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Provenance Tracker — presentation theme (shared by EN + KR decks)
+   Mirrors the OBS / GAL palettes from src/lib/design-tokens.ts.
+   Observatory dark chrome + Gallery warm-paper accents.
+   Display: Cormorant Garamond · UI: Pretendard
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Observatory (dark) */
+  --obs-bg:        #0a0908;
+  --obs-surface:   #131110;
+  --obs-surface2:  #161413;
+  --obs-border:    #2a2218;
+  --obs-border-mid:#3d3228;
+  --obs-text:      #f6f1e8;
+  --obs-muted:     #9a8f85;
+  --obs-faint:     #5c5449;
+  --clay:          #c87855;
+  --gold:          #d4a853;
+  --sage:          #6f8d7d;
+  --purple:        #9b7fe0;   /* dealer / agent accent */
+  --globe-ocean:   #060504;
+  --globe-land:    #7a5828;
+  --globe-border:  #a87848;
+  /* Gallery (light) — for paper "card" moments */
+  --gal-bg:        #f7f4ee;
+  --gal-text:      #1a1714;
+  --gal-clay:      #b06840;
+
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-ui: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+/* ── Reveal base overrides ─────────────────────────────────────────────── */
+.reveal {
+  font-family: var(--font-ui);
+  font-size: 30px;
+  color: var(--obs-text);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.reveal-viewport { background: var(--obs-bg); }
+
+.reveal .slides { text-align: left; }
+.reveal .slides section { top: 0 !important; }
+
+/* Headings */
+.reveal h1, .reveal h2, .reveal h3 {
+  font-family: var(--font-display);
+  color: var(--obs-text);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.35em;
+  text-transform: none;
+}
+.reveal h1 { font-size: 2.5em; }
+.reveal h2 { font-size: 1.85em; }
+.reveal h3 { font-size: 1.25em; font-weight: 600; }
+
+.reveal p { line-height: 1.45; margin: 0 0 0.6em; }
+.reveal strong { color: var(--gold); font-weight: 600; }
+.reveal em { color: var(--clay); font-style: italic; }
+.reveal a { color: var(--sage); text-decoration: none; }
+
+/* Lists */
+.reveal ul, .reveal ol { display: block; margin-left: 1.1em; }
+.reveal li { margin: 0.32em 0; line-height: 1.4; }
+.reveal ul li::marker { color: var(--gold); }
+
+/* ── Reusable atoms ────────────────────────────────────────────────────── */
+.kicker {
+  font-family: var(--font-ui);
+  font-size: 0.5em;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+  margin-bottom: 0.8em;
+  display: block;
+}
+.lead { font-size: 1.15em; color: var(--obs-text); line-height: 1.4; }
+.muted { color: var(--obs-muted); }
+.faint { color: var(--obs-faint); }
+.serif-quote {
+  font-family: var(--font-display);
+  font-size: 1.5em;
+  font-style: italic;
+  line-height: 1.3;
+  color: var(--obs-text);
+}
+.tiny { font-size: 0.62em; color: var(--obs-faint); letter-spacing: 0.02em; }
+.source-tag {
+  display: inline-block;
+  font-size: 0.55em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--obs-faint);
+  border: 1px solid var(--obs-border-mid);
+  border-radius: 999px;
+  padding: 0.18em 0.8em;
+  margin-top: 1.2em;
+  font-family: var(--font-ui);
+}
+
+/* Color helpers tied to the product's arc legend */
+.c-custody { color: var(--gold); }
+.c-loan { color: var(--sage); }
+.c-dealer { color: var(--purple); }
+.c-clay { color: var(--clay); }
+
+/* ── Layout helpers ────────────────────────────────────────────────────── */
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1em; align-items: start; }
+.cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8em; }
+.center { text-align: center; }
+.full-center {
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  text-align: center; min-height: 78vh;
+}
+
+/* Cards */
+.card {
+  background: var(--obs-surface);
+  border: 1px solid var(--obs-border);
+  border-radius: 12px;
+  padding: 0.85em 1em;
+}
+.card h3 { margin-bottom: 0.25em; font-size: 1.05em; }
+.card p { font-size: 0.78em; color: var(--obs-muted); margin: 0; line-height: 1.35; }
+.card.accent-gold { border-left: 3px solid var(--gold); }
+.card.accent-sage { border-left: 3px solid var(--sage); }
+.card.accent-clay { border-left: 3px solid var(--clay); }
+.card.accent-purple { border-left: 3px solid var(--purple); }
+
+/* Pills / chips */
+.chip {
+  display: inline-block;
+  font-size: 0.62em;
+  padding: 0.22em 0.7em;
+  border-radius: 999px;
+  background: var(--obs-surface2);
+  border: 1px solid var(--obs-border-mid);
+  color: var(--obs-muted);
+  margin: 0.15em 0.2em 0.15em 0;
+  letter-spacing: 0.02em;
+}
+.chip.gold { color: var(--gold); border-color: var(--gold); }
+.chip.sage { color: var(--sage); border-color: var(--sage); }
+.chip.purple { color: var(--purple); border-color: var(--purple); }
+
+/* Big stat */
+.stat { font-family: var(--font-display); font-size: 2.6em; color: var(--gold); line-height: 1; font-weight: 600; }
+.stat-label { font-size: 0.62em; color: var(--obs-muted); letter-spacing: 0.04em; }
+
+/* Screenshots */
+.shot {
+  border-radius: 10px;
+  border: 1px solid var(--obs-border-mid);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  max-height: 64vh;
+  width: auto;
+  max-width: 100%;
+}
+.shot-frame { text-align: center; }
+.caption { font-size: 0.6em; color: var(--obs-faint); margin-top: 0.6em; letter-spacing: 0.02em; }
+
+/* Placeholder for live-demo / to-capture shots */
+.placeholder {
+  border: 1px dashed var(--obs-border-mid);
+  border-radius: 10px;
+  background: repeating-linear-gradient(
+    45deg, var(--obs-surface), var(--obs-surface) 12px,
+    var(--obs-surface2) 12px, var(--obs-surface2) 24px);
+  color: var(--obs-muted);
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  min-height: 46vh; padding: 1.5em; text-align: center;
+}
+.placeholder .pl-icon { font-size: 2em; color: var(--gold); margin-bottom: 0.3em; }
+.placeholder .pl-title { font-family: var(--font-ui); font-weight: 600; color: var(--obs-text); font-size: 0.8em; letter-spacing: 0.1em; text-transform: uppercase; }
+.placeholder .pl-note { font-size: 0.66em; color: var(--obs-muted); margin-top: 0.4em; max-width: 24ch; }
+
+/* Pipeline / flow row */
+.flow { display: flex; align-items: center; gap: 0.5em; flex-wrap: wrap; font-size: 0.8em; }
+.flow .step {
+  background: var(--obs-surface); border: 1px solid var(--obs-border-mid);
+  border-radius: 8px; padding: 0.4em 0.7em; color: var(--obs-text);
+}
+.flow .arrow { color: var(--gold); }
+.flow .step.gate { border-color: var(--clay); color: var(--clay); }
+
+/* Progress bar / footer */
+.reveal .progress { color: var(--gold); height: 3px; }
+.deck-footer {
+  position: fixed; bottom: 12px; left: 18px;
+  font-family: var(--font-ui); font-size: 13px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--obs-faint); z-index: 30;
+}
+
+/* Section divider slides */
+.section-divider { border-top: 1px solid var(--obs-border-mid); padding-top: 0.5em; }
+.act-num { font-family: var(--font-display); font-size: 0.9em; color: var(--clay); font-style: italic; }
+
+/* Speaker-notes readability (printed/notes view inherits) */
+.reveal aside.notes { font-family: var(--font-ui); }
+
+/* Tighten on smaller heights */
+@media (max-height: 740px) { .reveal { font-size: 26px; } }
