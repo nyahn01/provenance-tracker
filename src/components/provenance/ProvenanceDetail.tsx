@@ -9,13 +9,15 @@
  * Extracted verbatim from StoriesApp.tsx (no behavioral change). StoriesApp
  * still owns all state; this component receives it via props.
  */
-import type { Dispatch, SetStateAction } from 'react'
+import { useRef, type Dispatch, type SetStateAction } from 'react'
 import type { SearchResult, ProvenanceResponse } from '@/lib/types'
 import type { RkdRecord } from '@/lib/rkd'
 import { OBS, GAL } from '@/lib/design-tokens'
 import { SourceCard } from './SourceCard'
 import { ConfidenceDot } from './ConfidenceDot'
 import { PriceSparkline } from './PriceSparkline'
+import { EventIcon } from './EventIcon'
+import { useFocusTrap } from './useFocusTrap'
 import { buildUnifiedTimeline, detectWWIIGap, EV_STYLES, sourceRecordUrl } from './timeline'
 
 interface ProvenanceDetailProps {
@@ -37,6 +39,12 @@ export function ProvenanceDetail({
   onClose, isTablet, drawerOpen, setDrawerOpen,
 }: ProvenanceDetailProps) {
   const sources = prov ? [...new Set(prov.locations.map(l => l.source))] : []
+
+  // On tablet/mobile the panel is a modal slide-in drawer — trap focus inside it
+  // while open and close on Escape. On desktop it is an always-visible side panel
+  // (non-modal), so the trap stays inactive.
+  const panelRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(panelRef, isTablet && drawerOpen, () => setDrawerOpen(false))
 
   return (
     <>
@@ -82,7 +90,13 @@ export function ProvenanceDetail({
       )}
 
       {/* ── STORY: provenance detail (warm gallery panel) ────────────────────── */}
-      <div style={{
+      <div
+        ref={panelRef}
+        role={isTablet ? 'dialog' : 'complementary'}
+        aria-modal={isTablet && drawerOpen ? true : undefined}
+        aria-label="Provenance details"
+        tabIndex={-1}
+        style={{
         position: 'fixed', top: 0, right: 0, bottom: 0,
         // Desktop: always-visible side panel. Tablet/mobile: slide-in drawer.
         width: isTablet ? 'min(400px, 92vw)' : 'min(460px, 100%)',
@@ -170,7 +184,7 @@ export function ProvenanceDetail({
                       fontFamily: 'var(--font-ui)',
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                        <span style={{ fontSize: '1rem', color: EV_STYLES.gap.color, lineHeight: 1 }}>░</span>
+                        <EventIcon type="gap" fontSize="1rem" />
                         <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: EV_STYLES.gap.color }}>
                           Provenance gap
                         </span>
@@ -203,7 +217,7 @@ export function ProvenanceDetail({
                         marginBottom: 12,
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                          <span style={{ fontSize: '1rem', color: EV_STYLES.gap.color, lineHeight: 1 }}>░</span>
+                          <EventIcon type="gap" fontSize="1rem" />
                           <span style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: EV_STYLES.gap.color }}>
                             Provenance gap
                           </span>
@@ -230,7 +244,7 @@ export function ProvenanceDetail({
                           const isExh = ev.type === 'exhibition'
                           return (
                             <div key={i} style={{ display: 'flex', gap: 10, padding: '9px 12px', background: st.bg, borderRadius: 6, borderLeft: `3px solid ${st.border}`, opacity: isExh ? 0.82 : 1 }}>
-                              <span style={{ fontSize: '0.75rem', color: st.color, lineHeight: 1, minWidth: 18 }}>{st.icon}</span>
+                              <EventIcon type={ev.type} color={st.color} style={{ minWidth: 18 }} />
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6, marginBottom: 1 }}>
                                   <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: st.color, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
@@ -263,7 +277,7 @@ export function ProvenanceDetail({
                             opacity: isExh ? 0.82 : 1,
                           }}>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 18 }}>
-                              <span style={{ fontSize: '0.75rem', color: st.color, lineHeight: 1 }}>{st.icon}</span>
+                              <EventIcon type={ev.type} color={st.color} />
                               {i < timeline.length - 1 && (
                                 <span style={{ width: 1, flex: 1, minHeight: 8, background: GAL.border, marginTop: 4 }} />
                               )}
@@ -298,7 +312,7 @@ export function ProvenanceDetail({
                           fontFamily: 'var(--font-ui)',
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                            <span style={{ fontSize: '1rem', color: EV_STYLES.gap.color, lineHeight: 1 }}>░</span>
+                            <EventIcon type="gap" fontSize="1rem" />
                             <span style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: EV_STYLES.gap.color }}>
                               Provenance gap
                             </span>

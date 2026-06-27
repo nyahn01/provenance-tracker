@@ -7,12 +7,12 @@ import type { GettyRecord } from '@/lib/types'
 import { GAL } from '@/lib/design-tokens'
 
 export function PriceSparkline({ records }: { records: GettyRecord[] }) {
-  type Pt = { yr: number; p: number }
+  type Pt = { yr: number; p: number; raw: string }
   const pts: Pt[] = records.flatMap(r => {
     const yr = parseInt((r.saleDate ?? r.entryDate ?? '').slice(0, 4), 10)
     const raw = r.salePrice ?? r.purchasePrice
     const p = raw ? parseFloat(raw.replace(/[^0-9.]/g, '')) : NaN
-    return (yr > 1800 && !isNaN(p) && p > 0) ? [{ yr, p }] : []
+    return (yr > 1800 && !isNaN(p) && p > 0) ? [{ yr, p, raw: raw! }] : []
   }).sort((a, b) => a.yr - b.yr)
   if (pts.length < 2) return null
   const W = 140, H = 36, PAD = 4
@@ -23,10 +23,19 @@ export function PriceSparkline({ records }: { records: GettyRecord[] }) {
   const polyPoints = pts.map(p => `${px(p.yr).toFixed(1)},${py(p.p).toFixed(1)}`).join(' ')
   return (
     <div style={{ marginTop: 6, marginBottom: 10 }}>
-      <svg width={W} height={H} style={{ display: 'block', overflow: 'visible' }}>
+      <svg
+        width={W}
+        height={H}
+        viewBox={`0 0 ${W} ${H}`}
+        role="img"
+        aria-label={`Getty Provenance Index dealer price trajectory, ${xMin} to ${xMax}, lowest ${pts.find(p => p.p === pMin)?.raw}, highest ${pts.find(p => p.p === pMax)?.raw}`}
+        style={{ display: 'block', overflow: 'visible' }}
+      >
         <polyline points={polyPoints} fill="none" stroke={GAL.clay} strokeWidth={1.5} strokeLinejoin="round" />
         {pts.map((p, i) => (
-          <circle key={i} cx={px(p.yr)} cy={py(p.p)} r={2.5} fill={GAL.clay} />
+          <circle key={i} cx={px(p.yr)} cy={py(p.p)} r={2.5} fill={GAL.clay}>
+            <title>{`${p.yr}: ${p.raw}`}</title>
+          </circle>
         ))}
       </svg>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: GAL.textFaint, width: W }}>

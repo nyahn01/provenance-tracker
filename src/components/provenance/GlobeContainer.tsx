@@ -120,6 +120,15 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
   }, [prov])
 
   return (
-    <div ref={containerRef} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: globeHeightPct }} />
+    <div
+      ref={containerRef}
+      role="img"
+      aria-label={
+        prov
+          ? "Interactive globe plotting this artwork's ownership and loan locations. The full chain is listed as text in the provenance panel."
+          : 'Interactive globe. Select a work to plot its ownership and loan locations; the full chain is listed as text in the provenance panel.'
+      }
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, height: globeHeightPct }}
+    />
   )
 }

@@ -89,6 +89,17 @@ npm run honesty      # static honesty check on git diff
 npm run honesty:full # honesty check across all source files
 ```
 
+## Docs
+
+| Doc | What it covers |
+|-----|----------------|
+| [docs/VISION.md](docs/VISION.md) | North star — mission, audience, non-goals, how the agent team proposes work |
+| [docs/SETUP_JOURNEY.md](docs/SETUP_JOURNEY.md) | The ~30-min build-walkthrough narration (agents, ship gate, queue, lessons) |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System internals and data flow |
+| [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) | Visual contract (palettes, type, layout) |
+| [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md) | Every API and dataset, with credibility tiers |
+| [docs/INSIGHTS.md](docs/INSIGHTS.md) | Running knowledge log — what was learned/decided/dead-ended |
+
 ## License
 
 Copyright © 2026 Nayoung Ahn. All rights reserved. See [LICENSE](LICENSE).
