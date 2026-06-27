@@ -359,6 +359,24 @@ agent to re-push; close the originating `feedback` issue by hand.
 > _Weekly — Provenance Tracker batch day:_ check the `priority` queue (≥2 ready?), run
 > `/workflow batch-agent-squad`, review the Vercel previews, merge the approved PRs.
 
+**Optional in-session tracker (a Claude Code Routine / scheduled task).** A scheduled task is a
+nice morning "standup" that auto-surfaces the queue — but it **only fires while a Claude Code session
+is open** and **auto-expires after 7 days**, so set it up on your **primary machine** (where `durable`
+persists across restarts) and **re-arm it weekly**. It is a tracker, not an unattended runner — the
+calendar reminder above stays the backstop for when Claude is closed. To create it, paste this into a
+Claude Code session:
+
+> Create a **durable, recurring** scheduled task — cron `7 9 * * 1-5` (weekday mornings, local time) —
+> with this prompt:
+>
+> > _Provenance Tracker batch-tracker. Using the GitHub tools on `nyahn01/provenance-tracker`: (1) list
+> > open issues labeled `priority`, counting as "ready" those that also have an `agent:<domain>` label
+> > and are not `paused`; (2) list open PRs awaiting the human merge; (3) note any `feedback` issues
+> > whose fix has merged. Give a SHORT status (≤5 lines): how many priorities are ready, which PRs await
+> > merge, and — if ≥2 are ready — one line "Good batch day — run `/workflow batch-agent-squad`." If
+> > nothing is ready and no PRs await merge, reply "Queue clear — nothing to batch." Read-only: take no
+> > action (no building, labeling, or merging)._
+
 ---
 
 ## 7. Using this as the project grows
