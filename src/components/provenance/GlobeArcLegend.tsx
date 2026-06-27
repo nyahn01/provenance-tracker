@@ -12,16 +12,12 @@
  */
 
 import { OBS } from '@/lib/design-tokens'
+import { AMBER_ARC } from './globe-data'
 
 interface GlobeArcLegendProps {
   /** Responsive height of the globe area — used to anchor the legend within it. */
   globeHeightPct: string
 }
-
-// Dealer-arc amber — matches buildDealerArcs in globe-data.ts and the /learn legend.
-// Kept as a file-scoped constant so it can be found quickly when the globe-data
-// value changes (the single change also needs to land here and in learn/page.tsx).
-const DEALER_ARC_COLOR = 'rgba(180,130,60,0.8)'
 
 export function GlobeArcLegend({ globeHeightPct }: GlobeArcLegendProps) {
   const items = [
@@ -36,7 +32,7 @@ export function GlobeArcLegend({ globeHeightPct }: GlobeArcLegendProps) {
       desc: 'Exhibition — owner unchanged',
     },
     {
-      color: DEALER_ARC_COLOR,
+      color: AMBER_ARC,
       label: 'Dealer trail',
       desc: 'Getty GPI record',
     },
