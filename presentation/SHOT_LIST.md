@@ -14,23 +14,27 @@ localhost, so a populated custody chain and the globe arcs only render against t
 | `top-workflow.png` | `/workflow` top fold — three stages of autonomy | The autonomy dial |
 | `top-pipeline.png`, `top-learn.png`, `top-demo.png`, `top-pricing.png` | top folds of those pages | spare / optional |
 | `page-*.png` | full-page captures of demo/team/learn/pipeline/workflow/pricing/feedback | spare / optional |
+| `live-water-lilies.png` | Water Lilies populated custody chain — gold globe arc Paris→NY→Chicago + dated AIC timeline | Demo · the journey, live |
+| `live-getty-degas.png` | Degas Yellow Dancers — Getty **GPI** dealer cards (seller→buyer, price, date) + 1963 museum acq. | Demo · the dealer layer |
 
-## ◷ To capture LIVE (placeholders in the deck)
+> **Note on the two `live-*` shots.** Captured locally by injecting the repo's own real
+> pre-parsed data (`featured-provenance.json`) and real seeded Getty records into the page,
+> bypassing only the network-blocked museum *metadata* fetch. The data shown is genuine — the
+> same the deployed site renders. If you want pixel-fresh captures from production, re-shoot them
+> live (steps below); otherwise these are ready to use.
+
+## ◷ Re-capture from the live site (optional — the two above are already embedded)
 
 Open the **deployed** app (Vercel) — not localhost — so the museum APIs resolve.
 
 1. **Populated custody chain — "Demo · the journey, live"**
-   - Go to the home page → click **Water Lilies** (Monet).
-   - Wait for the globe to draw the **gold custody arcs** Paris → New York → Chicago and the
-     sidebar timeline to populate with dated stops + source badges + confidence dots.
-   - Capture the full window (globe + panel). This replaces the `◷` placeholder on that slide.
-   - *Best alternative works if Water Lilies is thin live:* **Cézanne — The Basket of Apples**
-     (10 stops, international) or **Cassatt — The Child's Bath** (4 tight, dated stops).
+   - Home page → click **Water Lilies** (Monet). Wait for the **gold custody arcs**
+     Paris → New York → Chicago and the dated sidebar timeline. Capture the full window.
+   - *Alternatives if thin live:* **Cézanne — The Basket of Apples** or **Cassatt — The Child's Bath**.
 
 2. **Getty GPI dealer record — "Demo · the dealer layer"**
-   - Open **Degas — Yellow Dancers** (201 Getty records, the most in the set).
-   - Scroll the sidebar to the **Getty GPI** records; hover/expand one to show seller, buyer,
-     price, date, and the purple **GPI** badge. Capture that card.
+   - Open **Degas — Yellow Dancers**. Scroll the sidebar to the **Getty GPI** dealer cards
+     (seller, buyer, price, date, purple **GPI** badge). Capture them.
 
 3. *(Optional)* **GitHub board — "the cleanup turn"**
    - A screenshot of the repo **Issues** list or **Projects** board showing the label grammar
