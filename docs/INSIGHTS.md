@@ -20,6 +20,15 @@ written to a file, it's lost when the context window rolls. This file is the saf
 
 <!-- append insights below, newest first -->
 
+- `#process #data` OUTCOME LOOP wired ([[0002-stage3-autonomy-model]]) — `npm run metrics`
+  now snapshots featured custody-chain health to `metrics/latest.json`; the `retro` agent feeds
+  deltas back here, closing Act→Outcome. First snapshot (2026-06-27): 6 works, 38 custody
+  entries, 84.2% dated-start coverage, 3 null-coordinate entries, 6/6 deep chains — but
+  **5/6 works still carry a trailing dateless custody entry** (the #43/#48/#52 pattern).
+  Lesson: PR #49 fixed the *UI* (artist-origin reorders to the front) yet the *underlying data*
+  is unchanged — confirms #52's "clean the data first." Next: a `provenance-data` pass to date
+  or drop dateless artist-origin entries at the source, then watch the metric drop.
+
 - `#data` PRECISION FIX (custody vs loan) — the biggest credibility win. Exhibition loans were
   folded into the movement chain, so a work LOANED to a show and returned looked like it "moved."
   La Grande Jatte showed 18 "locations"; the true custody chain is 4 (Paris 1891 → Paris 1900 →

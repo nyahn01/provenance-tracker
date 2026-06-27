@@ -27,11 +27,13 @@ The system today has **Act**. Stage 3 adds **Sense** and a real **Outcome** sign
   `honesty-regression-sentinel` — `.claude/agents/`).
 - **Decide** — a generativity source (the deferred `product-visionary` + `vision-critic`
   from `docs/VISION.md`) emits `proposal` issues; a human promotes to `priority`.
-- **Act + Outcome** — the loop must not end at merge. Wire an outcome signal (Vercel Speed
-  Insights is already in; add error monitoring + product metrics: search-success rate,
-  % works with A-tier chains, honesty-gate pass rate, feedback volume) and a **retro** step
-  that converts merged-PR outcomes into `docs/INSIGHTS.md` lessons. Without an outcome signal
-  the system can *change* but not *improve*.
+- **Act + Outcome** — the loop must not end at merge. **Wired (first cut):** `npm run metrics`
+  (`scripts/metrics.mjs`) computes an offline custody-chain health snapshot to
+  `metrics/latest.json`; the `retro` agent (`.claude/agents/retro.md`) turns merged-PR outcomes
+  + that snapshot into `docs/INSIGHTS.md` lessons. Still to add: runtime/product signals
+  (Vercel Speed Insights is already in — extend with error monitoring, search-success rate,
+  honesty-gate pass rate, feedback volume). Without an outcome signal the system can *change*
+  but not *improve*.
 
 ### 2. Cooperation model — "editor-in-chief + autonomous newsroom"
 | Humans own | Agents own |

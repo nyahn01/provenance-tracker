@@ -21,5 +21,10 @@
     "_doc": "Scheduled self-audit agents that file issues (never build/merge). Enable per the ADR rollout. 'files' = label they apply to the issue they open.",
     "data-quality-sentinel": { "enabled": false, "files": "proposal" },
     "honesty-regression-sentinel": { "enabled": false, "files": "priority" }
+  },
+  "outcome": {
+    "_doc": "The Act+Outcome loop. `npm run metrics` computes metrics/latest.json (offline, runnable now); the `retro` agent turns merges+metrics into docs/INSIGHTS.md lessons. Cadence applies in scheduled/event-driven mode.",
+    "metrics_cron": "0 7 * * 1",
+    "retro_enabled": false
   }
 }
