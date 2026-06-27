@@ -78,8 +78,44 @@ if (valid.length === 0) {
   return { priorities: 0 };
 }
 
-log(`📋 Active priorities: ${valid.length}`);
-for (const p of valid) {
+// ─── In-flight guard ──────────────────────────────────────────────────────────
+// Skip issues that already have an open PR from a prior run (any device, any
+// session). Without this, every scheduled run re-spawns agents for in-flight
+// work and PRs pile up faster than they can be reviewed.
+const openPRsRaw = await agent(
+  `In the provenance-tracker project at C:\\Users\\Windows11\\Downloads\\provenance-tracker, run exactly this command:
+  gh pr list --state open --json number,title,headRefName --limit 100
+Return ONLY the raw JSON array — no prose, no code fences.`,
+  { label: "read:open-prs", phase: "Plan" }
+);
+
+const inFlightIssues = new Set();
+if (openPRsRaw) {
+  try {
+    const s = openPRsRaw.indexOf("["), e = openPRsRaw.lastIndexOf("]");
+    const openPRs = JSON.parse(s >= 0 && e >= 0 ? openPRsRaw.slice(s, e + 1) : openPRsRaw);
+    for (const pr of openPRs) {
+      const m = (pr.headRefName || "").match(/issue-(\d+)/);
+      if (m) inFlightIssues.add(m[1]);
+    }
+  } catch (_) { /* non-fatal: if we can't parse, proceed without the guard */ }
+}
+
+const queue = valid.filter((p) => {
+  if (inFlightIssues.has(p.id)) {
+    log(`⏭ SKIP #${p.id} "${p.title}" — PR already open, won't duplicate`);
+    return false;
+  }
+  return true;
+});
+
+if (queue.length === 0) {
+  log("✅ All priority Issues already have open PRs — nothing new to dispatch.");
+  return { priorities: valid.length, skipped: valid.length, dispatched: 0 };
+}
+
+log(`📋 Active priorities: ${valid.length} total, ${inFlightIssues.size} in-flight (skipped), ${queue.length} to dispatch`);
+for (const p of queue) {
   log(`   #${p.id} [${p.agent}]: ${p.title}`);
 }
 
@@ -164,23 +200,36 @@ log(`🚨 Running honesty gate on ${ran.length} PR(s)...`);
 
 const honestyReviews = await parallel(
   ran.map((run) => async () => {
-    const review = await agent(
+    // Extract PR URL from the build agent's report so the honesty reviewer can
+  // fetch the actual diff — trusting the build agent's self-report alone is not
+  // sufficient to catch overclaiming or honesty violations in the code.
+  const prUrlMatch = run.result ? String(run.result).match(/https:\/\/github\.com\/\S+\/pull\/\d+/) : null;
+  const prUrl = prUrlMatch ? prUrlMatch[0] : null;
+
+  const review = await agent(
       `You are the **provenance-honesty-review** gate for provenance-tracker.
 
 Agent **${run.agent}** just worked on priority #${run.priority}: "${run.title}".
 
-Their report:
+${prUrl
+  ? `## Step 1 — Read the actual diff
+Run: \`gh pr diff ${prUrl}\`
+Read every changed file before making your verdict. Do NOT rely solely on the build agent's self-report.`
+  : `## Step 1 — No PR URL found
+The build agent did not report a PR URL. Check if they opened one: \`gh pr list --state open --limit 10\` in C:\\Users\\Windows11\\Downloads\\provenance-tracker. If no PR was opened, BLOCK with reason "no PR opened".`}
+
+## Build agent's self-report (for context only — verify against the diff)
 ${run.result}
 
-## Your job: BLOCK or APPROVE
+## Step 2 — BLOCK or APPROVE
 
 Check for:
 1. **Over-claiming?** Any fact shown without a visible source? (Every fact needs "Source: Wikidata / Met / AIC / RKD")
 2. **Faked data?** Invented dates, coordinates, or gap-filling? (Never allowed)
 3. **Custody vs loans?** Ownership and exhibition loans conflated? (Must be separate)
-4. **Globe contract violated?** If StoriesApp.tsx was touched, does the PR confirm the locked init pattern was preserved?
-5. **Types first?** If a new data shape was added, was src/lib/types.ts updated first?
-6. **Build passing?** Did they confirm \`npm run build\` and \`npm run honesty\` passed?
+4. **Globe contract violated?** If StoriesApp.tsx or GlobeContainer.tsx was touched, confirm the locked init pattern is intact.
+5. **Types first?** If a new data shape was added, verify src/lib/types.ts was updated first.
+6. **Build passing?** Confirm \`npm run build\` and \`npm run honesty\` output was clean (no errors, no warnings suppressed).
 
 Reply with:
 - **BLOCK: [reason]** if any rule was violated. Be specific — agent will fix and re-push.
@@ -200,13 +249,15 @@ Reply with:
 const approved = honestyReviews.filter(r => r && r.verdict === "APPROVED").length;
 const blocked = honestyReviews.filter(r => r && r.verdict === "BLOCKED").length;
 
-log(`\n📊 Results: ${approved} approved, ${blocked} blocked.`);
+log(`\n📊 Results: ${approved} approved, ${blocked} blocked (${inFlightIssues.size} skipped as in-flight).`);
 if (blocked > 0) log(`   Blocked PRs stay open — agents re-push after fixing.`);
 log(`\n🎉 Batch complete. Check GitHub for open PRs.`);
 
 return {
   agents: agentDomains,
-  priorities: valid.length,
+  prioritiesTotal: valid.length,
+  skipped: inFlightIssues.size,
+  dispatched: queue.length,
   approved,
   blocked,
 };
