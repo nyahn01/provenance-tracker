@@ -89,6 +89,10 @@ const CITIES = {
   shanghai: { lat: 31.2304, lng: 121.4737 },
   taipei: { lat: 25.033, lng: 121.5654 },
   'hong kong': { lat: 22.3193, lng: 114.1694 },
+  // French towns that appear in provenance records
+  provins: { lat: 48.5597, lng: 3.2972 },
+  // US towns that appear in provenance records
+  'lake forest': { lat: 42.2597, lng: -87.8398 },
 }
 const SORTED = Object.keys(CITIES).sort((a, b) => b.length - a.length)
 
@@ -101,14 +105,38 @@ function geocode(place) {
   return null
 }
 
+/** Loose name match (case/punctuation-insensitive) — mirrors sameName in timeline.ts. */
+function sameName(a, b) {
+  const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+  const na = norm(a), nb = norm(b)
+  if (na.length < 4 || nb.length < 4) return false
+  return na === nb || na.includes(nb) || nb.includes(na)
+}
+
+/**
+ * Post-process entries: when a holder matches the artwork's artist and has no
+ * startDate, set startDate to the creation year. Never invents a date when the
+ * creation year is unknown. Mirrors applyArtistOriginFix in route.ts.
+ */
+function applyArtistOriginFix(entries, artist, creationYear) {
+  return entries.map(e => {
+    if (e.startDate != null) return e
+    const holder = e.institution ?? e.name
+    if (sameName(holder, artist) && creationYear != null) {
+      return { ...e, startDate: String(creationYear) }
+    }
+    return e
+  })
+}
+
 // ─── Featured works ───────────────────────────────────────────────────────────
 const FEATURED = [
-  { id: '16568',  title: 'Water Lilies',                  artist: 'Claude Monet' },
-  { id: '27992',  title: 'A Sunday on La Grande Jatte',   artist: 'Georges Seurat' },
-  { id: '18951',  title: 'Yellow Dancers (In the Wings)', artist: 'Edgar Degas' },
-  { id: '20684',  title: 'Paris Street; Rainy Day',       artist: 'Gustave Caillebotte' },
-  { id: '28560',  title: 'The Bedroom',                   artist: 'Vincent van Gogh' },
-  { id: '64818',  title: 'Stacks of Wheat (End of Summer)', artist: 'Claude Monet' },
+  { id: '16568',  title: 'Water Lilies',                  artist: 'Claude Monet',         creationYear: 1906 },
+  { id: '27992',  title: 'A Sunday on La Grande Jatte',   artist: 'Georges Seurat',        creationYear: 1884 },
+  { id: '18951',  title: 'Yellow Dancers (In the Wings)', artist: 'Edgar Degas',           creationYear: 1874 },
+  { id: '20684',  title: 'Paris Street; Rainy Day',       artist: 'Gustave Caillebotte',   creationYear: 1877 },
+  { id: '28560',  title: 'The Bedroom',                   artist: 'Vincent van Gogh',      creationYear: 1889 },
+  { id: '64818',  title: 'Stacks of Wheat (End of Summer)', artist: 'Claude Monet',        creationYear: 1890 },
 ]
 
 // ─── Extraction prompt (identical to route.ts extractOwnershipLocations) ─────
@@ -193,7 +221,7 @@ async function main() {
     }
 
     // Geocode entries
-    const entries = (parsed.entries ?? [])
+    let entries = (parsed.entries ?? [])
       .filter(e => e && typeof e.place === 'string' && e.place.trim())
       .map(e => {
         const pt = geocode(e.place)
@@ -207,6 +235,10 @@ async function main() {
           source: 'AIC provenance',
         }
       })
+
+    // Apply artist-origin startDate fix: when the first holder is the artwork's own artist
+    // and has no startDate, set it to the creation year (honest — never invented).
+    entries = applyArtistOriginFix(entries, work.artist, work.creationYear)
 
     results[`aic:${work.id}`] = entries
     console.log(`  → ${entries.length} entries: ${entries.map(e => e.name).join(', ')}`)

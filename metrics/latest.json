@@ -2,17 +2,17 @@
   "scope": "featured custody chains — offline, from src/lib/featured-provenance.json",
   "featuredWorks": 6,
   "custodyEntries": 38,
-  "datedStartCoveragePct": 84.2,
+  "datedStartCoveragePct": 97.4,
   "aTierEntries": 38,
-  "nullCoordinateEntries": 3,
-  "worksWithTrailingDatelessCustody": 5,
+  "nullCoordinateEntries": 1,
+  "worksWithTrailingDatelessCustody": 1,
   "worksWithDeepChain": 6,
   "perWork": [
     {
       "work": "aic:16568",
       "entries": 5,
-      "datedStart": 4,
-      "trailingDatelessCustody": true
+      "datedStart": 5,
+      "trailingDatelessCustody": false
     },
     {
       "work": "aic:27992",
@@ -23,25 +23,25 @@
     {
       "work": "aic:18951",
       "entries": 6,
-      "datedStart": 5,
-      "trailingDatelessCustody": true
+      "datedStart": 6,
+      "trailingDatelessCustody": false
     },
     {
       "work": "aic:20684",
       "entries": 6,
-      "datedStart": 5,
-      "trailingDatelessCustody": true
+      "datedStart": 6,
+      "trailingDatelessCustody": false
     },
     {
       "work": "aic:28560",
       "entries": 8,
-      "datedStart": 7,
-      "trailingDatelessCustody": true
+      "datedStart": 8,
+      "trailingDatelessCustody": false
     },
     {
       "work": "aic:64818",
       "entries": 8,
-      "datedStart": 6,
+      "datedStart": 7,
       "trailingDatelessCustody": true
     }
   ],

@@ -20,6 +20,8 @@ written to a file, it's lost when the context window rolls. This file is the saf
 
 <!-- append insights below, newest first -->
 
+- `#data` DATA QUALITY PASS (#55) — fixed two root-cause defects in the featured custody chains. Artist-origin entries (e.g. "Vincent van Gogh", "Claude Monet") with `startDate: null` now receive the artwork's creation year (honest — they held it from when it was made; creation year sourced from `meta.date`); `sameName()` from [[timeline.ts]] reused for the artist-match. "Provins" and "Lake Forest" added to [[geocode.ts]] with real city-level coordinates. Metrics before → after: `worksWithTrailingDatelessCustody` 5/6 → 1/6, `nullCoordinateEntries` 3 → 1, `datedStartCoveragePct` 84.2% → 97.4%. The 1 remaining dateless entry (Wood family acquisition of Stacks of Wheat) is genuinely undocumented — left as null per honesty contract. The 1 remaining null-coord entry is Johanna van Gogh-Bonger / "the Netherlands" (1891–1901) — a country-level owner we deliberately keep in the timeline rather than fake a city on the map. Fix applied to both the committed `featured-provenance.json` and the runtime route (`applyArtistOriginFix`) and `preparse-provenance.mjs` so future re-parses produce the same quality.
+
 - `#process #data` OUTCOME LOOP wired ([[0002-stage3-autonomy-model]]) — `npm run metrics`
   now snapshots featured custody-chain health to `metrics/latest.json`; the `retro` agent feeds
   deltas back here, closing Act→Outcome. First snapshot (2026-06-27): 6 works, 38 custody
