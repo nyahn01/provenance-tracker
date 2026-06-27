@@ -144,6 +144,29 @@ html, body {
   outline-offset: 2px;
 }
 
+/* ─── Skip-to-content link (visible only on keyboard focus) ──────────────────── */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  padding: 10px 16px;
+  background: var(--obs-surface);
+  border: 1px solid var(--obs-clay-border);
+  border-radius: var(--radius-md);
+  color: var(--obs-text);
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  /* Pulled off-screen until focused so it never disturbs layout. */
+  transform: translateY(-200%);
+  transition: transform 150ms var(--ease-gentle);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 /* ─── Scrollbar (observatory) ────────────────────────────────────────────────── */
 .obs-scroll::-webkit-scrollbar {
   width: 4px;

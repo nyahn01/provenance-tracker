@@ -39,8 +39,15 @@ export default function RootLayout({
           fontFamily: 'var(--font-ui)',
         }}
       >
+        <a href="#main" className="skip-link">Skip to content</a>
         <SiteNav />
-        {children}
+        {/* `display: contents` keeps this landmark layout-neutral — it generates no
+            box, so the full-bleed globe and the marketing pages render unchanged,
+            while giving the skip link a focus target and a single <main> landmark.
+            tabIndex=-1 lets the skip link move focus here without making it tabbable. */}
+        <main id="main" tabIndex={-1} style={{ display: 'contents' }}>
+          {children}
+        </main>
         {/* Visible on marketing pages (their style tag sets body overflow:auto).
             Clipped by body overflow-hidden on the full-screen globe — handled there separately. */}
         <footer style={{

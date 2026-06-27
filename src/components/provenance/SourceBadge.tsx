@@ -3,14 +3,14 @@
  * Extracted verbatim from StoriesApp.tsx (no visual change).
  */
 import { GAL } from '@/lib/design-tokens'
-import { tierLabel } from './timeline'
+import { tierLabel, sourceInstitution } from './timeline'
 
 export function SourceBadge({ source }: { source: string }) {
   const label = tierLabel(source)
   const isGPI = label === 'GPI'
   const isRKD = label === 'RKD'
   return (
-    <span style={{
+    <span aria-label={`Source: ${sourceInstitution(source)}`} style={{
       background: isGPI ? 'rgba(124,92,191,0.12)' : isRKD ? 'rgba(74,122,106,0.12)' : 'rgba(160,120,48,0.10)',
       color: isGPI ? '#9b7fe0' : isRKD ? GAL.sage : GAL.gold,
       border: isGPI ? '1px solid rgba(124,92,191,0.30)' : isRKD ? '1px solid rgba(74,122,106,0.28)' : '1px solid rgba(160,120,48,0.25)',
