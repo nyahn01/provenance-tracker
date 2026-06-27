@@ -78,6 +78,10 @@ A priority = an open Issue labeled `priority` + `agent:<domain>` (+ `paused` to 
 `Closes #N` auto-closes it on merge — the queue self-cleans. The Projects board is the at-a-glance
 view (readable on phone). The batch workflow reads `gh issue list --label priority`, not markdown.
 
+Forward-looking ideas land as an open Issue labeled `proposal` (not `priority`) — a suggestion, not
+queued work. The human promotes one by relabeling it `priority` + `agent:<domain>`; only then is it
+built. This separates ideation from execution without an autopilot (rationale: `docs/VISION.md`).
+
 `main` is protected by the `protect-main` ruleset (PR required, honesty+build checks must pass,
 no direct pushes). Approvals are intentionally OFF for the solo maintainer — see
 `docs/decisions/0001-branch-protection-solo-dev.md`. Agents NEVER merge; the human merges.
