@@ -157,10 +157,13 @@ export function ProvenanceDetail({
 
             {/* ── Unified provenance timeline ── */}
             {(() => {
+              const creationYear = (() => { const m = prov.artwork.date?.match(/\d{4}/); return m ? parseInt(m[0], 10) : null })()
               const timeline = buildUnifiedTimeline(
                 prov.locations,
                 prov.exhibitions,
                 prov.gettyRecords ?? [],
+                prov.artwork.artist,
+                creationYear,
               )
               const extraExh = Math.max(0, prov.exhibitions.length - 4)
               const extraGPI = Math.max(0, (prov.gettyRecords?.length ?? 0) - 4)

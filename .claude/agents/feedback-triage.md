@@ -65,6 +65,10 @@ human (and the build agents) act on it later.
 - **Honesty.** Quote verbatim. No fabricated assessments, no invented user intent. If an
   issue is too vague to assess, say so in the file and mark `priority: low`.
 - **One PR per run**, even for many issues. Don't spam separate PRs.
+- **Never use a closing keyword on a feedback issue.** Not in this PR, and not in any later
+  fix PR/commit that resolves the feedback. Use `Addresses #N` / `Refs #N`, never
+  `Closes`/`Fixes`/`Resolves` — those auto-close on merge and rob the human of the verification
+  step (this is how #29/#31 were silently closed). Closing keywords are for `priority` issues only.
 - **Idempotent-ish.** Skip issues already carrying the `triaged` label (they're in a
   prior PR). You can filter: `gh issue list --label feedback --state open` then drop any
   that also have `triaged`.

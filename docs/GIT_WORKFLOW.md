@@ -14,6 +14,12 @@ the `protect-main` ruleset (see `docs/decisions/0001-branch-protection-solo-dev.
   runs build → serve → `verify.mjs` and commits only if green. Agents never `git commit` raw
   (one sanctioned exception: `feedback-triage` commits docs-only `feedback/` files via plain git).
 - End the body with `Closes #N` so merging auto-closes the priority Issue.
+- **Feedback issues are exempt from closing keywords.** A commit/PR that fixes a `feedback`-labeled
+  issue must reference it with a NON-closing keyword (`Addresses #N` / `Refs #N`), never
+  `Closes`/`Fixes`/`Resolves` — those auto-close on merge and skip the human's verification. Closing
+  keywords are only for `priority` issues; the human closes feedback issues after confirming the fix.
+  (A merged commit using `Closes #` on a feedback issue is exactly how #29/#31 were silently closed
+  before they were verified.)
 
 ## PR → merge
 1. Push the branch; open a PR (`gh pr create`). Body must contain `Closes #N` + the honesty checklist.
