@@ -1,6 +1,6 @@
 # Project Status — what's implemented
 
-_Last updated 2026-06-26. A factual inventory of what exists and works today. For vision and rules see [CLAUDE.md](CLAUDE.md); for the live work queue see the GitHub Issues `priority` label / Projects board._
+_Last updated 2026-06-27. A factual inventory of what exists and works today. For vision and rules see [CLAUDE.md](CLAUDE.md); for how the workflow evolved across stages see [docs/WORKFLOW_STAGES.md](WORKFLOW_STAGES.md); for the live work queue see the GitHub Issues `priority` label / Projects board._
 
 ## Stack
 
@@ -19,6 +19,7 @@ _Last updated 2026-06-26. A factual inventory of what exists and works today. Fo
 | `/learn` | Provenance glossary |
 | `/pricing` | Three-tier pricing |
 | `/team` | How the platform + agent team are built |
+| `/workflow` | How the workflow evolved across Stages 1–3 (companion to [docs/WORKFLOW_STAGES.md](WORKFLOW_STAGES.md)) |
 | `/feedback` | In-app feedback form |
 
 ## API routes
@@ -32,6 +33,7 @@ _Last updated 2026-06-26. A factual inventory of what exists and works today. Fo
 | `GET /api/rkd` | Dutch/Flemish provenance | RKD Netherlands |
 | `GET /api/cache` · `GET /api/cache/invalidate` | Cache stats / purge by source | in-memory cache |
 | `POST /api/feedback` | Files a labeled GitHub issue (email fallback) | GitHub API |
+| `GET /api/status` | Honest machine-readable status (featured-works count, source list, `claudeKeyConfigured`) | derived (no live claims) |
 
 ## Features (all working)
 
@@ -42,7 +44,7 @@ _Last updated 2026-06-26. A factual inventory of what exists and works today. Fo
 - **Provenance Intelligence card** — deterministic FLAG/REVIEW/CLEAR risk tier + Getty price sparkline.
 - **Per-source TTL cache + per-IP rate limiting** ([src/lib/cache.ts](src/lib/cache.ts)).
 - **Feedback → GitHub issue** with email fallback ([src/components/FeedbackForm.tsx](src/components/FeedbackForm.tsx)).
-- **6 curated featured works** (public-domain, deep Tier-A provenance) in [src/lib/featured.ts](src/lib/featured.ts). Custody chains pre-parsed and committed to [src/lib/featured-provenance.json](src/lib/featured-provenance.json) — zero Claude runtime cost for featured works.
+- **8 curated featured works** (public-domain, deep Tier-A provenance) in [src/lib/featured.ts](src/lib/featured.ts). Custody chains pre-parsed and committed to [src/lib/featured-provenance.json](src/lib/featured-provenance.json) — zero Claude runtime cost for featured works.
 - **Prose extraction cache** — disk-backed ([src/lib/prose-cache.ts](src/lib/prose-cache.ts)) so each user-searched artwork is parsed by Claude at most once per server instance.
 
 ## Component architecture (post-refactor)
@@ -63,7 +65,7 @@ Every fact carries a source. Custody ≠ exhibition loans (separate arrays + UI)
 - `npm run dev` · `npm run build`
 - `node scripts/ship.mjs [--commit "…"] [--push]` — build → serve → verify gate (agents never commit raw)
 - `npm run honesty` — over-claim / invented-data grep on the diff
-- `npm run preparse` — re-run Claude Haiku over the 6 featured works; commit the output to lock in results
+- `npm run preparse` — re-run Claude Haiku over the 8 featured works; commit the output to lock in results
 
 ## Known constraints
 
