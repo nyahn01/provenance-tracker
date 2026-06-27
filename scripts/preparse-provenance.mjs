@@ -1,5 +1,5 @@
 /**
- * Pre-parse provenance prose for the 6 featured artworks using Claude Haiku.
+ * Pre-parse provenance prose for the 8 featured artworks using Claude Haiku.
  * Commit the output — featured works then have zero runtime Claude cost.
  *
  * Run: node scripts/preparse-provenance.mjs

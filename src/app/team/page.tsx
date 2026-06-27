@@ -163,7 +163,7 @@ export default function TeamPage() {
               ))}
             </div>
             <div style={{ marginTop: 14, fontSize: '0.76rem', color: C.textMuted, lineHeight: 1.6 }}>
-              Overnight enrichment running: Goupil &amp; Cie dataset → seeded (4,388 records)
+              See <Link href="/workflow" style={{ color: C.gold, borderBottom: `1px solid ${C.border}` }}>how the workflow evolved →</Link> across Stages 1–3.
             </div>
           </div>
 
@@ -427,6 +427,9 @@ export default function TeamPage() {
               Built with Claude Sonnet &amp; Opus · Anthropic · 2026
             </div>
             <div style={{ display: 'flex', gap: 20 }}>
+              <Link href="/workflow" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                How it works →
+              </Link>
               <Link href="/demo" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
                 Our story →
               </Link>

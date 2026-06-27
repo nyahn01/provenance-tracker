@@ -15,7 +15,7 @@ never invented data. Each `LocationEntry.source` / timeline entry must name its 
 
 Rule: a fact may use any tier, but the tier must be visible to the user. Never launder D/E into A.
 
-## Sources (status as of 2026-06-26)
+## Sources (status as of 2026-06-27)
 - [x] **Met Museum API** (A) — object detail, image, own location. *Live.*
 - [x] **Art Institute of Chicago API** (A) — object detail, provenance_text, exhibition_history. *Live.*
 - [x] **Rijksmuseum Linked Art API** (A) — keyless; `data.rijksmuseum.nl` + `id.rijksmuseum.nl`; Dutch Golden Age provenance prose (AAT `300444174`). *Live.*

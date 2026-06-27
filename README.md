@@ -95,6 +95,7 @@ npm run metrics      # Outcome-loop snapshot → metrics/latest.json (offline)
 | Doc | What it covers |
 |-----|----------------|
 | [docs/VISION.md](docs/VISION.md) | North star — mission, audience, non-goals, how the agent team proposes work |
+| [docs/WORKFLOW_STAGES.md](docs/WORKFLOW_STAGES.md) | How the workflow evolved (Stage 1→2→3), GitHub-as-partner, and the operating runbook |
 | [docs/SETUP_JOURNEY.md](docs/SETUP_JOURNEY.md) | The ~30-min build-walkthrough narration (agents, ship gate, queue, lessons) |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System internals and data flow |
 | [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) | Visual contract (palettes, type, layout) |

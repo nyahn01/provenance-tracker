@@ -38,7 +38,7 @@ import type {
   ProvenanceResponse,
 } from '@/lib/types'
 
-// Pre-parsed ownership chains for the 6 featured artworks (zero runtime Claude cost).
+// Pre-parsed ownership chains for the 8 featured artworks (zero runtime Claude cost).
 // Populated by: node scripts/preparse-provenance.mjs
 const FEATURED_PROVENANCE = featuredProvenanceData as Record<string, LocationEntry[]>
 
