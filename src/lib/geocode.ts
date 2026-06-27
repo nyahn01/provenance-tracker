@@ -75,6 +75,7 @@ const CITIES: Record<string, GeoPoint> = {
   provins: { lat: 48.5597, lng: 3.2972 },
   // US towns that appear in provenance records
   'lake forest': { lat: 42.2597, lng: -87.8398 },
+  'naugatuck': { lat: 41.4854, lng: -73.0504 },
 }
 
 /**
