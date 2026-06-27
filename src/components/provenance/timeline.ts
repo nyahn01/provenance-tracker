@@ -3,7 +3,7 @@
  * dealer records into a single sorted, confidence-scored event list. Extracted
  * verbatim from StoriesApp.tsx (no behavioral change).
  */
-import type { LocationEntry, ExhibitionLoan, GettyRecord } from '@/lib/types'
+import type { LocationEntry, ExhibitionLoan, GettyRecord, ArtworkMeta } from '@/lib/types'
 
 export function tierLabel(source: string): string {
   const s = source.toLowerCase()
@@ -15,6 +15,76 @@ export function tierLabel(source: string): string {
   if (s.includes('getty') || s.includes('knoedler') || s.includes('gpi') || s.includes('goupil')) return 'GPI'
   if (s.includes('europeana')) return 'EUR'
   return source.toUpperCase().slice(0, 12)
+}
+
+/**
+ * Full human-readable institution name for a source tier label, used in the
+ * source-citation hover/focus card. Honesty: this names the institution that
+ * documents the fact, never a "current location" claim.
+ */
+export function sourceInstitution(source: string): string {
+  switch (tierLabel(source)) {
+    case 'MET':      return 'The Metropolitan Museum of Art'
+    case 'AIC':      return 'Art Institute of Chicago'
+    case 'RIJKS':    return 'Rijksmuseum'
+    case 'Wikidata': return 'Wikidata'
+    case 'RKD':      return 'RKD — Netherlands Institute for Art History'
+    case 'GPI':      return 'Getty Provenance Index'
+    case 'EUR':      return 'Europeana'
+    default:         return source
+  }
+}
+
+/**
+ * Deep link to the source RECORD for a timeline event, where one exists.
+ *
+ * Honesty: links to the public record that carries the provenance fact — the
+ * museum object page (where the provenance prose lives), the Wikidata entity,
+ * or the source-supplied record URL (GPI/RKD already carry their own). Returns
+ * null when no stable public record URL can be built — the card then shows the
+ * institution as attribution without a fabricated link.
+ *
+ * @param eventUrl per-event URL already on the event (GPI ledger, RKD record)
+ * @param source   tier label of the event's source
+ * @param artwork  the work, whose `id` is "<source>-<rawId>"
+ */
+export function sourceRecordUrl(
+  eventUrl: string | undefined,
+  source: string,
+  artwork: Pick<ArtworkMeta, 'id' | 'source'>,
+): string | null {
+  // Event-level record URL (Getty ledger, RKD record) always wins — it is the
+  // most specific link to the exact fact.
+  if (eventUrl) return eventUrl
+
+  const label = tierLabel(source)
+  // The fact-bearing record for a museum-prose event is that work's object page.
+  // Only build it when the event's tier matches the work's owning institution —
+  // a Wikidata location fact on a Met work links to the Met object page; a
+  // cross-source label we can't anchor to a record returns null (shown as plain
+  // attribution, never a guessed link).
+  const rawId = artwork.id.includes('-') ? artwork.id.slice(artwork.id.indexOf('-') + 1) : artwork.id
+  if (!rawId) return null
+
+  switch (artwork.source) {
+    case 'met':
+      if (label === 'MET') return `https://www.metmuseum.org/art/collection/search/${rawId}`
+      break
+    case 'aic':
+      if (label === 'AIC') return `https://www.artic.edu/artworks/${rawId}`
+      break
+    case 'cleveland':
+      // Cleveland's own record page documents its provenance prose.
+      if (label === 'CLEVELAND') return `https://www.clevelandart.org/art/${rawId}`
+      break
+    case 'wikidata':
+      if (label === 'Wikidata' && /^Q\d+$/.test(rawId)) return `https://www.wikidata.org/wiki/${rawId}`
+      break
+    case 'rijks':
+      if (label === 'RIJKS') return `https://www.rijksmuseum.nl/en/collection/${rawId}`
+      break
+  }
+  return null
 }
 
 export interface ProvenanceEvent {
