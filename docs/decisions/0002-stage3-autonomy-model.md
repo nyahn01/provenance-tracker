@@ -72,8 +72,9 @@ A single config switches Stage 1/2/3 with no code change:
 
 ## Consequences
 - **Cost ceiling is real.** The Max plan covers *interactive* Claude Code, not headless CI
-  agent runs. Stage 2/3 orchestration needs an Anthropic-API-budgeted runner; until funded,
-  `.github/workflows/orchestrate.yml` stays a STUB and `mode` stays `manual`. The dial exists
+  agent runs. Anthropic API credits were restored 2026-06-27, so funding is no longer the
+  blocker — but the Stage 2/3 orchestration runner (`.github/workflows/orchestrate.yml`) still
+  stays a STUB and `mode` stays `manual` **by choice** until we decide to run it. The dial exists
   so flipping it later is a one-line change, not a rebuild.
 - **Strict-approval path.** To let a human *approve* (not just merge) auto-tier PRs, give
   agents a separate bot identity (ADR 0001 already notes this) so PRs aren't self-authored.

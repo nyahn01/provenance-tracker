@@ -21,7 +21,7 @@ A curated set of famous, **public-domain** works, each with:
 - **honest gaps** shown as a feature, not hidden;
 - a cinematic map auto-framed to that work's actual journey.
 Method: multi-source reconciliation across Met, Art Institute of Chicago, Rijksmuseum, and
-Wikidata (Claude-assisted when funded; deterministic prose-mining otherwise).
+Wikidata (Claude-assisted reconciliation is active; deterministic prose-mining remains the fallback).
 
 ## 4. Who it's for (in order of realism)
 | Segment                          | Why it matters                                                             | What they get                                                           |
@@ -39,12 +39,12 @@ gap-aware, custody-vs-loan dataset compounds as we add works and sources.
 ## 6. Honest limitations (today)
 - Coverage is narrow (a curated set, mostly Art Institute of Chicago + Rijksmuseum depth).
 - The Met API exposes no provenance prose; Wikidata gives ~1 (sometimes wrong) location.
-- Deterministic extraction is rougher than Claude (which is currently unfunded).
+- The deterministic prose-miner (our fallback if a Claude call fails) is rougher than Claude's reconciliation, which is now active.
 - Some iconic works (Picasso, Hopper) are in copyright — data is fine, images are not ours to show.
 
 ## 7. If pursued further
 1. Expand the curated set; add tier-A sources (Getty Provenance Index, RKD, Europeana).
-2. Restore Claude reconciliation for conflict-flagging and cleaner custody chains.
+2. Extend the now-active Claude reconciliation for deeper conflict-flagging and cleaner custody chains.
 3. Explore a B2B "provenance method" demo for dealers/researchers — never over-claiming coverage.
 
 ## 8. Security & operating notes
@@ -66,7 +66,7 @@ Activating Stripe billing is a deliberate gate, not a default. **All** of the fo
 true before we turn it on.
 
 ### Data quality gate
-- ☐ Claude API funded and active — real extraction, not the deterministic fallback
+- ☑ Claude API funded and active — real extraction, not the deterministic fallback (restored 2026-06-27)
 - ☐ At least 3 new Tier-1 data sources live: Smithsonian Open Access, National Gallery London, and an expanded GPI (Durand-Ruel / Wildenstein dealer archives)
 - ☐ AAMD Object Registry integrated, so WWII-era gap detection has real institutional backing
 
