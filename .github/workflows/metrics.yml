@@ -1,0 +1,70 @@
+name: Metrics (Outcome-loop heartbeat)
+
+# Free, agent-less heartbeat for the Act→Outcome loop (ADR 0002): every time the
+# featured data changes on main — and weekly — recompute the platform-health
+# snapshot and post it to the run summary, warning if a key metric regressed.
+# No Anthropic API, no agents, no secrets, no commits. `npm run metrics` is
+# offline (node built-ins only), so this needs no `npm install`.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/lib/featured-provenance.json'
+      - 'scripts/metrics.mjs'
+  schedule:
+    - cron: '13 7 * * 1'   # Mondays, off-peak
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: metrics
+  cancel-in-progress: false
+
+jobs:
+  metrics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      # Keep the committed snapshot as the baseline to diff against.
+      - name: Snapshot baseline
+        run: cp metrics/latest.json /tmp/baseline.json
+
+      - name: Compute current snapshot
+        run: |
+          node scripts/metrics.mjs | tee /tmp/metrics.txt
+          {
+            echo '### Platform health — featured custody chains'
+            echo ''
+            echo '```'
+            cat /tmp/metrics.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Lower is better for dateless/null-coord; higher is better for coverage.
+      # Warn (don't fail) — legitimate data changes can move these and a human reviews.
+      - name: Flag regressions vs committed baseline
+        run: |
+          node -e '
+            const fs = require("node:fs");
+            const base = JSON.parse(fs.readFileSync("/tmp/baseline.json", "utf8"));
+            const cur  = JSON.parse(fs.readFileSync("metrics/latest.json", "utf8"));
+            const worse = [];
+            if (cur.worksWithTrailingDatelessCustody > base.worksWithTrailingDatelessCustody)
+              worse.push(`dateless custody ${base.worksWithTrailingDatelessCustody} -> ${cur.worksWithTrailingDatelessCustody}`);
+            if (cur.nullCoordinateEntries > base.nullCoordinateEntries)
+              worse.push(`null coords ${base.nullCoordinateEntries} -> ${cur.nullCoordinateEntries}`);
+            if (cur.datedStartCoveragePct < base.datedStartCoveragePct)
+              worse.push(`dated coverage ${base.datedStartCoveragePct}% -> ${cur.datedStartCoveragePct}%`);
+            if (worse.length) {
+              console.log("::warning title=Data-quality regression::" + worse.join("; "));
+            } else {
+              console.log("No data-quality regression vs the committed snapshot.");
+            }
+          '
