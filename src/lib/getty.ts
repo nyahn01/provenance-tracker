@@ -69,3 +69,40 @@ export function searchGetty(artist: string, title = '', limit = 20): GettyRecord
     .filter(r => matchesArtist(r, lastName) && matchesTitle(r, title))
     .slice(0, limit)
 }
+
+/**
+ * Lazy-initialised set of artist last names present in the seeded GPI index
+ * (Knoedler + Goupil). Built once from the same in-memory singleton as
+ * getRecords() — zero extra file I/O after first call.
+ *
+ * Coverage is deliberately narrow (~35 artists, all 19th–early-20th-century
+ * French/Impressionist); this set is the ground truth for the boost.
+ */
+let _gpiLastNames: Set<string> | null = null
+function getGpiLastNames(): Set<string> {
+  if (_gpiLastNames) return _gpiLastNames
+  const records = getRecords()
+  _gpiLastNames = new Set(
+    records
+      .map(r => r.artist?.split(',')[0].trim().toUpperCase())
+      .filter((n): n is string => !!n),
+  )
+  return _gpiLastNames
+}
+
+/**
+ * Returns true when the seeded GPI index contains at least one record for
+ * this artist's last name. Offline only — reads from the pre-seeded
+ * public/data/getty-{knoedler,goupil}.json files via getRecords().
+ *
+ * Never returns true for an artist not verified in the seeded data.
+ * Use this to award a ranking boost — do NOT use it to claim GPI "coverage"
+ * in any user-facing copy without also surfacing the actual records.
+ *
+ * @param artistDisplay - Any display string, e.g. "Claude Monet (French, 1840–1926)"
+ */
+export function hasGpiCoverage(artistDisplay: string): boolean {
+  const lastName = artistLastName(artistDisplay)
+  if (!lastName) return false
+  return getGpiLastNames().has(lastName)
+}
