@@ -16,6 +16,7 @@ import { OBS } from '@/lib/design-tokens'
 const LINKS: { href: string; label: string; accent?: boolean }[] = [
   { href: '/', label: 'Explore' },
   { href: '/learn', label: 'Learn' },
+  { href: '/pipeline', label: 'The data' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/team', label: 'How it\'s built' },
   { href: '/feedback', label: 'Feedback', accent: true },
