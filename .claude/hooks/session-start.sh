@@ -57,4 +57,12 @@ if [ -n "$warn" ]; then
 else
   echo "session-start: ✓ '$branch' clean and in sync with origin"
 fi
+
+# Warn if too many open agent PRs have accumulated (batch ran more than it was reviewed).
+OPEN_AGENT_PRS=$(gh pr list --state open --json headRefName \
+  --jq '[.[] | select(.headRefName | startswith("feat/"))] | length' 2>/dev/null || echo 0)
+if [ "${OPEN_AGENT_PRS:-0}" -gt 3 ]; then
+  echo "session-start: ⚠ $OPEN_AGENT_PRS open agent PRs — review or run triage-stale-prs before next batch"
+fi
+
 exit 0
