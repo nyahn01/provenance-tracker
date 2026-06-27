@@ -42,6 +42,25 @@ const cardStyle: CSSProperties = {
   textAlign: 'left',
 }
 
+/**
+ * Transparent bridge that fills the 6px gap between the card bottom and
+ * the trigger top. Without this, the cursor passes through empty space
+ * when moving upward from the trigger into the card, triggering onMouseLeave
+ * and collapsing the card before the user can reach the link inside it.
+ *
+ * Positioned at bottom: 100% (= top of the trigger element), height 8px
+ * (slightly exceeds the 6px gap), so it seamlessly connects the hover zones.
+ */
+const bridgeStyle: CSSProperties = {
+  position: 'absolute',
+  bottom: '100%',
+  left: 0,
+  width: '100%',
+  height: 8,
+  background: 'transparent',
+  zIndex: 19,
+}
+
 export function SourceCard({ source, recordUrl }: SourceCardProps) {
   const [open, setOpen] = useState(false)
   const wrapRef = useRef<HTMLSpanElement>(null)
@@ -79,28 +98,36 @@ export function SourceCard({ source, recordUrl }: SourceCardProps) {
       </button>
 
       {open && (
-        <span id={cardId} role="tooltip" style={cardStyle}>
-          <span style={{ display: 'block', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: GAL.textFaint, marginBottom: 4 }}>
-            Source
-          </span>
-          <span style={{ display: 'block', fontSize: '0.8rem', color: GAL.text, fontWeight: 500, lineHeight: 1.35 }}>
-            {institution}
-          </span>
-          {recordUrl ? (
-            <a
-              href={recordUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: 'inline-block', marginTop: 7, fontSize: '0.7rem', color: GAL.clay, textDecoration: 'none', borderBottom: `1px solid ${GAL.border}`, paddingBottom: 1 }}
-            >
-              View source record ↗
-            </a>
-          ) : (
-            <span style={{ display: 'block', marginTop: 7, fontSize: '0.68rem', color: GAL.textMuted, lineHeight: 1.4 }}>
-              No public record link for this fact — attributed to the institution above.
+        <>
+          {/* Transparent bridge: fills the 6–8 px gap between the trigger and
+              the card above it. Without this, moving the cursor upward into
+              the card briefly exits the hover container and collapses the card
+              before the user can reach the link inside it. */}
+          <span aria-hidden="true" style={bridgeStyle} />
+
+          <span id={cardId} role="tooltip" style={cardStyle}>
+            <span style={{ display: 'block', fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: GAL.textFaint, marginBottom: 4 }}>
+              Source
             </span>
-          )}
-        </span>
+            <span style={{ display: 'block', fontSize: '0.8rem', color: GAL.text, fontWeight: 500, lineHeight: 1.35 }}>
+              {institution}
+            </span>
+            {recordUrl ? (
+              <a
+                href={recordUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'inline-block', marginTop: 7, fontSize: '0.7rem', color: GAL.clay, textDecoration: 'none', borderBottom: `1px solid ${GAL.border}`, paddingBottom: 1 }}
+              >
+                View source record ↗
+              </a>
+            ) : (
+              <span style={{ display: 'block', marginTop: 7, fontSize: '0.68rem', color: GAL.textMuted, lineHeight: 1.4 }}>
+                No public record link for this fact — attributed to the institution above.
+              </span>
+            )}
+          </span>
+        </>
       )}
     </span>
   )
