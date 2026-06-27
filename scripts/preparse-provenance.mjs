@@ -137,6 +137,8 @@ const FEATURED = [
   { id: '20684',  title: 'Paris Street; Rainy Day',       artist: 'Gustave Caillebotte',   creationYear: 1877 },
   { id: '28560',  title: 'The Bedroom',                   artist: 'Vincent van Gogh',      creationYear: 1889 },
   { id: '64818',  title: 'Stacks of Wheat (End of Summer)', artist: 'Claude Monet',        creationYear: 1890 },
+  { id: '111442', title: "The Child's Bath",              artist: 'Mary Cassatt',          creationYear: 1893 },
+  { id: '111436', title: 'The Basket of Apples',          artist: 'Paul Cézanne',          creationYear: 1893 },
 ]
 
 // ─── Extraction prompt (identical to route.ts extractOwnershipLocations) ─────

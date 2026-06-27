@@ -85,6 +85,28 @@ export const FEATURED_WORKS: FeaturedWork[] = [
     hook: "One of Monet's celebrated series -- Paris dealer network to Chicago.",
     imageId: 'a38e2828-ec6f-ece1-a30f-70243449197b', localSrc: '/works/stacks-of-wheat.jpg', credit: AIC_CREDIT,
   },
+  {
+    // Cassatt: Knoedler GPI coverage; tight 4-owner chain with dated dealer receipts.
+    // Image: replace placeholder with Wikimedia Commons file
+    //   Mary_Cassatt_-_The_Child's_Bath_-_1910.2_-_Art_Institute_of_Chicago.jpg
+    // imageId: update from AIC API (blocked by Cloudflare in this environment).
+    source: 'aic', id: '111442',
+    title: "The Child's Bath",
+    artist: 'Mary Cassatt', year: '1893',
+    hook: 'Cassatt sold to Durand-Ruel Paris, then to Harris Whittemore CT, back to Durand-Ruel New York, then to Chicago -- four owners in 17 years, all receipts dated.',
+    imageId: 'b272df73-9a79-4c1b-a5e2-b4f9c0e3d721', localSrc: '/works/childs-bath.jpg', credit: AIC_CREDIT,
+  },
+  {
+    // Cézanne: Knoedler GPI coverage; 8-stop chain Paris→Berlin→Paris→New York→Chicago.
+    // Image: replace placeholder with Wikimedia Commons file
+    //   Paul_Cézanne,_The_Basket_of_Apples.jpg
+    // imageId: update from AIC API (blocked by Cloudflare in this environment).
+    source: 'aic', id: '111436',
+    title: 'The Basket of Apples',
+    artist: 'Paul Cézanne', year: 'c. 1893',
+    hook: 'Vollard Paris to Bernheim-Jeune to Paul Cassirer Berlin and back, then Hessel, Rosenberg, New York, and Chicago -- eight hands in thirty years.',
+    imageId: 'fe25bfef-1c5a-4b9e-a3d8-6c7f0d2e4a89', localSrc: '/works/basket-of-apples.jpg', credit: AIC_CREDIT,
+  },
 ]
 
 export function aicImage(imageId: string, width = 600): string {

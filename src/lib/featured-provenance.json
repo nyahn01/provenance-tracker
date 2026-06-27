@@ -352,5 +352,144 @@
       "endDate": null,
       "source": "AIC provenance"
     }
+  ],
+  "aic:111442": [
+    {
+      "name": "Paris",
+      "institution": "Mary Cassatt",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1893",
+      "endDate": "1893",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Durand-Ruel",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1893",
+      "endDate": "1894",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Naugatuck",
+      "institution": "Harris Whittemore",
+      "lat": 41.4854,
+      "lng": -73.0504,
+      "startDate": "1894",
+      "endDate": "1899",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Durand-Ruel",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1899",
+      "endDate": "1910",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "The Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1910",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ],
+  "aic:111436": [
+    {
+      "name": "Paris",
+      "institution": "Paul Cézanne",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1893",
+      "endDate": "1895",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Ambroise Vollard",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1895",
+      "endDate": "1907",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Galerie Bernheim-Jeune",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1907",
+      "endDate": "1907",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Berlin",
+      "institution": "Paul Cassirer",
+      "lat": 52.52,
+      "lng": 13.405,
+      "startDate": "1907",
+      "endDate": "1908",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Galerie Bernheim-Jeune",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1908",
+      "endDate": "1913",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Jos Hessel",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1913",
+      "endDate": "1922",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Paul Rosenberg",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1922",
+      "endDate": "1925",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Joseph Stransky, French Galleries",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1925",
+      "endDate": "1925",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Frederic Clay Bartlett",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1925",
+      "endDate": "1926",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "The Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1926",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
   ]
 }
