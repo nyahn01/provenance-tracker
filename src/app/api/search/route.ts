@@ -14,6 +14,7 @@ import { searchRijks } from '@/lib/rijksmuseum'
 import { searchEuropeana } from '@/lib/europeana'
 import { searchWikidata } from '@/lib/wikidata-search'
 import { searchCleveland } from '@/lib/cleveland'
+import { hasGpiCoverage } from '@/lib/getty'
 import type { SearchResult, SearchResponse } from '@/lib/types'
 
 const SEARCH_TTL_MS = 5 * 60 * 1000 // 5 minutes
@@ -229,6 +230,11 @@ export async function GET(request: NextRequest) {
     if (!artistKnown) s -= 30
     if (r.thumbnail) s += 10
     s += sourceRank[r.source] ?? 0
+    // GPI boost: award +15 when the seeded Getty Provenance Index (Knoedler +
+    // Goupil) contains verified records for this artist. Offline only — reads
+    // from the pre-seeded public/data JSON via hasGpiCoverage(); no network
+    // call is made. This is a tiebreaker/booster, never an override.
+    if (artistKnown && hasGpiCoverage(r.artist)) s += 15
     return s
   }
 
