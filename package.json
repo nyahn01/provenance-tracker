@@ -16,7 +16,8 @@
     "ship": "node scripts/ship.mjs",
     "preparse": "node scripts/preparse-provenance.mjs",
     "metrics": "node scripts/metrics.mjs",
-    "curate": "node scripts/curate.mjs"
+    "curate": "node scripts/curate.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.28.0",
@@ -35,6 +36,7 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "eslint": "^9.0.0",
-    "eslint-config-next": "^16.2.9"
+    "eslint-config-next": "^16.2.9",
+    "vitest": "^2.1.9"
   }
 }
