@@ -25,3 +25,6 @@ out/
 
 # Disk-backed prose extraction cache (generated at runtime, not shared)
 cache/
+
+# STORM curation pipeline drafts (per-run proposals, promoted by hand — not committed)
+vault/agents/drafts/
