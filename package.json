@@ -15,7 +15,8 @@
     "check:images": "node scripts/check-images.mjs",
     "ship": "node scripts/ship.mjs",
     "preparse": "node scripts/preparse-provenance.mjs",
-    "metrics": "node scripts/metrics.mjs"
+    "metrics": "node scripts/metrics.mjs",
+    "curate": "node scripts/curate.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.28.0",
