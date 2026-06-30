@@ -50,8 +50,8 @@ interface CacheEntry<T> {
 
 const store = new Map<string, CacheEntry<unknown>>()
 
-// Cache keys embed user-supplied query terms. They pass through encodeURIComponent()
-// at every log sink below so a crafted key (CR/LF) cannot forge log lines.
+// Cache keys embed user-supplied query terms, so they are deliberately NOT logged
+// (only the operation + numeric TTL is) — untrusted text never reaches a log line.
 
 // ─── L1: synchronous in-process tier ─────────────────────────────────────────
 
@@ -149,23 +149,23 @@ async function l2DelByPrefix(prefix: string): Promise<number> {
 export async function getCached<T>(key: string): Promise<T | undefined> {
   const hot = l1Get<T>(key)
   if (hot !== undefined) {
-    console.log(`[cache] HIT(l1)  ${encodeURIComponent(key)}`)
+    console.log('[cache] HIT(l1)')
     return hot
   }
   const warm = await l2Get<T>(key)
   if (warm !== undefined) {
     l1Set(key, warm.value, warm.ttlRemainingMs)
-    console.log(`[cache] HIT(l2)  ${encodeURIComponent(key)}`)
+    console.log('[cache] HIT(l2)')
     return warm.value
   }
-  console.log(`[cache] MISS     ${encodeURIComponent(key)}`)
+  console.log('[cache] MISS')
   return undefined
 }
 
 /** Write to L1 and (best-effort) the durable L2. */
 export async function setCached<T>(key: string, value: T, ttlMs: number): Promise<void> {
   l1Set(key, value, ttlMs)
-  console.log(`[cache] SET      ${encodeURIComponent(key)} (ttl=${Math.round(ttlMs / 1000)}s)`)
+  console.log(`[cache] SET (ttl=${Math.round(ttlMs / 1000)}s)`)
   await l2Set(key, value, ttlMs)
 }
 
@@ -194,7 +194,6 @@ export async function cacheInvalidateByPrefixes(prefixes: string[]): Promise<num
     if (prefixes.some(p => key.startsWith(p))) {
       store.delete(key)
       removed++
-      console.log(`[cache] INVALIDATED ${encodeURIComponent(key)}`)
     }
   }
   for (const p of prefixes) await l2DelByPrefix(p)

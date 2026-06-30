@@ -81,3 +81,13 @@ A single config switches Stage 1/2/3 with no code change:
 - The scaffold added here (`orchestration.json`, the workflow skeleton, the two sentinel
   specs) is wiring + design only — no agent is executed, no secret is used, nothing is merged
   autonomously yet. Promotion to Stage 2/3 is a deliberate, human, reversible flip.
+
+## Update — Stage-2 Sense loop activated (#91)
+The dial was flipped: `mode` → `scheduled`, both sentinels `enabled: true`. The runner
+(`scripts/orchestrate.mjs`) replaces the stub — the read-only sentinels
+(`scripts/sentinels/*.mjs`) scan `main` on the daily cron and file idempotent issues
+(data-quality → `proposal`, honesty-regression → `priority`), capped by `max_prs_per_run`.
+The sentinels are deterministic (no Claude spend) and never edit code, merge, or close.
+Reverting is the same one-line flip (`mode` → `manual`, or `paused: true`). What is **not**
+yet automated: turning a `priority` issue into a PR — that build step is delegated to a
+coding-agent run, and a human still merges every PR (the moat is unchanged).

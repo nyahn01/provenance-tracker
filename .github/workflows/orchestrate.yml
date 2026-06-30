@@ -1,16 +1,12 @@
-name: Orchestrate (Stage-3 scaffold)
+name: Orchestrate (Stage-2 Sense loop)
 
-# Stage-3 autonomy scaffold — WIRING ONLY, inert by default.
-#
-# Reads .claude/orchestration.json and does nothing unless `mode` is
-# `scheduled` or `event-driven` AND `paused` is false. Even then, the
-# orchestrate job is a STUB that only logs intent — no agents run, no
-# secrets are used, nothing is written or merged.
-#
-# To go live (Stage 2/3): flip `mode` in .claude/orchestration.json and
-# replace the STUB step with a real Claude runner (needs an Anthropic-API
-# budget + the token/PR caps from the config).
-# See docs/decisions/0002-stage3-autonomy-model.md.
+# Stage-2 runner. Reads .claude/orchestration.json and does nothing unless `mode`
+# is `scheduled` or `event-driven` AND `paused` is false (the guard job exits early
+# otherwise). When active it runs scripts/orchestrate.mjs: the read-only sentinels
+# scan `main` and the runner files idempotent issues (capped by max_prs_per_run),
+# then routes the `priority` queue. Sentinels never edit code, never merge, never
+# close; building a priority issue into a PR is a separate coding-agent step and a
+# human always merges. See docs/decisions/0002-stage3-autonomy-model.md.
 
 on:
   workflow_dispatch:
@@ -63,14 +59,19 @@ jobs:
     needs: guard
     if: needs.guard.outputs.run == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write  # the Sense loop files proposal/priority issues
     steps:
       - uses: actions/checkout@v4
-      - name: STUB — would orchestrate (no agents run here)
-        shell: bash
-        run: |
-          echo "::notice::Stage-3 orchestration would run (mode=${{ needs.guard.outputs.mode }})."
-          echo "Implement here: read the GitHub-Issues queue (label: priority),"
-          echo "route each to its specialist agent, build, run the blocking honesty"
-          echo "gate, and open PRs — respecting max_token_budget_per_run and"
-          echo "max_prs_per_run from .claude/orchestration.json. A human still merges"
-          echo "(except auto-on-green tiers). This scaffold executes no agents."
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Run the Sense loop (sentinels) + route the priority queue
+        run: node scripts/orchestrate.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

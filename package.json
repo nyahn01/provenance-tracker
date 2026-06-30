@@ -17,6 +17,7 @@
     "preparse": "node scripts/preparse-provenance.mjs",
     "metrics": "node scripts/metrics.mjs",
     "curate": "node scripts/curate.mjs",
+    "orchestrate": "node scripts/orchestrate.mjs",
     "test": "vitest run"
   },
   "dependencies": {
