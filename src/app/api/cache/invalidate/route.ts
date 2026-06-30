@@ -59,8 +59,10 @@ export async function GET(request: NextRequest) {
   const removed = await cacheInvalidateSource(source as CacheSource)
   const stats = cacheStats()
 
+  // `source` is whitelist-validated above, but encode it inline at the log sink —
+  // a barrier CodeQL models — so the log-injection query stays clear regardless.
   console.log(
-    `[cache/invalidate] source=${source} removed=${removed} total_remaining=${stats.total}`,
+    `[cache/invalidate] source=${encodeURIComponent(source)} removed=${removed} total_remaining=${stats.total}`,
   )
 
   return NextResponse.json({
