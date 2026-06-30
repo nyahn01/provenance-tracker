@@ -50,12 +50,8 @@ interface CacheEntry<T> {
 
 const store = new Map<string, CacheEntry<unknown>>()
 
-/** Cache keys embed user-supplied query terms; strip control chars (CR/LF) and
- *  bound the length before logging so a crafted key can't forge log lines. */
-function keyForLog(key: string): string {
-  // eslint-disable-next-line no-control-regex
-  return key.replace(/[\u0000-\u001f\u007f]/g, " ").slice(0, 200)
-}
+// Cache keys embed user-supplied query terms. They pass through encodeURIComponent()
+// at every log sink below so a crafted key (CR/LF) cannot forge log lines.
 
 // ─── L1: synchronous in-process tier ─────────────────────────────────────────
 
@@ -153,23 +149,23 @@ async function l2DelByPrefix(prefix: string): Promise<number> {
 export async function getCached<T>(key: string): Promise<T | undefined> {
   const hot = l1Get<T>(key)
   if (hot !== undefined) {
-    console.log(`[cache] HIT(l1)  ${keyForLog(key)}`)
+    console.log(`[cache] HIT(l1)  ${encodeURIComponent(key)}`)
     return hot
   }
   const warm = await l2Get<T>(key)
   if (warm !== undefined) {
     l1Set(key, warm.value, warm.ttlRemainingMs)
-    console.log(`[cache] HIT(l2)  ${keyForLog(key)}`)
+    console.log(`[cache] HIT(l2)  ${encodeURIComponent(key)}`)
     return warm.value
   }
-  console.log(`[cache] MISS     ${keyForLog(key)}`)
+  console.log(`[cache] MISS     ${encodeURIComponent(key)}`)
   return undefined
 }
 
 /** Write to L1 and (best-effort) the durable L2. */
 export async function setCached<T>(key: string, value: T, ttlMs: number): Promise<void> {
   l1Set(key, value, ttlMs)
-  console.log(`[cache] SET      ${keyForLog(key)} (ttl=${Math.round(ttlMs / 1000)}s)`)
+  console.log(`[cache] SET      ${encodeURIComponent(key)} (ttl=${Math.round(ttlMs / 1000)}s)`)
   await l2Set(key, value, ttlMs)
 }
 
@@ -198,7 +194,7 @@ export async function cacheInvalidateByPrefixes(prefixes: string[]): Promise<num
     if (prefixes.some(p => key.startsWith(p))) {
       store.delete(key)
       removed++
-      console.log(`[cache] INVALIDATED ${keyForLog(key)}`)
+      console.log(`[cache] INVALIDATED ${encodeURIComponent(key)}`)
     }
   }
   for (const p of prefixes) await l2DelByPrefix(p)
