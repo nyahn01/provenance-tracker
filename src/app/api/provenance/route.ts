@@ -20,7 +20,10 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { getCached, setCached, checkRateLimit, CACHE_TTL } from '@/lib/cache'
+// L1-only: the provenance response embeds locally-sourced data (Getty seed file,
+// disk prose cache), so it stays in-process rather than writing file-derived bytes
+// to the shared durable store. Network-only routes (search/reconcile/rkd) use L2.
+import { cacheGet, cacheSet, checkRateLimit, CACHE_TTL } from '@/lib/cache'
 import { geocode, geocodeNamed } from '@/lib/geocode'
 import { fetchRijks } from '@/lib/rijksmuseum'
 import { searchGetty } from '@/lib/getty'
@@ -417,7 +420,7 @@ export async function GET(request: NextRequest) {
   }
 
   const cacheKey = `provenance:${source}:${id}`
-  const cached = await getCached<ProvenanceResponse>(cacheKey)
+  const cached = cacheGet<ProvenanceResponse>(cacheKey)
   if (cached) return NextResponse.json(cached)
 
   // 1. Museum detail (required — if this fails, the artwork itself is unknown)
@@ -543,6 +546,6 @@ export async function GET(request: NextRequest) {
   }
   // Use source-specific TTL: Met/AIC = 7d, Rijksmuseum/Europeana fall back to AIC TTL
   const ttl = source === 'met' ? CACHE_TTL.met : CACHE_TTL.aic
-  await setCached(cacheKey, response, ttl)
+  cacheSet(cacheKey, response, ttl)
   return NextResponse.json(response)
 }

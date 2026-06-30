@@ -15,7 +15,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getCached, setCached } from '@/lib/cache'
+// L1-only: Getty records are read from a local seeded file, so caching them in a
+// shared durable store adds no value and would push file data over the network.
+import { cacheGet, cacheSet } from '@/lib/cache'
 import { searchGetty } from '@/lib/getty'
 import type { GettyRecord } from '@/lib/types'
 
@@ -30,10 +32,10 @@ export async function GET(request: NextRequest) {
   }
 
   const cacheKey = `getty:${artist.toLowerCase()}:${title.toLowerCase()}`
-  const cached = await getCached<GettyRecord[]>(cacheKey)
+  const cached = cacheGet<GettyRecord[]>(cacheKey)
   if (cached) return NextResponse.json(cached)
 
   const matches = searchGetty(artist, title, 20)
-  await setCached(cacheKey, matches, GETTY_TTL_MS)
+  cacheSet(cacheKey, matches, GETTY_TTL_MS)
   return NextResponse.json(matches)
 }
