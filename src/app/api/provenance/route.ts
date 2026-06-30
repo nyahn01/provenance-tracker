@@ -20,7 +20,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { cacheGet, cacheSet, checkRateLimit, CACHE_TTL } from '@/lib/cache'
+import { getCached, setCached, checkRateLimit, CACHE_TTL } from '@/lib/cache'
 import { geocode, geocodeNamed } from '@/lib/geocode'
 import { fetchRijks } from '@/lib/rijksmuseum'
 import { searchGetty } from '@/lib/getty'
@@ -417,7 +417,7 @@ export async function GET(request: NextRequest) {
   }
 
   const cacheKey = `provenance:${source}:${id}`
-  const cached = cacheGet<ProvenanceResponse>(cacheKey)
+  const cached = await getCached<ProvenanceResponse>(cacheKey)
   if (cached) return NextResponse.json(cached)
 
   // 1. Museum detail (required — if this fails, the artwork itself is unknown)
@@ -543,6 +543,6 @@ export async function GET(request: NextRequest) {
   }
   // Use source-specific TTL: Met/AIC = 7d, Rijksmuseum/Europeana fall back to AIC TTL
   const ttl = source === 'met' ? CACHE_TTL.met : CACHE_TTL.aic
-  cacheSet(cacheKey, response, ttl)
+  await setCached(cacheKey, response, ttl)
   return NextResponse.json(response)
 }

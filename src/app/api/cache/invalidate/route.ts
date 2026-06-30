@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  const removed = cacheInvalidateSource(source as CacheSource)
+  const removed = await cacheInvalidateSource(source as CacheSource)
   const stats = cacheStats()
 
   console.log(

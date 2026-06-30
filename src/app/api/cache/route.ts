@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     total: stats.total,
+    durable: stats.durable, // true when a Vercel KV / Upstash L2 is configured
     ttl_config: {
       met: `${CACHE_TTL.met / 1000 / 60 / 60 / 24}d`,
       aic: `${CACHE_TTL.aic / 1000 / 60 / 60 / 24}d`,

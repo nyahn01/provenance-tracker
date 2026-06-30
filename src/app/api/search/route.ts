@@ -9,7 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { cacheGet, cacheSet, checkRateLimit } from '@/lib/cache'
+import { getCached, setCached, checkRateLimit } from '@/lib/cache'
 import { searchRijks } from '@/lib/rijksmuseum'
 import { searchEuropeana } from '@/lib/europeana'
 import { searchWikidata } from '@/lib/wikidata-search'
@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
     rawMode === 'artist' || rawMode === 'title' ? rawMode : 'all'
 
   const cacheKey = `search:${searchBy}:${q.toLowerCase()}`
-  const cached = cacheGet<SearchResponse>(cacheKey)
+  const cached = await getCached<SearchResponse>(cacheKey)
   if (cached) {
     return NextResponse.json({ ...cached, cached: true })
   }
@@ -277,7 +277,7 @@ export async function GET(request: NextRequest) {
   if (clevelandResult.status === 'fulfilled' && (clevelandResult.value as SearchResult[]).length > 0) sources.push('Cleveland Museum of Art API')
 
   const response: SearchResponse = { results, query: q, searchBy, sources }
-  cacheSet(cacheKey, response, SEARCH_TTL_MS)
+  await setCached(cacheKey, response, SEARCH_TTL_MS)
 
   return NextResponse.json(response)
 }
