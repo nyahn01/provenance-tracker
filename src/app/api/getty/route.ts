@@ -15,7 +15,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { cacheGet, cacheSet } from '@/lib/cache'
+import { getCached, setCached } from '@/lib/cache'
 import { searchGetty } from '@/lib/getty'
 import type { GettyRecord } from '@/lib/types'
 
@@ -30,10 +30,10 @@ export async function GET(request: NextRequest) {
   }
 
   const cacheKey = `getty:${artist.toLowerCase()}:${title.toLowerCase()}`
-  const cached = cacheGet<GettyRecord[]>(cacheKey)
+  const cached = await getCached<GettyRecord[]>(cacheKey)
   if (cached) return NextResponse.json(cached)
 
   const matches = searchGetty(artist, title, 20)
-  cacheSet(cacheKey, matches, GETTY_TTL_MS)
+  await setCached(cacheKey, matches, GETTY_TTL_MS)
   return NextResponse.json(matches)
 }

@@ -21,7 +21,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { cacheGet, cacheSet, checkRateLimit } from '@/lib/cache'
+import { getCached, setCached, checkRateLimit } from '@/lib/cache'
 import type { ReconcileRequest, ReconcileResponse } from '@/lib/types'
 
 const RECONCILE_TTL_MS = 10 * 60 * 1000 // 10 minutes
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
   }
 
   const cacheKey = hashBody(body)
-  const cached = cacheGet<ReconcileResponse>(cacheKey)
+  const cached = await getCached<ReconcileResponse>(cacheKey)
   if (cached) {
     return NextResponse.json({ ...cached, cached: true })
   }
@@ -159,6 +159,6 @@ export async function POST(request: NextRequest) {
     warnings: parsed.warnings ?? [],
   }
 
-  cacheSet(cacheKey, response, RECONCILE_TTL_MS)
+  await setCached(cacheKey, response, RECONCILE_TTL_MS)
   return NextResponse.json(response)
 }

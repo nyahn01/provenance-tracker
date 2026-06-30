@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { cacheGet, cacheSet, CACHE_TTL } from '@/lib/cache'
+import { getCached, setCached, CACHE_TTL } from '@/lib/cache'
 import { searchRkd } from '@/lib/rkd'
 
 export async function GET(request: NextRequest) {
@@ -15,11 +15,11 @@ export async function GET(request: NextRequest) {
   if (!artist) return NextResponse.json({ error: 'Missing param: artist' }, { status: 400 })
 
   const key = `rkd:${artist}:${title}:${limit}`
-  const cached = cacheGet(key)
+  const cached = await getCached(key)
   if (cached) return NextResponse.json(cached)
 
   const records = await searchRkd(artist, title, limit)
   const result = { records, source: 'RKD Netherlands Art Institute', count: records.length }
-  cacheSet(key, result, CACHE_TTL.rkd)
+  await setCached(key, result, CACHE_TTL.rkd)
   return NextResponse.json(result)
 }
