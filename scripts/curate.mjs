@@ -344,13 +344,16 @@ export function chainGaps(chain) {
 
 // ─── 4. Draft (essay + chain) ────────────────────────────────────────────────
 function titleCase(s) { return s.replace(/\b\w/g, c => c.toUpperCase()) }
-function slugify(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) }
 
 function buildEssay(meta, chain, getty, conflicts, questions, date, usedClaude) {
   const sourceLine = usedClaude ? 'Claude (claude-haiku-4-5) over AIC tier-A prose' : 'deterministic prose miner over AIC tier-A prose'
   const holders = chain.map(e => `- **${e.institution || e.name}** — ${e.name}, ${e.startDate ?? '?'}–${e.endDate ?? 'present'} _(source: ${e.source})_`).join('\n')
   const gaps = chainGaps(chain)
-  const q = (arr) => arr.map(s => `- ${s}`).join('\n')
+  const q = (arr) => (arr ?? []).map(s => `- ${s}`).join('\n')
+  // Drive the perspective headers from the single PERSPECTIVES map, not literals.
+  const perspectiveBlocks = PERSPECTIVES
+    .map(p => `**${titleCase(p.key)} — ${p.lens} (${p.agent})**\n${q(questions[p.key])}`)
+    .join('\n\n')
   return `---
 title: "${date} — ${meta.title}"
 date: ${date}
@@ -391,14 +394,7 @@ ${gaps.length ? gaps.map(g => `- ${g.note}`).join('\n') : '_No undocumented span
 
 ## Multi-perspective questions (STORM)
 
-**Scholarship (art-historian)**
-${q(questions.scholarship)}
-
-**Risk (art-insurance-advisor)**
-${q(questions.risk)}
-
-**Market (provenance-strategy)**
-${q(questions.market)}
+${perspectiveBlocks}
 
 ## Evidence
 
@@ -454,7 +450,9 @@ async function main() {
   const stdout = args.includes('--stdout')
   const dryRun = args.includes('--dry-run')
   const outDir = argValue(args, '--out') || join(ROOT, 'vault', 'agents', 'drafts')
-  const date = argValue(args, '--date') || new Date().toISOString().slice(0, 10)
+  const dateArg = argValue(args, '--date')
+  // Only an ISO date is allowed in the filename; anything else falls back to today.
+  const date = dateArg && /^\d{4}-\d{2}-\d{2}$/.test(dateArg) ? dateArg : new Date().toISOString().slice(0, 10)
 
   const key = process.env.ANTHROPIC_API_KEY
   const client = key ? new Anthropic({ apiKey: key }) : null
@@ -473,11 +471,13 @@ async function main() {
 
   if (dryRun) { console.log('  --dry-run: nothing written'); return }
 
-  const slug = slugify(`${meta.artist}-${meta.title}`) || `aic-${id}`
   const essay = buildEssay(meta, chain, getty, conflicts, questions, date, !!client)
   await mkdir(outDir, { recursive: true })
+  // Filenames derive ONLY from the validated numeric id + sanitized date — never
+  // from network-fetched fields (artist/title) — so the write path can't be
+  // steered by upstream API content.
   const chainPath = join(outDir, `aic-${id}.chain.json`)
-  const essayPath = join(outDir, `${date}-${slug}.md`)
+  const essayPath = join(outDir, `aic-${id}-${date}.md`)
   await writeFile(chainPath, JSON.stringify({ [`aic:${id}`]: chain }, null, 2) + '\n', 'utf8')
   await writeFile(essayPath, essay, 'utf8')
   console.log(`  wrote ${chainPath.replace(ROOT, '.')}`)
