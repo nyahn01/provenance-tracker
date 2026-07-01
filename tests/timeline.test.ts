@@ -29,3 +29,23 @@ describe('buildUnifiedTimeline — start-less custody ordering (#103)', () => {
     expect(events[0].detail).toBe('Held until 1984')
   })
 })
+
+describe('buildUnifiedTimeline — unmapped custody entries stay visible, not faked (#102)', () => {
+  it('flags an entry with no lat/lng as unmapped instead of inventing coordinates', () => {
+    // Mirrors aic:28560: AIC's own provenance text names only "the Netherlands" —
+    // no city — for Johanna van Gogh-Bonger, so there is no honest coordinate to give her.
+    const withCoords: LocationEntry = {
+      name: 'Paris', institution: 'Theo van Gogh', lat: 48.8566, lng: 2.3522,
+      startDate: '1889', endDate: '1891', source: 'AIC provenance',
+    }
+    const noCoords: LocationEntry = {
+      name: 'the Netherlands', institution: 'Johanna van Gogh-Bonger', lat: null, lng: null,
+      startDate: '1891', endDate: '1901', source: 'AIC provenance',
+    }
+    const events = buildUnifiedTimeline([withCoords, noCoords], [], [])
+    expect(events.find(e => e.who === 'Theo van Gogh')?.unmapped).toBe(false)
+    expect(events.find(e => e.who === 'Johanna van Gogh-Bonger')?.unmapped).toBe(true)
+    // The place name itself is shown honestly — not dropped, not replaced with a guess.
+    expect(events.find(e => e.who === 'Johanna van Gogh-Bonger')?.where).toBe('the Netherlands')
+  })
+})

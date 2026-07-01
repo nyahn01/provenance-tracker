@@ -99,6 +99,13 @@ export interface ProvenanceEvent {
   sourceUrl?: string
   /** Confidence level for this event, derived from the originating data source. */
   confidence: 'high' | 'medium' | 'low'
+  /**
+   * True when the source names a place too coarse to geocode (e.g. a country
+   * with no city, as AIC's provenance text sometimes gives) — the entry is
+   * real and dated, it just has no lat/lng, so it never appears on the globe.
+   * Never a fabricated coordinate; a visible label instead (honesty gate #102).
+   */
+  unmapped?: boolean
 }
 
 export function extractYear(date?: string): number {
@@ -198,6 +205,7 @@ export function buildUnifiedTimeline(
       detail: isArtistOrigin ? 'Origin — the artist' : (heldUntil ? `Held until ${fmtYear(loc.endDate ?? undefined)}` : undefined),
       source: label,
       confidence: loc.confidence ?? sourceConfidence(label, loc.startDate != null),
+      unmapped: loc.lat == null || loc.lng == null,
     })
   }
 

@@ -256,7 +256,12 @@ export function ProvenanceDetail({
                                   <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textFaint, flexShrink: 0 }}>{ev.year}</span>
                                 </div>
                                 <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.82rem', color: GAL.text, fontWeight: 500, lineHeight: 1.3 }}>{ev.who}</div>
-                                {ev.where && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1 }}>{ev.where}</div>}
+                                {ev.where && (
+                                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1 }}>
+                                    {ev.where}
+                                    {ev.unmapped && <span style={{ color: GAL.textFaint, fontStyle: 'italic' }}> — not shown on globe (no coordinates in source)</span>}
+                                  </div>
+                                )}
                                 {ev.detail && !isExh && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1, lineHeight: 1.4 }}>{ev.detail}</div>}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5 }}>
                                   <SourceCard source={ev.source} recordUrl={sourceRecordUrl(ev.sourceUrl, ev.source, selected)} />
@@ -293,7 +298,12 @@ export function ProvenanceDetail({
                                 <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textFaint, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{ev.year}</span>
                               </div>
                               <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.82rem', color: ev.type === 'gap' ? GAL.textMuted : GAL.text, fontWeight: 500, lineHeight: 1.3 }}>{ev.who}</div>
-                              {ev.where && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1 }}>{ev.where}</div>}
+                              {ev.where && (
+                                <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1 }}>
+                                  {ev.where}
+                                  {ev.unmapped && <span style={{ color: GAL.textFaint, fontStyle: 'italic' }}> — not shown on globe (no coordinates in source)</span>}
+                                </div>
+                              )}
                               {ev.detail && !isExh && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1, lineHeight: 1.4 }}>{ev.detail}</div>}
                               {ev.price && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textFaint, marginTop: 2 }}>{ev.price}</div>}
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5 }}>
