@@ -36,18 +36,39 @@ describe('buildChainLayout — lane classification (#130)', () => {
     expect(layout.loans[0].anchorIndex).toBe(0)
   })
 
-  it('puts Getty records on the dealer lane', () => {
+  it('folds a documented sale into the custody owner it created — no duplicate card (dedup)', () => {
+    // Custody owner "Knoedler & Co." (1910) + a Getty sale to the same owner, same year:
+    // the sale must annotate that custody entry, not appear as a second entry.
+    const locations = [loc('New York', 'Knoedler & Co.', '1910', null)]
+    const layout = buildChainLayout(locations, [], [
+      {
+        piRecordNo: null, artist: null, title: null, entryDate: null, saleDate: '1910',
+        seller: 'Durand-Ruel', sellerLocation: null, buyer: 'Knoedler & Co.', buyerLocation: 'New York',
+        purchasePrice: '$18,000', salePrice: null, transaction: null, notes: null,
+        sourceUrl: 'https://gpi.example/1', sourceLabel: 'Getty GPI',
+      },
+    ], [])
+    expect(layout.unmatchedSales).toHaveLength(0)
+    expect(layout.custody).toHaveLength(1)
+    expect(layout.custody[0].sales).toHaveLength(1)
+    expect(layout.custody[0].sales![0].price).toBe('$18,000')
+    expect(layout.custody[0].sales![0].via).toContain('Knoedler')
+  })
+
+  it('keeps a sale with no matching custody owner as an honest unmatched entry (never dropped)', () => {
     const locations = [loc('Chicago', 'Palmer Family', '1902', null)]
     const layout = buildChainLayout(locations, [], [
       {
-        piRecordNo: null, artist: null, title: null, entryDate: null, saleDate: '1920',
-        seller: 'Knoedler', sellerLocation: null, buyer: 'Palmer Family', buyerLocation: null,
+        piRecordNo: null, artist: null, title: null, entryDate: null, saleDate: '1907',
+        seller: 'Monet', sellerLocation: null, buyer: 'Durand-Ruel', buyerLocation: 'Paris',
         purchasePrice: '$500', salePrice: null, transaction: null, notes: null,
         sourceUrl: null, sourceLabel: 'Getty GPI',
       },
     ], [])
-    expect(layout.dealers).toHaveLength(1)
-    expect(layout.dealers[0].lane).toBe('dealer')
+    expect(layout.unmatchedSales).toHaveLength(1)
+    expect(layout.unmatchedSales[0].who).toBe('Durand-Ruel')
+    // It did not get folded into the unrelated custody owner.
+    expect(layout.custody[0].sales).toBeUndefined()
   })
 })
 
