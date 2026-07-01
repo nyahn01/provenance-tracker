@@ -27,6 +27,7 @@ import { fileURLToPath } from 'node:url'
 import { SENTINELS } from './sentinels/index.mjs'
 import { planFeedbackRouting } from './feedback/route.mjs'
 import { rankProposals, renderDigest } from './decision/rank.mjs'
+import { autoPromoteTarget } from './decision/promote.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const cfg = JSON.parse(readFileSync(join(ROOT, '.claude/orchestration.json'), 'utf8'))
@@ -127,6 +128,31 @@ async function main() {
         })
         log(`  #${p.number} → ${p.label} (triage-queued)`)
       }
+    }
+  }
+
+  // ── Auto-promote: high-stakes sentinels (security/honesty) → priority ───────
+  // Approved graduated autonomy. Never merges — a human always merges.
+  if (cfg.decision?.auto_promote?.enabled) {
+    const kinds = cfg.decision.auto_promote.kinds ?? ['security', 'honesty']
+    if (DRY) {
+      log(`auto-promote: [dry-run] would promote open security/honesty proposals (${kinds.join(', ')}) → priority`)
+    } else {
+      const proposals = await gh(`/repos/${REPO}/issues?state=open&labels=proposal&per_page=100`)
+      let promoted = 0
+      for (const p of proposals) {
+        if (promoted >= cap) break
+        const labels = (p.labels || []).map(l => l.name)
+        if (labels.includes('priority')) continue
+        const target = autoPromoteTarget(p.title, kinds)
+        if (!target) continue
+        await gh(`/repos/${REPO}/issues/${p.number}/labels`, { method: 'POST', body: JSON.stringify({ labels: ['priority', `agent:${target.agent}`] }) })
+        await gh(`/repos/${REPO}/issues/${p.number}/labels/proposal`, { method: 'DELETE' }).catch(() => {})
+        await gh(`/repos/${REPO}/issues/${p.number}/comments`, { method: 'POST', body: JSON.stringify({ body: `Auto-promoted \`proposal\` → \`priority\` (${target.kind} is high-stakes/low-ambiguity). Routed to \`agent:${target.agent}\`. A human still merges the resulting PR.` }) })
+        log(`  auto-promoted #${p.number} (${target.kind}) → priority`)
+        promoted++
+      }
+      if (!promoted) log('auto-promote: no eligible security/honesty proposals')
     }
   }
 

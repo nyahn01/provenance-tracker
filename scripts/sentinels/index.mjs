@@ -13,6 +13,7 @@ import { scanHonestyRegression } from './honesty-regression.mjs'
 import { scanSecurity } from './security.mjs'
 import { scanDocsDrift } from './docs-drift.mjs'
 import { scanRepoHygiene } from './repo-hygiene.mjs'
+import { scanStalePlans } from './stale-plans.mjs'
 
 export const SENTINELS = {
   'data-quality-sentinel': scanFeatured,
@@ -20,4 +21,5 @@ export const SENTINELS = {
   'security-sentinel': scanSecurity,
   'docs-drift-sentinel': scanDocsDrift,
   'repo-hygiene-sentinel': scanRepoHygiene,
+  'stale-plans-sentinel': scanStalePlans,
 }
