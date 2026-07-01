@@ -24,8 +24,7 @@
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { scanFeatured } from './sentinels/data-quality.mjs'
-import { scanHonestyRegression } from './sentinels/honesty-regression.mjs'
+import { SENTINELS } from './sentinels/index.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const cfg = JSON.parse(readFileSync(join(ROOT, '.claude/orchestration.json'), 'utf8'))
@@ -83,15 +82,17 @@ async function main() {
   log(`mode=${cfg.mode} paused=${cfg.paused} → ${active ? 'ACTIVE' : 'inert (no-op)'}${DRY ? ' [dry-run]' : ''}`)
   if (!active) return
 
-  // ── Sense: run enabled sentinels ──────────────────────────────────────────
+  // ── Sense: run every enabled, registered sentinel ─────────────────────────
   const findings = []
-  if (cfg.sentinels?.['data-quality-sentinel']?.enabled) {
-    const f = scanFeatured()
-    log(`data-quality: ${f.length} finding(s)`) ; findings.push(...f)
-  }
-  if (cfg.sentinels?.['honesty-regression-sentinel']?.enabled) {
-    const f = scanHonestyRegression()
-    log(`honesty-regression: ${f.length} finding(s)`) ; findings.push(...f)
+  for (const [key, scan] of Object.entries(SENTINELS)) {
+    if (!cfg.sentinels?.[key]?.enabled) continue
+    try {
+      const f = scan()
+      log(`${key}: ${f.length} finding(s)`)
+      findings.push(...f)
+    } catch (err) {
+      log(`${key}: scan errored (skipped) — ${err.message}`)
+    }
   }
 
   // File issues, idempotent + capped.
