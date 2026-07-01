@@ -11,7 +11,7 @@
  *     were moved verbatim from StoriesApp.tsx; they communicate only through the
  *     two refs, so this is a closed, side-effect-free boundary.
  */
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ProvenanceResponse } from '@/lib/types'
 import { OBS, state } from '@/lib/design-tokens'
 import { buildArcs, buildDealerArcs, buildGapArcs, buildLabels, cityCoords, AMBER_DOT } from './globe-data'
@@ -25,6 +25,10 @@ interface GlobeContainerProps {
 export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const globeRef = useRef<any>(null)
+  // Flips true once the async globe init completes, so the prov effect below re-runs
+  // and draws the arcs even when `prov` was already set at mount (the "see on map"
+  // reveal case — the landing globe got away with `prov` arriving null→value later).
+  const [ready, setReady] = useState(false)
 
   // ── Globe init (full-screen background, once) ──────────────────────────────
   useEffect(() => {
@@ -77,6 +81,7 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
       const fit = () => { const el = containerRef.current; if (el) globe.width(el.clientWidth).height(el.clientHeight) }
       fit(); onResize = fit; window.addEventListener('resize', fit)
       globeRef.current = globe
+      if (mounted) setReady(true)
     })()
     return () => { mounted = false; if (onResize) window.removeEventListener('resize', onResize) }
   }, [])
@@ -139,7 +144,7 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
       const spread = Math.max(Math.max(...lats) - Math.min(...lats), Math.max(...lngs) - Math.min(...lngs))
       g.pointOfView({ lat, lng, altitude: Math.min(2.5, Math.max(0.7, spread / 40)) }, 1200)
     }
-  }, [prov])
+  }, [prov, ready])
 
   return (
     <div
