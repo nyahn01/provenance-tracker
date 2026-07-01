@@ -8,20 +8,25 @@ need is absent, ask `design-director` to add it — never invent ad-hoc styles.
 
 ## 0. Philosophy
 
+> **Hero update (ADR 0004):** the globe is no longer the hero. The hero is the
+> **timeline-led chain of custody** — see `docs/design/timeline-hero-spec.md` for the
+> binding spec (type ramp, motion, the continuous linear timeline in §4/§6h). The globe
+> is retained as the landing backdrop and the forthcoming "see this journey on a map"
+> reveal (Stage 2b). The two modes below still describe the palettes and their roles.
+
 The UI lives in two modes that share DNA:
 
-**Observatory** (landing / globe) — near-black, luminous, cinematic. The globe is the
-hero. Typography is restrained: one serif headline, small-caps labels, nothing competing
-with the rotating earth. Colour used as light: clay arcs trace journeys, gold pins pulse
-like distant stars.
+**Observatory** (landing) — near-black, luminous. The globe is a **supporting backdrop**,
+no longer the hero. Typography is restrained: one serif headline, small-caps labels. The
+curated collection leads.
 
-**Gallery** (detail / provenance) — warm off-white, editorial, generous margins. Walks
-the user from the planetarium into the exhibition room. The artwork is the hero: large,
-unmanipulated, captioned like a catalogue raisonné entry. Every fact carries a visible
-source badge. Gaps are beautiful invitations, never broken states.
+**Gallery** (detail / provenance) — warm off-white, editorial, generous margins. **The
+artwork is the hero**: large, unmanipulated, lit with a soft shadow, captioned by the
+continuous **chain-of-custody timeline** (§6h). Every fact carries a visible source badge;
+a documented sale folds into the owner it created; gaps are beautiful invitations, never
+broken states.
 
-The transition between modes is the product's most important moment: 400 ms ease-out,
-background fades from near-black to warm paper.
+The transition between modes is a key moment: ~400 ms ease-out into the warm gallery.
 
 ---
 
@@ -259,6 +264,23 @@ carries one of these badges. Non-negotiable per honesty rules.
 Style: `border-radius: --radius-sm; padding: 2px 6px; font-size: 0.625rem; font-family: --font-ui; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase`.
 
 On gallery (light) background: use `--gal-*` variants of the same hue family.
+
+### 6h. Chain-of-custody timeline (the hero — `ChainOfCustodyTimeline`)
+The provenance hero. A **single continuous vertical spine**, top = earliest, the same
+linear form at every width (never a horizontal "kanban" row). Full spec:
+`docs/design/timeline-hero-spec.md`.
+- **Custody** = the unbroken thread — a dot on the spine (`--gal-gold` ring). Serif year,
+  owner name, location, source badge + confidence dot.
+- **Sale** = *how* custody changed. A documented dealer record (Getty GPI) is **folded into
+  the custody owner it created** as an inline annotation (`◆ Sale · seller → buyer · price ·
+  GPI ↗`), keyed on a real name+date match — never a duplicate card, never fabricated. An
+  unmatched sale is kept as its own honest entry, never dropped. (`accent.dealer`.)
+- **Loan** = an exhibition; it **branches off** the spine (`--gal-sage`) labelled "not a
+  custody change" and never advances the thread.
+- **Gap** = drawn on the spine as a labelled dashed band; inviting ("Help complete the
+  record"), never an error.
+- A **legend** names every mark (identity is never colour-alone; the custody/loan/sale hues
+  pass CVD separation). Warm gallery palette to match the detail view.
 
 ---
 
