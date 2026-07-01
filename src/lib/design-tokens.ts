@@ -32,6 +32,10 @@ export const OBS = {
   text: '#f6f1e8', textMuted: '#9a8f85', textFaint: '#5c5449',
   clay: '#c87855', gold: '#d4a853', sage: '#6f8d7d',
   globeOcean: '#060504', globeLand: '#7a5828', globeBorder: '#a87848',
+  // Timeline-hero gap state (docs/design/timeline-hero-spec.md §2, ADR 0004). A
+  // dimmed warm-neutral blend of textFaint/borderMid, dimmed further — deliberately
+  // NOT red, NOT globeOcean, NOT a data hue. Design call: eyeball on the preview.
+  gapWeave: '#463d33',
 } as const
 
 // ─── Gallery (light) — provenance detail panel ───────────────────────────────
@@ -65,6 +69,7 @@ export const accent = {
   sage: OBS.sage,         // #6f8d7d
   dealer: '#7c5cbf',      // EV_STYLES.dealer
   dealerSoft: '#9b7fe0',  // marketing purple
+  gap: OBS.gapWeave,      // mirror of OBS.gapWeave for the semantic layer
 } as const
 
 export const state = {
@@ -86,4 +91,15 @@ export const globe = {
   ocean: '#060504',   // canvas fill literal in StoriesApp globe init — DO NOT change
   land: '#7a5828',
   border: '#a87848',
+} as const
+
+// ─── Motion (timeline-hero spec §3) ──────────────────────────────────────────
+// Curatorial, not ambient. The reduced-motion fallback is handled globally by
+// the `@media (prefers-reduced-motion: reduce)` rule in globals.css (forces
+// animation/transition-duration to 0.01ms) — components just use these values
+// and get the fallback for free.
+export const motion = {
+  dur: { micro: 200, event: 400, reveal: 550 },
+  ease: { standard: 'cubic-bezier(0.25, 0.1, 0, 1)' },
+  stagger: { chain: 90 },
 } as const
