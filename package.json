@@ -18,6 +18,7 @@
     "metrics": "node scripts/metrics.mjs",
     "curate": "node scripts/curate.mjs",
     "orchestrate": "node scripts/orchestrate.mjs",
+    "plan-to-issue": "node scripts/plan-to-issue.mjs",
     "test": "vitest run"
   },
   "dependencies": {

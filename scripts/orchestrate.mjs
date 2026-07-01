@@ -26,6 +26,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { SENTINELS } from './sentinels/index.mjs'
 import { planFeedbackRouting } from './feedback/route.mjs'
+import { rankProposals, renderDigest } from './decision/rank.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const cfg = JSON.parse(readFileSync(join(ROOT, '.claude/orchestration.json'), 'utf8'))
@@ -125,6 +126,31 @@ async function main() {
           body: JSON.stringify({ body: `Routed to **${p.label}** and queued for triage by the orchestrator. Deep triage (validity + verbatim record) is done by the \`feedback-triage\` agent; a human promotes to \`priority\`.\n\n<!-- feedback-routed -->` }),
         })
         log(`  #${p.number} → ${p.label} (triage-queued)`)
+      }
+    }
+  }
+
+  // ── Decide: rank open proposals into a single in-place Decision digest ──────
+  // Recommends the next proposal to promote; never promotes/merges (human decides).
+  if (cfg.decision?.digest?.enabled) {
+    if (DRY) {
+      log('decision digest: [dry-run] would rank open proposals and upsert the "Decision digest" issue')
+    } else {
+      const proposals = await gh(`/repos/${REPO}/issues?state=open&labels=proposal&per_page=100`)
+      const enriched = proposals
+        .filter(p => !(p.body || '').includes('<!-- decision-digest -->')) // don't rank the digest itself
+        .map(p => ({ number: p.number, title: p.title, comments: p.comments, reactions: p.reactions }))
+      const ranked = rankProposals(enriched)
+      const body = renderDigest(ranked)
+      // Upsert: find an open issue carrying the digest marker.
+      const all = await gh(`/repos/${REPO}/issues?state=open&per_page=100`)
+      const existing = all.find(i => (i.body || '').includes('<!-- decision-digest -->'))
+      if (existing) {
+        await gh(`/repos/${REPO}/issues/${existing.number}`, { method: 'PATCH', body: JSON.stringify({ body }) })
+        log(`decision digest: refreshed #${existing.number} (${ranked.length} proposal(s))`)
+      } else {
+        const created = await gh(`/repos/${REPO}/issues`, { method: 'POST', body: JSON.stringify({ title: '🧭 Decision digest — next up', body }) })
+        log(`decision digest: created #${created.number} (${ranked.length} proposal(s))`)
       }
     }
   }
