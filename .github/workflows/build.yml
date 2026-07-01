@@ -1,0 +1,90 @@
+name: Build issue (Claude Code)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# The ACT step, for real — a headless Claude Code run implements a promoted issue
+# into a DRAFT pull request. MANUAL-FIRST by design: a human dispatches this for a
+# chosen issue and watches the result. A human ALWAYS merges (the moat is unchanged).
+#
+# ⚠️  NOT verifiable from the dev sandbox — the first real run must be watched.
+#     If the action's inputs/tool names differ in your version, check
+#     https://github.com/anthropics/claude-code-action (README / docs/usage.md).
+#
+# ONE-TIME SETUP (human):
+#   1. Install the Claude GitHub App on this repo: https://github.com/apps/claude
+#   2. Ensure the `ANTHROPIC_API_KEY` repo secret is set (already used by other
+#      workflows here). Console: https://console.anthropic.com
+#
+# RUN IT:  Actions → "Build issue (Claude Code)" → Run workflow → issue number.
+#   or:    gh workflow run build.yml -f issue_number=<n>
+#
+# GO FULL-AUTO LATER: uncomment the `issues: labeled` trigger below — it then fires
+# whenever the orchestrator applies `ready-to-build` (bounded by the orchestrator's
+# max_prs_per_run). Until then, only manual dispatch builds anything.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to implement"
+        required: true
+        type: string
+  # Full-auto (later): build when the orchestrator marks an issue ready.
+  # issues:
+  #   types: [labeled]
+
+permissions:
+  contents: write        # branch + commits
+  pull-requests: write   # open the draft PR
+  issues: write          # read the issue, comment
+
+concurrency:
+  group: build-issue-${{ github.event.inputs.issue_number || github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # On the (future) label trigger, only act on `ready-to-build`.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.label.name == 'ready-to-build'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Implement the issue with Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Implement GitHub issue #${{ github.event.inputs.issue_number || github.event.issue.number }} in this repository.
+
+            Read CLAUDE.md and AGENTS.md first and obey them — especially the honesty
+            contract (every on-screen fact carries a visible source; no invented dates,
+            coordinates, or risk scores; sparse data shown as a gap, never faked; custody
+            is never conflated with exhibition loans) and the "one fact, one home" rules.
+
+            Steps:
+            1. Create a branch named feat/<domain>/<short-slug>.
+            2. Implement the issue as ONE coherent, minimal change (types-first: new data
+               shapes go in src/lib/types.ts before any other file).
+            3. Make the gates pass: `npm run honesty` && `npm run build` && `npm test`.
+            4. Commit with a conventional-commit message and open a **draft** pull request
+               whose body contains "Closes #${{ github.event.inputs.issue_number || github.event.issue.number }}".
+            5. Do NOT merge — a human merges. If the change cannot be made honestly (e.g. a
+               required source is unreachable, so a value would have to be invented), open the
+               draft PR explaining the blocker instead of fabricating data.
+          # Tool/turn limits. If tool names differ in your action version, see the action's
+          # docs/usage.md — `Bash` (npm/git/gh), plus the file tools, are what's needed.
+          claude_args: |
+            --max-turns 25
+            --allowedTools Bash,Edit,Write,Read,Glob,Grep
