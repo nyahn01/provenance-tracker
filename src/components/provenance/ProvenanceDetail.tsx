@@ -125,15 +125,23 @@ export function ProvenanceDetail({
         <div style={{ maxWidth: isMobile ? undefined : 1100, margin: isMobile ? undefined : '0 auto' }}>
 
         {hero && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={hero} alt={selected.title} loading="eager" decoding="async" fetchPriority="high"
-            onError={e => { e.currentTarget.style.display = 'none' }}
-            // Reserve the band so the panel doesn't reflow when the image arrives.
-            // Desktop/tablet: the object is the hero — large and uncropped (spec §5).
-            style={{
-              width: '100%', height: isMobile ? 280 : 'min(56vh, 560px)',
-              objectFit: isMobile ? 'cover' : 'contain', display: 'block', background: GAL.surface2,
-            }} />
+          // The object is the hero: presented large and uncropped, centered with room
+          // to breathe and a soft shadow to lift it like a framed work (spec §5).
+          <div style={{
+            padding: isMobile ? 0 : '32px 24px 8px',
+            display: 'flex', justifyContent: 'center', background: GAL.bg,
+          }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={hero} alt={selected.title} loading="eager" decoding="async" fetchPriority="high"
+              onError={e => { e.currentTarget.style.display = 'none' }}
+              style={{
+                width: isMobile ? '100%' : 'auto', maxWidth: '100%',
+                height: isMobile ? 280 : 'min(56vh, 560px)',
+                objectFit: isMobile ? 'cover' : 'contain', display: 'block',
+                background: isMobile ? GAL.surface2 : 'transparent',
+                boxShadow: isMobile ? 'none' : '0 16px 44px rgba(26,23,20,0.22)',
+              }} />
+          </div>
         )}
 
         <div style={{ padding: '22px 24px 8px' }}>

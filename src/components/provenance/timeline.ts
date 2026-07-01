@@ -155,7 +155,7 @@ export function sourceConfidence(source: string, hasExplicitDate: boolean): Prov
 }
 
 /** Loose name match (case/punctuation-insensitive) used to spot artist-origin entries. */
-function sameName(a: string, b: string): boolean {
+export function sameName(a: string, b: string): boolean {
   const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
   const na = norm(a), nb = norm(b)
   if (na.length < 4 || nb.length < 4) return false
