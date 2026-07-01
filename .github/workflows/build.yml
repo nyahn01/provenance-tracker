@@ -11,8 +11,12 @@ name: Build issue (Claude Code)
 #
 # ONE-TIME SETUP (human):
 #   1. Install the Claude GitHub App on this repo: https://github.com/apps/claude
-#   2. Ensure the `ANTHROPIC_API_KEY` repo secret is set (already used by other
-#      workflows here). Console: https://console.anthropic.com
+#   2. Add a GitHub *Actions* secret `CLAUDE_CODE_OAUTH_TOKEN` (Claude Pro/Max):
+#      run `claude setup-token` locally, then Settings → Secrets and variables →
+#      Actions → New repository secret. (NOTE: a Vercel env var is NOT a GitHub
+#      Actions secret — they are separate stores.) To use a pay-as-you-go API key
+#      instead, swap the input below for `anthropic_api_key` + an ANTHROPIC_API_KEY
+#      Actions secret.
 #
 # RUN IT:  Actions → "Build issue (Claude Code)" → Run workflow → issue number.
 #   or:    gh workflow run build.yml -f issue_number=<n>
@@ -65,7 +69,7 @@ jobs:
       - name: Implement the issue with Claude Code
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
             Implement GitHub issue #${{ github.event.inputs.issue_number || github.event.issue.number }} in this repository.
 
@@ -87,5 +91,5 @@ jobs:
           # Tool/turn limits. If tool names differ in your action version, see the action's
           # docs/usage.md — `Bash` (npm/git/gh), plus the file tools, are what's needed.
           claude_args: |
-            --max-turns 25
+            --max-turns 60
             --allowedTools Bash,Edit,Write,Read,Glob,Grep
