@@ -5,7 +5,6 @@ import type { SearchResult, SearchByMode, ProvenanceResponse } from '@/lib/types
 import { FEATURED_WORKS, type FeaturedWork } from '@/lib/featured'
 import { OBS } from '@/lib/design-tokens'
 import { GlobeContainer } from './provenance/GlobeContainer'
-import { GlobeArcLegend } from './provenance/GlobeArcLegend'
 import { GlobeGapBadge } from './provenance/GlobeGapBadge'
 import { countUnresolvedGaps } from './provenance/globe-data'
 import { SourceBadge } from './provenance/SourceBadge'
@@ -96,11 +95,10 @@ export default function StoriesApp() {
       {/* Globe — owns its own refs + the locked GLOBE CONTRACT init (see GlobeContainer) */}
       <GlobeContainer prov={prov} globeHeightPct={globeHeightPct} />
 
-      {/* Arc-tier legend — sibling to GlobeContainer, never inside it (GLOBE CONTRACT).
-          Idle view only: once a story opens, ProvenanceDetail shows its own contextual
-          arc legend, so this overlay would just duplicate it — and on mobile/tablet it
-          sat behind the drawer, unreachable and unremovable, hence "persists on page" (#114). */}
-      {!inStory && <GlobeArcLegend globeHeightPct={globeHeightPct} />}
+      {/* No arc-tier legend on the idle hero: with no work selected the globe shows no
+          arcs, so the legend explained nothing and read as persistent chrome. Once a story
+          opens, ProvenanceDetail carries its own contextual arc legend. (Removed per the
+          timeline-led redesign — the globe is being demoted from the hero; ADR 0004.) */}
 
       {/* Undocumented-gap badge — sibling to GlobeContainer, story view only
           (gaps are per-work). Never drawn as an arc; see GlobeGapBadge. */}
