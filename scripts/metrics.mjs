@@ -35,11 +35,13 @@ for (const [work, raw] of works) {
   datedStart += datedN
   nullCoord += list.filter(e => e.lat == null || e.lng == null).length
   aTier += list.filter(e => isATier(e.source)).length
-  // The #43/#48/#52 data signal: after the app's sort, would a dateless custody
-  // entry land at the chronological end? (The UI now reorders artist-origin
-  // entries to the front; this tracks the underlying data, which is still raw.)
-  const sorted = [...list].sort((a, b) => extractYear(a.startDate) - extractYear(b.startDate))
-  const trailingDateless = sorted.length > 0 && !sorted[sorted.length - 1].startDate
+  // The #43/#48/#52 data signal: after the app's sort (which falls back to an entry's
+  // endDate when it has no startDate), would a truly UNPLACEABLE custody entry — one
+  // with neither a start nor an end date — land at the chronological end?
+  const placedYear = (e) => (e.startDate ? extractYear(e.startDate) : (e.endDate ? extractYear(e.endDate) : 9999))
+  const sorted = [...list].sort((a, b) => placedYear(a) - placedYear(b))
+  const lastEntry = sorted[sorted.length - 1]
+  const trailingDateless = !!lastEntry && !lastEntry.startDate && !lastEntry.endDate
   if (trailingDateless) datelessLeadWorks++
   if (datedN >= 3) deepChains++
   perWork.push({ work, entries: list.length, datedStart: datedN, trailingDatelessCustody: trailingDateless })

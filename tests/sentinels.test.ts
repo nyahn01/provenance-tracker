@@ -35,6 +35,18 @@ describe('data-quality sentinel', () => {
     expect(t.body).toContain('Unknown buyer')
   })
 
+  it('does NOT flag a start-less entry that has an endDate (it is placeable, #103)', () => {
+    const prov = {
+      'aic:x': [
+        { name: 'Paris', lat: 48.85, lng: 2.35, startDate: '1900', endDate: '1902' },
+        { name: 'Lake Forest', institution: 'Wood', lat: 42.26, lng: -87.84, startDate: null, endDate: '1984' },
+        { name: 'Chicago', institution: 'AIC', lat: 41.88, lng: -87.63, startDate: '1985', endDate: null },
+      ],
+    }
+    const f = scanDataQuality(prov)
+    expect(f.find((x: any) => x.id === 'data-quality-trailing-dateless-custody')).toBeUndefined()
+  })
+
   it('stays silent on a clean chain', () => {
     const prov = {
       'aic:3': [

@@ -5,7 +5,7 @@
   "datedStartCoveragePct": 98.1,
   "aTierEntries": 53,
   "nullCoordinateEntries": 1,
-  "worksWithTrailingDatelessCustody": 1,
+  "worksWithTrailingDatelessCustody": 0,
   "worksWithDeepChain": 8,
   "perWork": [
     {
@@ -42,7 +42,7 @@
       "work": "aic:64818",
       "entries": 8,
       "datedStart": 7,
-      "trailingDatelessCustody": true
+      "trailingDatelessCustody": false
     },
     {
       "work": "aic:111442",

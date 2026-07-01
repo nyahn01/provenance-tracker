@@ -47,13 +47,18 @@ export function scanDataQuality(prov) {
     })
   }
 
-  // 2. Trailing dateless custody (a "?" row that sorts to the chronological end).
+  // 2. Trailing UNPLACEABLE custody (a row that sorts to the chronological end and
+  //    can't be ordered at all). An entry with only an endDate is still placeable (by
+  //    that endDate) — it is NOT a defect — so we flag only entries with neither a
+  //    start nor an end date. Ordering mirrors the app timeline (endDate fallback).
+  const placed = (e) => (e.startDate ? extractYear(e.startDate) : (e.endDate ? extractYear(e.endDate) : 9999))
   const trailing = []
   for (const [work, list] of works) {
     if (!list.length) continue
-    const sorted = [...list].sort((a, b) => extractYear(a.startDate) - extractYear(b.startDate))
-    if (!sorted[sorted.length - 1].startDate) {
-      trailing.push({ work, where: sorted[sorted.length - 1].institution || sorted[sorted.length - 1].name || '(unnamed)' })
+    const sorted = [...list].sort((a, b) => placed(a) - placed(b))
+    const last = sorted[sorted.length - 1]
+    if (last && !last.startDate && !last.endDate) {
+      trailing.push({ work, where: last.institution || last.name || '(unnamed)' })
     }
   }
   if (trailing.length) {
