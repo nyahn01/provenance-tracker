@@ -34,7 +34,7 @@
     "_doc": "The Decide step. Ranks open `proposal` issues into a single in-place 'Decision digest' and recommends the next promotion. `auto_promote` grants graduated autonomy: the high-stakes/low-ambiguity sentinels (security, honesty) may auto-promote proposal→priority within max_prs_per_run; everything else stays the human's button. NEVER merges — a human always merges.",
     "digest": { "enabled": true },
     "auto_promote": { "enabled": true, "kinds": ["security", "honesty"] },
-    "auto_build": { "enabled": false, "_doc": "ACT step (OFF by default). When true, the runner dispatches each buildable `priority` issue to a bring-your-own coding agent (env BUILD_AGENT_CMD) that opens a DRAFT PR; with no agent cmd it posts the build brief + `ready-to-build` label. A human ALWAYS merges. Bounded by max_prs_per_run; skips `paused`." }
+    "auto_build": { "enabled": true, "_doc": "ACT step (ON). The runner dispatches each buildable `priority` issue to a bring-your-own coding agent (env BUILD_AGENT_CMD) that opens a DRAFT PR; with no agent cmd it posts the build brief + `ready-to-build` label for a human/session. A human ALWAYS merges. Bounded by max_prs_per_run; skips `paused`. Revert = set enabled:false (or paused:true)." }
   },
   "outcome": {
     "_doc": "The Act+Outcome loop. `npm run metrics` computes metrics/latest.json (offline, runnable now); the `retro` agent turns merges+metrics into docs/INSIGHTS.md lessons. Cadence applies in scheduled/event-driven mode.",
