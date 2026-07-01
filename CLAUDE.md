@@ -31,6 +31,10 @@ files — done work closes an Issue; a lesson merges into `docs/INSIGHTS.md`. Ke
 (~150 lines max) — it loads on every turn of every agent.
 
 ## ⚠️ GLOBE CONTRACT — read before touching StoriesApp.tsx / GlobeContainer.tsx
+**The globe is no longer the hero.** The hero is the timeline-led chain-of-custody view
+(ADR `docs/decisions/0004-timeline-led-hero.md`; spec `docs/design/timeline-hero-spec.md`).
+The globe is *retained* — as the landing backdrop and the forthcoming "see this journey on a
+map" reveal (Stage 2b, Globe.gl) — so its **init-safety rules below still apply in full**.
 The globe init is locked (it has been broken twice). The globe trio lives in
 `src/lib/design-tokens.ts` (`OBS.globeOcean / globeLand / globeBorder`) — don't restate the hexes
 here. The canvas-fill literal below is the ocean value on purpose. Init pattern:
