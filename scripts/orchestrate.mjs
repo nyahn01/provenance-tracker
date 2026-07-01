@@ -25,6 +25,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { SENTINELS } from './sentinels/index.mjs'
+import { planFeedbackRouting } from './feedback/route.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const cfg = JSON.parse(readFileSync(join(ROOT, '.claude/orchestration.json'), 'utf8'))
@@ -104,6 +105,29 @@ async function main() {
     if (await fileFinding(f, existing)) filed++
   }
   if (!findings.length) log('no findings — sentinels stay silent (no "all clear" issue)')
+
+  // ── Feedback: route raw website feedback to a domain owner + triage queue ───
+  // Lightweight routing only — deep validity triage (verbatim files) is the LLM
+  // feedback-triage agent's job. This never judges validity, promotes, or closes.
+  if (cfg.feedback?.route?.enabled) {
+    if (DRY) {
+      log('feedback routing: [dry-run] would GET open feedback issues and assign agent:<domain> + triage-queued')
+    } else {
+      const fb = await gh(`/repos/${REPO}/issues?state=open&labels=feedback&per_page=50`)
+      const plan = planFeedbackRouting(fb).slice(0, cap)
+      log(`feedback routing: ${plan.length} untriaged issue(s)`)
+      for (const p of plan) {
+        await gh(`/repos/${REPO}/issues/${p.number}/labels`, {
+          method: 'POST', body: JSON.stringify({ labels: [p.label, 'triage-queued'] }),
+        })
+        await gh(`/repos/${REPO}/issues/${p.number}/comments`, {
+          method: 'POST',
+          body: JSON.stringify({ body: `Routed to **${p.label}** and queued for triage by the orchestrator. Deep triage (validity + verbatim record) is done by the \`feedback-triage\` agent; a human promotes to \`priority\`.\n\n<!-- feedback-routed -->` }),
+        })
+        log(`  #${p.number} → ${p.label} (triage-queued)`)
+      }
+    }
+  }
 
   // ── Route: read the priority queue (build is delegated to the coding agent) ─
   if (!DRY) {

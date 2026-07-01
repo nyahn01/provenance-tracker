@@ -25,6 +25,10 @@
     "docs-drift-sentinel": { "enabled": true, "files": "proposal" },
     "repo-hygiene-sentinel": { "enabled": true, "files": "proposal" }
   },
+  "feedback": {
+    "_doc": "Lightweight routing of raw website feedback (issues labeled `feedback`) into the queue: assign an agent:<domain> owner + `triage-queued` marker. Deep validity triage (verbatim files) stays the LLM feedback-triage agent's job; this never judges, promotes, or closes.",
+    "route": { "enabled": true }
+  },
   "outcome": {
     "_doc": "The Act+Outcome loop. `npm run metrics` computes metrics/latest.json (offline, runnable now); the `retro` agent turns merges+metrics into docs/INSIGHTS.md lessons. Cadence applies in scheduled/event-driven mode.",
     "metrics_cron": "0 7 * * 1",
