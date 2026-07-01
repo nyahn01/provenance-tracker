@@ -181,13 +181,21 @@ export function buildUnifiedTimeline(
     // (feedback #43 / #48). Order it first. We invent no date: the year stays "?" unless
     // the creation year is known (the artist held the work from the moment it was made).
     const isArtistOrigin = !loc.startDate && !!artist && sameName(who, artist)
+    // A custody entry with no startDate but a known endDate IS placeable — order it by
+    // its endDate instead of bucketing to 9999 (which would dangle it at the timeline
+    // END, e.g. "held until 1984" landing after a 1985 museum acquisition). We invent no
+    // start date: the displayed year stays "?" and the detail notes what we do know.
+    const placedKey = loc.startDate
+      ? extractYear(loc.startDate)
+      : (loc.endDate ? extractYear(loc.endDate) : 9999)
+    const heldUntil = !loc.startDate && !!loc.endDate && !isArtistOrigin
     events.push({
       year: isArtistOrigin && creationYear ? String(creationYear) : fmtYear(loc.startDate ?? undefined),
-      sortKey: isArtistOrigin ? (creationYear ?? -1) : extractYear(loc.startDate ?? undefined),
+      sortKey: isArtistOrigin ? (creationYear ?? -1) : placedKey,
       type,
       who,
       where,
-      detail: isArtistOrigin ? 'Origin — the artist' : undefined,
+      detail: isArtistOrigin ? 'Origin — the artist' : (heldUntil ? `Held until ${fmtYear(loc.endDate ?? undefined)}` : undefined),
       source: label,
       confidence: loc.confidence ?? sourceConfidence(label, loc.startDate != null),
     })
