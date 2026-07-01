@@ -91,5 +91,5 @@ jobs:
           # Tool/turn limits. If tool names differ in your action version, see the action's
           # docs/usage.md — `Bash` (npm/git/gh), plus the file tools, are what's needed.
           claude_args: |
-            --max-turns 25
+            --max-turns 60
             --allowedTools Bash,Edit,Write,Read,Glob,Grep
