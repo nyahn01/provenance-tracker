@@ -88,6 +88,19 @@ The dial was flipped: `mode` → `scheduled`, both sentinels `enabled: true`. Th
 (`scripts/sentinels/*.mjs`) scan `main` on the daily cron and file idempotent issues
 (data-quality → `proposal`, honesty-regression → `priority`), capped by `max_prs_per_run`.
 The sentinels are deterministic (no Claude spend) and never edit code, merge, or close.
-Reverting is the same one-line flip (`mode` → `manual`, or `paused: true`). What is **not**
-yet automated: turning a `priority` issue into a PR — that build step is delegated to a
-coding-agent run, and a human still merges every PR (the moat is unchanged).
+Reverting is the same one-line flip (`mode` → `manual`, or `paused: true`).
+
+## Update — full loop wired (#104–#109, #107)
+The loop now runs **Sense → Feedback → Auto-promote → Decide → Act** on the cron:
+- **Sense** — six read-only sentinels (data-quality, honesty-regression, security, docs-drift,
+  repo-hygiene, stale-plans) file idempotent, capped issues.
+- **Feedback** — raw `feedback` issues get an `agent:<domain>` owner + `triage-queued`.
+- **Auto-promote** — `security`/`honesty` proposals auto-promote to `priority`
+  (`decision.auto_promote`); every other domain stays the human's button.
+- **Decide** — open proposals are ranked into a single "Decision digest" recommending the next
+  promotion.
+- **Act** — `decision.auto_build` (**OFF by default**) dispatches buildable `priority` issues to a
+  bring-your-own coding agent (`BUILD_AGENT_CMD`) that opens a **draft** PR; with no agent configured
+  it posts the build brief + `ready-to-build`. **A human always merges** — the moat is unchanged.
+All autonomy is opt-in per flag and reversible in one line. The coding agent itself is BYO and not
+bundled/verified in CI.

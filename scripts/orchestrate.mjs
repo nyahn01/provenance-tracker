@@ -28,6 +28,7 @@ import { SENTINELS } from './sentinels/index.mjs'
 import { planFeedbackRouting } from './feedback/route.mjs'
 import { rankProposals, renderDigest } from './decision/rank.mjs'
 import { autoPromoteTarget } from './decision/promote.mjs'
+import { selectBuildable, dispatch } from './build-issue.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const cfg = JSON.parse(readFileSync(join(ROOT, '.claude/orchestration.json'), 'utf8'))
@@ -181,17 +182,28 @@ async function main() {
     }
   }
 
-  // ── Route: read the priority queue (build is delegated to the coding agent) ─
+  // ── Act: build the priority queue (OFF by default; human always merges) ─────
   if (!DRY) {
     const queue = await gh(`/repos/${REPO}/issues?state=open&labels=priority&per_page=50`)
     log(`priority queue: ${queue.length} issue(s)`)
     for (const it of queue) {
-      const agent = (it.labels || []).map(l => l.name).find(n => n.startsWith('agent:')) || 'agent:unassigned'
       const paused = (it.labels || []).some(l => l.name === 'paused')
-      log(`  #${it.number} → ${agent}${paused ? ' (paused, skipped)' : ''} — "${it.title}"`)
+      log(`  #${it.number} → ${agentOf(it.labels)}${paused ? ' (paused, skipped)' : ''} — "${it.title}"`)
     }
-    log('build step: delegated to the coding-agent run; the runner never merges (human gate).')
+    if (cfg.decision?.auto_build?.enabled) {
+      const buildable = selectBuildable(queue, cap)
+      log(`auto-build: ${buildable.length} issue(s) to dispatch (${process.env.BUILD_AGENT_CMD ? 'BUILD_AGENT_CMD set' : 'no agent cmd → brief-only'})`)
+      for (const b of buildable) {
+        const full = await gh(`/repos/${REPO}/issues/${b.number}`)
+        await dispatch(full) // BYO coding agent or posts the brief; never merges
+      }
+    } else {
+      log('auto-build: disabled — priority issues built by a human/session; the runner never merges (human gate).')
+    }
   }
 }
+
+const agentOf = (labels = []) =>
+  labels.map(l => (typeof l === 'string' ? l : l.name)).find(n => n.startsWith('agent:')) || 'agent:unassigned'
 
 main().catch(e => { console.error('[orchestrate] fatal:', e.message); process.exit(1) })

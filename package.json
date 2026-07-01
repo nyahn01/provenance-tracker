@@ -19,6 +19,7 @@
     "curate": "node scripts/curate.mjs",
     "orchestrate": "node scripts/orchestrate.mjs",
     "plan-to-issue": "node scripts/plan-to-issue.mjs",
+    "build-issue": "node scripts/build-issue.mjs",
     "test": "vitest run"
   },
   "dependencies": {
