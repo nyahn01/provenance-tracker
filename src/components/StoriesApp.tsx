@@ -95,8 +95,10 @@ export default function StoriesApp() {
       <GlobeContainer prov={prov} globeHeightPct={globeHeightPct} />
 
       {/* Arc-tier legend — sibling to GlobeContainer, never inside it (GLOBE CONTRACT).
-          Shown in both idle and in-story states; anchored to the bottom-left of the globe zone. */}
-      <GlobeArcLegend globeHeightPct={globeHeightPct} />
+          Idle view only: once a story opens, ProvenanceDetail shows its own contextual
+          arc legend, so this overlay would just duplicate it — and on mobile/tablet it
+          sat behind the drawer, unreachable and unremovable, hence "persists on page" (#114). */}
+      {!inStory && <GlobeArcLegend globeHeightPct={globeHeightPct} />}
 
       {/* Overlay only covers the globe area */}
       {!inStory && (
