@@ -37,6 +37,7 @@ permissions:
   contents: write        # branch + commits
   pull-requests: write   # open the draft PR
   issues: write          # read the issue, comment
+  id-token: write        # claude-code-action@v1 mints its GitHub App token via OIDC
 
 concurrency:
   group: build-issue-${{ github.event.inputs.issue_number || github.event.issue.number }}
