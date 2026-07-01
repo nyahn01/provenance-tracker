@@ -13,8 +13,8 @@
  */
 import { useEffect, useRef } from 'react'
 import type { ProvenanceResponse } from '@/lib/types'
-import { OBS } from '@/lib/design-tokens'
-import { buildArcs, buildDealerArcs, buildLabels, cityCoords, AMBER_DOT } from './globe-data'
+import { OBS, state } from '@/lib/design-tokens'
+import { buildArcs, buildDealerArcs, buildGapArcs, buildLabels, cityCoords, AMBER_DOT } from './globe-data'
 
 interface GlobeContainerProps {
   prov: ProvenanceResponse | null
@@ -50,13 +50,16 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
         globe.polygonsData(geo.features).polygonCapColor(() => OBS.globeLand)
           .polygonSideColor(() => 'rgba(0,0,0,0)').polygonStrokeColor(() => OBS.globeBorder).polygonAltitude(0.005)
       }
+      // Stroke/dash/opacity read per-datum off each arc object (built in globe-data.ts's
+      // buildArcs/buildGapArcs) — confidence-honest arcs + the gap tier (issue #124)
+      // only change what these accessors READ, never the accessor calls themselves.
       globe.arcsData([])
         .arcColor((d: any) => d.color ?? OBS.gold)
         .arcAltitude((d: any) => d.altitude ?? 0.18)
-        .arcStroke((d: any) => d.altitude <= 0.12 ? 0.35 : 0.6)
-        .arcDashLength((d: any) => d.altitude <= 0.12 ? 0.02 : 0.015)
-        .arcDashGap((d: any) => d.altitude <= 0.12 ? 0.025 : 0.015)
-        .arcDashAnimateTime(10000)
+        .arcStroke((d: any) => d.stroke ?? (d.altitude <= 0.12 ? 0.35 : 0.6))
+        .arcDashLength((d: any) => d.dashLength ?? (d.altitude <= 0.12 ? 0.02 : 0.015))
+        .arcDashGap((d: any) => d.dashGap ?? (d.altitude <= 0.12 ? 0.025 : 0.015))
+        .arcDashAnimateTime((d: any) => d.dashAnimateTime ?? 10000)
       globe.pointsData([]).pointLat((d: any) => d.lat).pointLng((d: any) => d.lng)
         .pointAltitude(0.006).pointRadius((d: any) => d.r ?? 0.28)
         .pointColor((d: any) => d.color ?? 'rgba(212,168,83,0.8)')
@@ -87,11 +90,14 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
       const c = g.controls?.(); if (c) c.autoRotate = true
       return
     }
-    // Three arc tiers — custody (gold, 0.18), exhibition loans (sage, 0.30), dealer trails (amber, 0.12)
+    // Four arc tiers — custody (gold, 0.18), exhibition loans (sage, 0.30), dealer
+    // trails (amber, 0.12), and resolvable gaps (state.gap, 0.24 — broken/un-animated,
+    // issue #124). Gaps with no coordinates are never drawn here (see GlobeGapBadge).
     const custodyArcs = buildArcs(prov.locations, OBS.gold, 0.18)
     const exhibitionArcs = buildArcs(prov.exhibitions, OBS.sage, 0.30)
     const dealerArcs = buildDealerArcs(prov.gettyRecords ?? [])
-    g.arcsData([...custodyArcs, ...exhibitionArcs, ...dealerArcs])
+    const gapArcs = buildGapArcs(prov.locations, prov.gaps, state.gap)
+    g.arcsData([...custodyArcs, ...exhibitionArcs, ...dealerArcs, ...gapArcs])
 
     // City dots — custody (large gold), exhibition (medium sage), GPI endpoints (small amber)
     const custodyDots = prov.locations
