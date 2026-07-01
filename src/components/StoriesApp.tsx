@@ -312,7 +312,7 @@ export default function StoriesApp() {
           showInsight={showInsight}
           setShowInsight={setShowInsight}
           onClose={close}
-          isTablet={isTablet}
+          isMobile={isMobile}
           drawerOpen={drawerOpen}
           setDrawerOpen={setDrawerOpen}
         />

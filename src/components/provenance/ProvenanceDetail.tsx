@@ -1,10 +1,16 @@
 'use client'
 
 /**
- * ProvenanceDetail — the warm "gallery" sidebar shown when a work is selected:
- * the mobile/tablet hamburger + backdrop, the slide-in panel, the
- * ChainOfCustodyTimeline, RKD records, primary-source text, the deterministic
- * Provenance Intelligence card, and the sources/credit footer.
+ * ProvenanceDetail — the open-work view shown when a work is selected.
+ *
+ * Desktop/tablet (`!isMobile`): a full-width host (spec `docs/design/timeline-hero-spec.md`
+ * §4.1/§5) — the artwork is the object-hero above a centered ~1100px column, and the
+ * ChainOfCustodyTimeline gets the room to render its horizontal hero layout instead of
+ * being squeezed into a drawer. Always visible (non-modal) while a work is open; no
+ * hamburger/backdrop — the panel IS the view.
+ *
+ * Mobile (`isMobile`): unchanged narrow slide-in drawer (hamburger + backdrop) so the
+ * ChainOfCustodyTimeline keeps its vertical mobile fallback (spec §4.1 mobile).
  *
  * StoriesApp owns all state; this component receives it via props.
  */
@@ -26,27 +32,27 @@ interface ProvenanceDetailProps {
   showInsight: boolean
   setShowInsight: Dispatch<SetStateAction<boolean>>
   onClose: () => void
-  isTablet: boolean
+  isMobile: boolean
   drawerOpen: boolean
   setDrawerOpen: Dispatch<SetStateAction<boolean>>
 }
 
 export function ProvenanceDetail({
   selected, hero, credit, prov, loading, showInsight, setShowInsight,
-  onClose, isTablet, drawerOpen, setDrawerOpen,
+  onClose, isMobile, drawerOpen, setDrawerOpen,
 }: ProvenanceDetailProps) {
   const sources = prov ? [...new Set(prov.locations.map(l => l.source))] : []
 
-  // On tablet/mobile the panel is a modal slide-in drawer — trap focus inside it
-  // while open and close on Escape. On desktop it is an always-visible side panel
-  // (non-modal), so the trap stays inactive.
+  // On mobile the panel is a modal slide-in drawer — trap focus inside it while
+  // open and close on Escape. On desktop/tablet it is an always-visible
+  // full-width host (non-modal), so the trap stays inactive.
   const panelRef = useRef<HTMLDivElement>(null)
-  useFocusTrap(panelRef, isTablet && drawerOpen, () => setDrawerOpen(false))
+  useFocusTrap(panelRef, isMobile && drawerOpen, () => setDrawerOpen(false))
 
   return (
     <>
-      {/* ── Hamburger button — visible on mobile/tablet when story is open ──── */}
-      {isTablet && (
+      {/* ── Hamburger button — visible on mobile when story is open ──────────── */}
+      {isMobile && (
         <button
           onClick={() => setDrawerOpen(o => !o)}
           aria-label={drawerOpen ? 'Close provenance panel' : 'Open provenance panel'}
@@ -74,8 +80,8 @@ export function ProvenanceDetail({
         </button>
       )}
 
-      {/* ── Backdrop overlay for drawer on mobile/tablet ──────────────────── */}
-      {isTablet && drawerOpen && (
+      {/* ── Backdrop overlay for drawer on mobile ─────────────────────────── */}
+      {isMobile && drawerOpen && (
         <div
           onClick={() => setDrawerOpen(false)}
           style={{
@@ -86,41 +92,52 @@ export function ProvenanceDetail({
         />
       )}
 
-      {/* ── STORY: provenance detail (warm gallery panel) ────────────────────── */}
+      {/* ── STORY: provenance detail — full-width host (desktop/tablet) or
+          mobile slide-in drawer ──────────────────────────────────────────── */}
       <div
         ref={panelRef}
-        role={isTablet ? 'dialog' : 'complementary'}
-        aria-modal={isTablet && drawerOpen ? true : undefined}
+        role={isMobile ? 'dialog' : 'complementary'}
+        aria-modal={isMobile && drawerOpen ? true : undefined}
         aria-label="Provenance details"
         tabIndex={-1}
         style={{
         position: 'fixed', top: 0, right: 0, bottom: 0,
-        // Desktop: always-visible side panel. Tablet/mobile: slide-in drawer.
-        width: isTablet ? 'min(400px, 92vw)' : 'min(460px, 100%)',
+        // Desktop/tablet: always-visible full-width host. Mobile: slide-in drawer.
+        left: isMobile ? undefined : 0,
+        width: isMobile ? 'min(400px, 92vw)' : '100%',
         background: GAL.bg,
-        borderLeft: `1px solid ${GAL.borderMid}`,
+        borderLeft: isMobile ? `1px solid ${GAL.borderMid}` : 'none',
         overflowY: 'auto',
-        boxShadow: '-20px 0 60px rgba(0,0,0,0.4)',
+        boxShadow: isMobile ? '-20px 0 60px rgba(0,0,0,0.4)' : 'none',
         zIndex: 150,
-        // Slide transform: on tablet, translate off-screen when closed
-        transform: isTablet && !drawerOpen ? 'translateX(100%)' : 'translateX(0)',
-        transition: isTablet ? 'transform 300ms cubic-bezier(0.25,0.1,0,1)' : 'none',
+        // Slide transform: on mobile, translate off-screen when closed
+        transform: isMobile && !drawerOpen ? 'translateX(100%)' : 'translateX(0)',
+        transition: isMobile ? 'transform 300ms cubic-bezier(0.25,0.1,0,1)' : 'none',
       }}>
         <button onClick={onClose}
           style={{ position: 'sticky', top: 0, zIndex: 2, width: '100%', textAlign: 'left', background: GAL.bg, border: 'none', borderBottom: `1px solid ${GAL.border}`, padding: '14px 24px', color: GAL.textMuted, fontFamily: 'var(--font-ui)', fontSize: '0.8rem', cursor: 'pointer' }}>
           ← All journeys
         </button>
 
+        {/* Content column — capped width + centered on the full-width host
+            (spec §5: "a real content column, ~max-width 1100"); unconstrained
+            on the mobile drawer, which keeps its existing narrow layout. */}
+        <div style={{ maxWidth: isMobile ? undefined : 1100, margin: isMobile ? undefined : '0 auto' }}>
+
         {hero && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={hero} alt={selected.title} loading="eager" decoding="async" fetchPriority="high"
             onError={e => { e.currentTarget.style.display = 'none' }}
             // Reserve the band so the panel doesn't reflow when the image arrives.
-            style={{ width: '100%', height: 280, objectFit: 'cover', display: 'block', background: GAL.surface2 }} />
+            // Desktop/tablet: the object is the hero — large and uncropped (spec §5).
+            style={{
+              width: '100%', height: isMobile ? 280 : 'min(56vh, 560px)',
+              objectFit: isMobile ? 'cover' : 'contain', display: 'block', background: GAL.surface2,
+            }} />
         )}
 
         <div style={{ padding: '22px 24px 8px' }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.7rem', fontWeight: 400, color: GAL.text, lineHeight: 1.1, margin: 0 }}>{selected.title}</h2>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: isMobile ? '1.7rem' : 'clamp(2.2rem, 4vw, 3.4rem)', fontWeight: 400, color: GAL.text, lineHeight: 1.1, margin: 0 }}>{selected.title}</h2>
           <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.85rem', color: GAL.textMuted, marginTop: 6 }}>
             {selected.artist}{selected.date ? ` · ${selected.date}` : ''}
           </div>
@@ -311,6 +328,7 @@ export function ProvenanceDetail({
             </div>
           </>
         )}
+        </div>
       </div>
     </>
   )
