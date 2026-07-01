@@ -6,6 +6,8 @@ import { FEATURED_WORKS, type FeaturedWork } from '@/lib/featured'
 import { OBS } from '@/lib/design-tokens'
 import { GlobeContainer } from './provenance/GlobeContainer'
 import { GlobeArcLegend } from './provenance/GlobeArcLegend'
+import { GlobeGapBadge } from './provenance/GlobeGapBadge'
+import { countUnresolvedGaps } from './provenance/globe-data'
 import { SourceBadge } from './provenance/SourceBadge'
 import { ProvenanceDetail } from './provenance/ProvenanceDetail'
 
@@ -99,6 +101,10 @@ export default function StoriesApp() {
           arc legend, so this overlay would just duplicate it — and on mobile/tablet it
           sat behind the drawer, unreachable and unremovable, hence "persists on page" (#114). */}
       {!inStory && <GlobeArcLegend globeHeightPct={globeHeightPct} />}
+
+      {/* Undocumented-gap badge — sibling to GlobeContainer, story view only
+          (gaps are per-work). Never drawn as an arc; see GlobeGapBadge. */}
+      {inStory && prov && <GlobeGapBadge count={countUnresolvedGaps(prov.gaps)} />}
 
       {/* Overlay only covers the globe area */}
       {!inStory && (
