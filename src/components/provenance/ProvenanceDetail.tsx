@@ -2,23 +2,20 @@
 
 /**
  * ProvenanceDetail — the warm "gallery" sidebar shown when a work is selected:
- * the mobile/tablet hamburger + backdrop, the slide-in panel, the arc legend,
- * the unified timeline, RKD records, primary-source text, the deterministic
+ * the mobile/tablet hamburger + backdrop, the slide-in panel, the
+ * ChainOfCustodyTimeline, RKD records, primary-source text, the deterministic
  * Provenance Intelligence card, and the sources/credit footer.
  *
- * Extracted verbatim from StoriesApp.tsx (no behavioral change). StoriesApp
- * still owns all state; this component receives it via props.
+ * StoriesApp owns all state; this component receives it via props.
  */
 import { useRef, type Dispatch, type SetStateAction } from 'react'
 import type { SearchResult, ProvenanceResponse } from '@/lib/types'
 import type { RkdRecord } from '@/lib/rkd'
 import { OBS, GAL } from '@/lib/design-tokens'
-import { SourceCard } from './SourceCard'
-import { ConfidenceDot } from './ConfidenceDot'
 import { PriceSparkline } from './PriceSparkline'
-import { EventIcon } from './EventIcon'
 import { useFocusTrap } from './useFocusTrap'
-import { buildUnifiedTimeline, detectWWIIGap, EV_STYLES, sourceRecordUrl, tierLabel } from './timeline'
+import { detectWWIIGap } from './timeline'
+import { ChainOfCustodyTimeline } from './ChainOfCustodyTimeline'
 
 interface ProvenanceDetailProps {
   selected: SearchResult
@@ -135,312 +132,18 @@ export function ProvenanceDetail({
 
         {prov && !loading && (
           <>
-            {/* Arc legend */}
-            <div style={{ padding: '14px 24px 0', display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textMuted }}>
-                <span style={{ display: 'inline-block', width: 22, height: 2, background: GAL.gold, borderRadius: 1 }} />
-                Custody
-              </span>
-              {prov.exhibitions.length > 0 && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textMuted }}>
-                  <span style={{ display: 'inline-block', width: 22, height: 2, background: GAL.sage, borderRadius: 1 }} />
-                  Loan
-                </span>
-              )}
-              {prov.gettyRecords && prov.gettyRecords.length > 0 && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textMuted }}>
-                  <span style={{ display: 'inline-block', width: 22, height: 2, background: 'rgba(180,130,60,0.65)', borderRadius: 1 }} />
-                  Dealer trail · GPI
-                </span>
-              )}
+            {/* ── Chain-of-custody timeline (docs/design/timeline-hero-spec.md §4.1) ── */}
+            <div style={{ padding: '18px 24px 0' }}>
+              <ChainOfCustodyTimeline
+                locations={prov.locations}
+                exhibitions={prov.exhibitions}
+                gettyRecords={prov.gettyRecords ?? []}
+                gaps={prov.gaps}
+                artist={prov.artwork.artist}
+                creationYear={(() => { const m = prov.artwork.date?.match(/\d{4}/); return m ? parseInt(m[0], 10) : null })()}
+                artwork={prov.artwork}
+              />
             </div>
-
-            {/* ── Unified provenance timeline ── */}
-            {(() => {
-              const creationYear = (() => { const m = prov.artwork.date?.match(/\d{4}/); return m ? parseInt(m[0], 10) : null })()
-              const timeline = buildUnifiedTimeline(
-                prov.locations,
-                prov.exhibitions,
-                prov.gettyRecords ?? [],
-                prov.artwork.artist,
-                creationYear,
-              )
-              const extraExh = Math.max(0, prov.exhibitions.length - 4)
-              const extraGPI = Math.max(0, (prov.gettyRecords?.length ?? 0) - 4)
-              const hasAnyData = timeline.length > 0 || prov.hasGap
-              // Show gap panel when custody chain is thin regardless of other data
-              const thinCustody = prov.locations.length < 2 && !prov.hasGap
-
-              return (
-                <div style={{ padding: '18px 24px 0' }}>
-                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: GAL.textFaint, marginBottom: 16 }}>
-                    Provenance story
-                  </div>
-
-                  {!hasAnyData ? (
-                    /* ── Provenance gap panel: intentional, not broken ── */
-                    <div style={{
-                      border: `1px dashed ${GAL.borderMid}`,
-                      borderRadius: 8,
-                      padding: '18px 20px',
-                      background: 'rgba(154,143,133,0.04)',
-                      fontFamily: 'var(--font-ui)',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                        <EventIcon type="gap" fontSize="1rem" />
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: EV_STYLES.gap.color }}>
-                          Provenance gap
-                        </span>
-                      </div>
-                      <p style={{ fontSize: '0.82rem', color: GAL.textMuted, lineHeight: 1.55, margin: '0 0 12px' }}>
-                        Ownership records for this work are incomplete.
-                      </p>
-                      <a
-                        href="/learn#provenance-gap"
-                        style={{
-                          fontSize: '0.75rem',
-                          color: EV_STYLES.gap.color,
-                          textDecoration: 'none',
-                          borderBottom: `1px solid rgba(154,143,133,0.35)`,
-                          paddingBottom: 1,
-                        }}
-                      >
-                        Learn about provenance gaps →
-                      </a>
-                    </div>
-                  ) : thinCustody ? (
-                    /* ── Thin custody but partial data: show gap panel first ── */
-                    <>
-                      <div style={{
-                        border: `1px dashed ${GAL.borderMid}`,
-                        borderRadius: 8,
-                        padding: '14px 16px',
-                        background: 'rgba(154,143,133,0.04)',
-                        fontFamily: 'var(--font-ui)',
-                        marginBottom: 12,
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                          <EventIcon type="gap" fontSize="1rem" />
-                          <span style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: EV_STYLES.gap.color }}>
-                            Provenance gap
-                          </span>
-                        </div>
-                        <p style={{ fontSize: '0.78rem', color: GAL.textMuted, lineHeight: 1.5, margin: '0 0 10px' }}>
-                          Ownership records for this work are incomplete.
-                        </p>
-                        <a
-                          href="/learn#provenance-gap"
-                          style={{
-                            fontSize: '0.72rem',
-                            color: EV_STYLES.gap.color,
-                            textDecoration: 'none',
-                            borderBottom: `1px solid rgba(154,143,133,0.35)`,
-                            paddingBottom: 1,
-                          }}
-                        >
-                          Learn about provenance gaps →
-                        </a>
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {timeline.map((ev, i) => {
-                          const st = EV_STYLES[ev.type]
-                          const isExh = ev.type === 'exhibition'
-                          return (
-                            <div key={i} style={{ display: 'flex', gap: 10, padding: '9px 12px', background: st.bg, borderRadius: 6, borderLeft: `3px solid ${st.border}`, opacity: isExh ? 0.82 : 1 }}>
-                              <EventIcon type={ev.type} color={st.color} style={{ minWidth: 18 }} />
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6, marginBottom: 1 }}>
-                                  <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: st.color, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                                    {ev.type === 'gift' ? 'bequest' : ev.type === 'acquisition' ? 'museum acq.' : ev.type}
-                                  </span>
-                                  <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textFaint, flexShrink: 0 }}>{ev.year}</span>
-                                </div>
-                                <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.82rem', color: GAL.text, fontWeight: 500, lineHeight: 1.3 }}>{ev.who}</div>
-                                {ev.where && (
-                                  <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1 }}>
-                                    {ev.where}
-                                    {ev.unmapped && <span style={{ color: GAL.textFaint, fontStyle: 'italic' }}> — not shown on globe (no coordinates in source)</span>}
-                                  </div>
-                                )}
-                                {ev.detail && !isExh && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1, lineHeight: 1.4 }}>{ev.detail}</div>}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5 }}>
-                                  <SourceCard source={ev.source} recordUrl={sourceRecordUrl(ev.sourceUrl, ev.source, selected)} />
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {timeline.map((ev, i) => {
-                        const st = EV_STYLES[ev.type]
-                        const isExh = ev.type === 'exhibition'
-                        return (
-                          <div key={i} style={{
-                            display: 'flex', gap: 10, padding: '9px 12px',
-                            background: st.bg, borderRadius: 6,
-                            borderLeft: `3px solid ${st.border}`,
-                            opacity: isExh ? 0.82 : 1,
-                          }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 18 }}>
-                              <EventIcon type={ev.type} color={st.color} />
-                              {i < timeline.length - 1 && (
-                                <span style={{ width: 1, flex: 1, minHeight: 8, background: GAL.border, marginTop: 4 }} />
-                              )}
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6, marginBottom: 1 }}>
-                                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: st.color, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                                  {ev.type === 'gift' ? 'bequest' : ev.type === 'acquisition' ? 'museum acq.' : ev.type}
-                                </span>
-                                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textFaint, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{ev.year}</span>
-                              </div>
-                              <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.82rem', color: ev.type === 'gap' ? GAL.textMuted : GAL.text, fontWeight: 500, lineHeight: 1.3 }}>{ev.who}</div>
-                              {ev.where && (
-                                <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1 }}>
-                                  {ev.where}
-                                  {ev.unmapped && <span style={{ color: GAL.textFaint, fontStyle: 'italic' }}> — not shown on globe (no coordinates in source)</span>}
-                                </div>
-                              )}
-                              {ev.detail && !isExh && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1, lineHeight: 1.4 }}>{ev.detail}</div>}
-                              {ev.price && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textFaint, marginTop: 2 }}>{ev.price}</div>}
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5 }}>
-                                <SourceCard source={ev.source} recordUrl={sourceRecordUrl(ev.sourceUrl, ev.source, selected)} />
-                                <ConfidenceDot confidence={ev.confidence} />
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
-
-                      {prov.hasGap && (
-                        <div style={{
-                          marginTop: 8,
-                          border: `1px dashed ${GAL.borderMid}`,
-                          borderRadius: 8,
-                          padding: '14px 16px',
-                          background: 'rgba(154,143,133,0.04)',
-                          fontFamily: 'var(--font-ui)',
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                            <EventIcon type="gap" fontSize="1rem" />
-                            <span style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: EV_STYLES.gap.color }}>
-                              Provenance gap
-                            </span>
-                          </div>
-                          <p style={{ fontSize: '0.78rem', color: GAL.textMuted, lineHeight: 1.5, margin: '0 0 10px', fontStyle: 'italic' }}>
-                            {prov.gaps[0]?.note ?? 'Ownership records for this work are incomplete.'}
-                          </p>
-                          <a
-                            href="/learn#provenance-gap"
-                            style={{
-                              fontSize: '0.72rem',
-                              color: EV_STYLES.gap.color,
-                              textDecoration: 'none',
-                              borderBottom: `1px solid rgba(154,143,133,0.35)`,
-                              paddingBottom: 1,
-                            }}
-                          >
-                            Learn about provenance gaps →
-                          </a>
-                        </div>
-                      )}
-
-                      {/* ── Expandable: all Getty GPI dealer records (artist-level) ── */}
-                      {extraGPI > 0 && (
-                        <div style={{ marginTop: 6 }}>
-                          <details>
-                            <summary style={{ cursor: 'pointer', fontFamily: 'var(--font-ui)', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: GAL.textFaint, userSelect: 'none', listStyle: 'none', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px' }}>
-                              <span style={{ fontSize: '0.6rem' }}>▶</span>
-                              + {extraGPI} more dealer record{extraGPI !== 1 ? 's' : ''} in Getty GPI (artist-level)
-                            </summary>
-                            <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 0 4px' }}>
-                              <div style={{ padding: '6px 12px', fontFamily: 'var(--font-ui)', fontSize: '0.65rem', color: GAL.textFaint, fontStyle: 'italic', borderLeft: `3px solid rgba(124,92,191,0.25)`, marginLeft: 0 }}>
-                                Artist-level dealer transactions — these document the commercial history of the artist&apos;s work in the Knoedler stock books, not custody of this specific painting.
-                              </div>
-                              {(prov.gettyRecords ?? []).slice(4).map((rec, i) => {
-                                const dateStr = rec.saleDate ?? rec.entryDate ?? undefined
-                                const seller = rec.seller ?? ''
-                                const buyer = rec.buyer ?? ''
-                                const via = [seller, buyer].filter(Boolean).join(' → ')
-                                const price = [rec.purchasePrice, rec.salePrice].filter(Boolean).join(' / ') || undefined
-                                return (
-                                  <div key={i} style={{ display: 'flex', gap: 10, padding: '8px 12px', background: 'rgba(124,92,191,0.05)', borderRadius: 6, borderLeft: '3px solid rgba(124,92,191,0.22)', fontFamily: 'var(--font-ui)' }}>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6, marginBottom: 1 }}>
-                                        <span style={{ fontSize: '0.68rem', color: '#7c5cbf', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                                          dealer
-                                        </span>
-                                        <span style={{ fontSize: '0.68rem', color: GAL.textFaint, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{dateStr ? dateStr.slice(0, 4) : '?'}</span>
-                                      </div>
-                                      <div style={{ fontSize: '0.82rem', color: GAL.text, fontWeight: 500, lineHeight: 1.3 }}>{buyer || seller || 'Knoedler & Co.'}</div>
-                                      {via && <div style={{ fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1, lineHeight: 1.4 }}>{via}</div>}
-                                      {rec.buyerLocation && <div style={{ fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1 }}>{rec.buyerLocation}</div>}
-                                      {price && <div style={{ fontSize: '0.68rem', color: GAL.textFaint, marginTop: 2 }}>{price}</div>}
-                                      <div style={{ marginTop: 5 }}>
-                                        <SourceCard source="GPI" recordUrl={rec.sourceUrl ?? null} />
-                                      </div>
-                                    </div>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          </details>
-                        </div>
-                      )}
-
-                      {/* ── Expandable: all exhibition loans ── */}
-                      {extraExh > 0 && (
-                        <div style={{ marginTop: 6 }}>
-                          <details>
-                            <summary style={{ cursor: 'pointer', fontFamily: 'var(--font-ui)', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: GAL.textFaint, userSelect: 'none', listStyle: 'none', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px' }}>
-                              <span style={{ fontSize: '0.6rem' }}>▶</span>
-                              + {extraExh} more exhibition loan{extraExh !== 1 ? 's' : ''} (not custody changes)
-                            </summary>
-                            <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 0 4px' }}>
-                              <div style={{ padding: '6px 12px', fontFamily: 'var(--font-ui)', fontSize: '0.65rem', color: GAL.textFaint, fontStyle: 'italic', borderLeft: `3px solid rgba(74,122,106,0.22)`, marginLeft: 0 }}>
-                                Exhibition loans — the work was shown here and returned. Loans are not custody changes.
-                              </div>
-                              {prov.exhibitions.slice(4).map((ex, i) => {
-                                const label = tierLabel(ex.source)
-                                return (
-                                  <div key={i} style={{ display: 'flex', gap: 10, padding: '8px 12px', background: 'rgba(74,122,106,0.04)', borderRadius: 6, borderLeft: `3px solid rgba(74,122,106,0.14)`, opacity: 0.82, fontFamily: 'var(--font-ui)' }}>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6, marginBottom: 1 }}>
-                                        <span style={{ fontSize: '0.68rem', color: GAL.sage, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                                          exhibition loan
-                                        </span>
-                                        <span style={{ fontSize: '0.68rem', color: GAL.textFaint, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{ex.startDate ? ex.startDate.slice(0, 4) : '?'}</span>
-                                      </div>
-                                      <div style={{ fontSize: '0.82rem', color: GAL.text, fontWeight: 500, lineHeight: 1.3 }}>
-                                        {(ex.institution && ex.institution !== ex.name) ? ex.institution : ex.name}
-                                      </div>
-                                      {ex.institution && ex.institution !== ex.name && (
-                                        <div style={{ fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1 }}>{ex.name}</div>
-                                      )}
-                                      {ex.excerpt && (
-                                        <div style={{ fontSize: '0.72rem', color: GAL.textMuted, marginTop: 1, lineHeight: 1.4, fontStyle: 'italic' }}>
-                                          &ldquo;{ex.excerpt.slice(0, 120)}{ex.excerpt.length > 120 ? '…' : ''}&rdquo;
-                                        </div>
-                                      )}
-                                      <div style={{ marginTop: 5 }}>
-                                        <SourceCard source={label} recordUrl={sourceRecordUrl(undefined, ex.source, selected)} />
-                                      </div>
-                                    </div>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          </details>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )
-            })()}
 
             {/* RKD Netherlands Art Institute records */}
             {prov.rkdRecords && prov.rkdRecords.length > 0 && (
