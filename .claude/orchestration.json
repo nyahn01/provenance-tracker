@@ -23,15 +23,17 @@
     "honesty-regression-sentinel": { "enabled": true, "files": "priority" },
     "security-sentinel": { "enabled": true, "files": "proposal|priority" },
     "docs-drift-sentinel": { "enabled": true, "files": "proposal" },
-    "repo-hygiene-sentinel": { "enabled": true, "files": "proposal" }
+    "repo-hygiene-sentinel": { "enabled": true, "files": "proposal" },
+    "stale-plans-sentinel": { "enabled": true, "files": "proposal" }
   },
   "feedback": {
     "_doc": "Lightweight routing of raw website feedback (issues labeled `feedback`) into the queue: assign an agent:<domain> owner + `triage-queued` marker. Deep validity triage (verbatim files) stays the LLM feedback-triage agent's job; this never judges, promotes, or closes.",
     "route": { "enabled": true }
   },
   "decision": {
-    "_doc": "The Decide step. Ranks open `proposal` issues by transparent heuristics (security/honesty highest, + engagement + staleness) into a single in-place 'Decision digest' issue and recommends the next promotion. Never promotes or merges — a human decides.",
-    "digest": { "enabled": true }
+    "_doc": "The Decide step. Ranks open `proposal` issues into a single in-place 'Decision digest' and recommends the next promotion. `auto_promote` grants graduated autonomy: the high-stakes/low-ambiguity sentinels (security, honesty) may auto-promote proposal→priority within max_prs_per_run; everything else stays the human's button. NEVER merges — a human always merges.",
+    "digest": { "enabled": true },
+    "auto_promote": { "enabled": true, "kinds": ["security", "honesty"] }
   },
   "outcome": {
     "_doc": "The Act+Outcome loop. `npm run metrics` computes metrics/latest.json (offline, runnable now); the `retro` agent turns merges+metrics into docs/INSIGHTS.md lessons. Cadence applies in scheduled/event-driven mode.",

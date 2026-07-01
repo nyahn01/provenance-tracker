@@ -83,13 +83,23 @@ Anthropic key with credits.
 - Decisions that change the spec also update the owning doc (CLAUDE.md, BUSINESS_CASE.md,
   DESIGN_SYSTEM.md, DATA_SOURCES.md). Wikilink with `[[...]]` so the Obsidian graph connects them.
 - `docs/INSIGHTS.md` is the running knowledge log (what was learned/decided/dead-ended).
+- **Capture recommendations as issues.** In-session ideas are ephemeral — the moment a plan or
+  recommendation is agreed, file it as an open `proposal` issue (with `agent:<domain>`) so it is not
+  lost. Use `npm run plan-to-issue <file.md>` or the GitHub API directly. A human promotes to
+  `priority`.
+- **Graduated auto-promotion.** The orchestrator auto-promotes the high-stakes/low-ambiguity
+  sentinels' proposals (`security`, `honesty`) to `priority`; every other domain stays the human's
+  button, guided by the daily Decision digest. Auto-promotion never merges — a human always merges
+  (`.claude/orchestration.json → decision.auto_promote`).
 
 ## The build loop (one task at a time)
 
 1. **Plan** the next change — write the approved plan to `.claude/plans/YYYY-MM-DD-<slug>.md`
-   (see `.claude/plans/README.md` for frontmatter format) **before** implementation starts.
-   The plan file is the shared contract; if implementation drifts, update the plan and
-   re-confirm with the human first.
+   (see `.claude/plans/README.md`) **before** implementation starts. The plan file is transient
+   scratch — the shared contract while building; if implementation drifts, update the plan and
+   re-confirm with the human first. When the sprint ships, the durable record is the closed issue
+   (and an ADR/INSIGHTS if a rule changed) — **delete the dated plan file** (the `stale-plans`
+   sentinel flags any left behind).
 2. **Build** — route to the owning agent. One coherent change at a time.
 3. **Gate** — ship via `node scripts/ship.mjs --push --commit "<msg>"`. Red → fix → re-run.
    For anything touching claims/data, the honesty grep in `verify.mjs` must pass; for bigger
