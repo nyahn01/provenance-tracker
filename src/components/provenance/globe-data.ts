@@ -18,6 +18,8 @@
 import type { LocationEntry, ExhibitionLoan, GettyRecord, GapEntry } from '@/lib/types'
 
 // ─── City coordinate lookup (for Getty dealer city dots) ─────────────────────
+// Intentionally a smaller, dealer-dot-specific set — NOT the full gazetteer
+// (that lives in src/lib/geocode.ts / scripts/lib/cities.mjs). Do not merge.
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   'paris': { lat: 48.8566, lng: 2.3522 }, 'london': { lat: 51.5074, lng: -0.1278 },
   'new york': { lat: 40.7128, lng: -74.006 }, 'chicago': { lat: 41.8781, lng: -87.6298 },
