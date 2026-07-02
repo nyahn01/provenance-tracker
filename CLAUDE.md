@@ -70,7 +70,11 @@ fallback remains if a call fails.
 
 ## Coding rules
 - TypeScript strict. Never hardcode keys — always `process.env`.
-- Globe.gl dynamically imported with `ssr: false`. Tailwind for all styling.
+- Globe.gl dynamically imported with `ssr: false`.
+- Styling: token-driven inline styles composed through the `src/components/ui` primitives
+  (Tailwind utilities only where already present); never restate a hex/font-size/letter-spacing
+  a token or primitive owns; hover/focus via CSS classes in globals.css, never JS style
+  mutation. (DESIGN_SYSTEM.md §11.)
 - All external API calls go through Next.js API routes (server-side only). Cache/pre-warm
   responses; add per-IP rate limiting (we proxy rate-limited free APIs).
 - Types-first: new data shapes go in `src/lib/types.ts` before any other file.
