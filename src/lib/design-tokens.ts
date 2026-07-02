@@ -43,6 +43,10 @@ export const GAL = {
   bg: '#f7f4ee', surface: '#ffffff', surface2: '#ede9e2', border: '#d8d2c8', borderMid: '#b8afa3',
   text: '#1a1714', textMuted: '#6b6460', textFaint: '#9e9790',
   clay: '#b06840', sage: '#4a7a6a', gold: '#a07830',
+  // Light-mode sibling of OBS.gapWeave (timeline-hero spec §2): a dimmed warm
+  // neutral between border and borderMid — texture for the gap band, never a
+  // data hue. Design call: eyeball on the preview (same precedent as OBS).
+  gapWeave: '#c9c0b2',
 } as const
 
 // ─── Marketing (dark, lighter surfaces) — static pages ───────────────────────
@@ -101,5 +105,7 @@ export const globe = {
 export const motion = {
   dur: { micro: 200, event: 400, reveal: 550 },
   ease: { standard: 'cubic-bezier(0.25, 0.1, 0, 1)' },
-  stagger: { chain: 90 },
+  // chain: per-event stagger as the chain assembles oldest→newest;
+  // gapBeat: the extra beat a gap holds before the chain resumes (spec §3).
+  stagger: { chain: 90, gapBeat: 250 },
 } as const

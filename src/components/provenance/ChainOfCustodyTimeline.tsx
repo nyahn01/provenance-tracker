@@ -17,7 +17,7 @@
  */
 import type { CSSProperties } from 'react'
 import type { LocationEntry, ExhibitionLoan, GapEntry, GettyRecord, ArtworkMeta } from '@/lib/types'
-import { GAL, accent } from '@/lib/design-tokens'
+import { GAL, accent, motion } from '@/lib/design-tokens'
 import { buildChainLayout, type ChainNode, type ChainGap, type SaleAnnotation } from './chain-timeline'
 import { sourceRecordUrl } from './timeline'
 import { SourceBadge } from './SourceBadge'
@@ -104,7 +104,8 @@ function GapBand({ gap }: { gap: ChainGap }) {
     <div role="group" aria-label={`Provenance gap, ${years}. ${gap.note}`}
       style={{
         padding: '12px 14px', borderRadius: 8, fontFamily: 'var(--font-ui)',
-        background: `repeating-linear-gradient(135deg, ${GAL.surface2} 0 6px, transparent 6px 12px)`,
+        // The gap weave (spec §2): texture in the gapWeave neutral, never a data hue.
+        background: `repeating-linear-gradient(135deg, ${GAL.gapWeave}55 0 6px, transparent 6px 12px)`,
         border: `1px dashed ${GAL.borderMid}`,
       }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
@@ -148,6 +149,21 @@ export function ChainOfCustodyTimeline({
     width: DOT, height: DOT, borderRadius: '50%', background: fill, border: `2px solid ${border}`,
   })
 
+  // "The chain assembles" (spec §3): each event fades up oldest→newest with a
+  // 90ms stagger; a gap holds an extra 250ms beat before the chain resumes.
+  // Delays are computed in render order from props — deterministic, so the SSG
+  // HTML matches hydration and stays fully crawlable. Reduced-motion collapses
+  // both duration AND delay via the global kill switch in globals.css.
+  let assembleDelay = 0
+  const assemble = (isGap = false): CSSProperties => {
+    const style: CSSProperties = {
+      animation: `fade-up ${motion.dur.event}ms ${motion.ease.standard} both`,
+      animationDelay: `${assembleDelay}ms`,
+    }
+    assembleDelay += motion.stagger.chain + (isGap ? motion.stagger.gapBeat : 0)
+    return style
+  }
+
   return (
     <section aria-label="Chain of custody timeline">
       <div style={{ ...eyebrow, marginBottom: 12 }}>Chain of custody</div>
@@ -167,7 +183,7 @@ export function ChainOfCustodyTimeline({
         <span aria-hidden style={{ position: 'absolute', left: SPINE_LEFT - 1, top: 6, bottom: 10, width: 2, background: GAL.borderMid }} />
 
         {leadingGaps.map((g, i) => (
-          <li key={`lead-${i}`} style={{ position: 'relative', paddingLeft: SPINE_LEFT + 22, paddingBottom: 22 }}><GapBand gap={g} /></li>
+          <li key={`lead-${i}`} style={{ position: 'relative', paddingLeft: SPINE_LEFT + 22, paddingBottom: 22, ...assemble(true) }}><GapBand gap={g} /></li>
         ))}
 
         {custody.map((node, i) => {
@@ -176,24 +192,26 @@ export function ChainOfCustodyTimeline({
           const following = chainGaps.filter(g => g.afterIndex === i)
           return (
             <li key={`c-${i}`} style={{ position: 'relative', paddingLeft: SPINE_LEFT + 22, paddingBottom: 22 }}>
-              <span aria-hidden style={dotStyle(GAL.bg, GAL.gold)} />
-              <EventBody node={node} tag={custodyTag(node)} tagColor={GAL.gold} artwork={artwork} />
+              <div style={assemble()}>
+                <span aria-hidden style={dotStyle(GAL.bg, GAL.gold)} />
+                <EventBody node={node} tag={custodyTag(node)} tagColor={GAL.gold} artwork={artwork} />
+              </div>
 
               {attachedSales.map((s, si) => (
-                <div key={`s-${si}`} style={{ position: 'relative', marginTop: 14 }}>
+                <div key={`s-${si}`} style={{ position: 'relative', marginTop: 14, ...assemble() }}>
                   <EventBody node={s} tag="Sale" tagColor={accent.dealer} artwork={artwork} />
                 </div>
               ))}
 
               {attachedLoans.map((l, li) => (
-                <div key={`l-${li}`} style={{ position: 'relative', marginTop: 14, ...branchGap }}>
+                <div key={`l-${li}`} style={{ position: 'relative', marginTop: 14, ...branchGap, ...assemble() }}>
                   <span aria-hidden style={{ position: 'absolute', left: -24, top: 6, width: 12, height: 12, borderRadius: '50%', background: GAL.sage }} />
                   <EventBody node={l} tag="Loan · not a move" tagColor={GAL.sage} artwork={artwork} />
                 </div>
               ))}
 
               {following.map((g, gi) => (
-                <div key={`g-${gi}`} style={{ marginTop: 14 }}><GapBand gap={g} /></div>
+                <div key={`g-${gi}`} style={{ marginTop: 14, ...assemble(true) }}><GapBand gap={g} /></div>
               ))}
             </li>
           )
