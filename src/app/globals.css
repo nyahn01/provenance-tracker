@@ -58,16 +58,20 @@
   box-sizing: border-box;
 }
 
+/* Pages scroll natively; the full-screen globe home opts INTO overflow-hidden
+   on its own <main> (src/app/page.tsx) — never the other way around. */
 html, body {
   width: 100%;
   height: 100%;
-  overflow: hidden;
 }
 
 /* ─── Reduced motion ─────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    /* Delays must die with durations, or staggered sequences (the timeline's
+       "chain assembles") would still trickle in one by one. */
+    animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
   }
 }
@@ -127,6 +131,35 @@ html, body {
   );
   background-size: 800px 100%;
   animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ─── Card hover (ui/Card primitive) — CSS class, never JS style mutation ────── */
+.ui-card-hover {
+  transition: border-color 250ms var(--ease-gentle), transform 250ms var(--ease-gentle);
+}
+.ui-card-hover:hover {
+  border-color: var(--obs-border-mid);
+  transform: translateY(-3px);
+}
+
+/* ─── Landing work cards (clay accent on hover; lead card spans 2 cols wide) ─── */
+.landing-work-card {
+  transition: border-color 250ms var(--ease-gentle), transform 250ms var(--ease-gentle);
+}
+.landing-work-card:hover {
+  border-color: var(--obs-clay);
+  transform: translateY(-4px);
+}
+.landing-result-row {
+  transition: background 150ms var(--ease-gentle);
+}
+.landing-result-row:hover {
+  background: var(--obs-clay-dim);
+}
+@media (min-width: 720px) {
+  .landing-lead {
+    grid-column: span 2;
+  }
 }
 
 /* ─── Nav links: horizontally scrollable on narrow widths, no visible scrollbar ─ */
