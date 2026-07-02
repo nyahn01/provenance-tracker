@@ -1,7 +1,7 @@
 # 0003 — STORM-style curation pipeline (multi-perspective, conflict-surfacing)
 
-- Status: proposed
-- Date: 2026-06-29
+- Status: accepted
+- Date: 2026-06-29 (accepted 2026-07-02)
 - Related: `0002-stage3-autonomy-model.md`, `docs/BUSINESS_CASE.md` (25-works gate), `docs/VISION.md`
 
 ## Context
@@ -59,3 +59,15 @@ schema change is required**.
 - **Rejected alternatives:** switching agent runners / redesigning (discards the orchestration moat);
   adding more MCP servers or skills (context bloat, doesn't address the real constraint); a separate
   "LLM wiki" (the `vault/` already is one — let the pipeline populate it).
+
+## Update log
+- **2026-07-02 — accepted; pipeline completed (closes #147).** Stages 1–4 had shipped earlier in
+  `scripts/curate.mjs`; this update adds stage 5 in-process (`validateChain` — shape, chronology,
+  no null-island coords, ≥2 mapped entries), candidate discovery (`scripts/discover-works.mjs`,
+  AIC public-domain paintings ranked by prose/years/Getty/exhibitions), `--batch N`
+  (discover → draft loop; drafts only, never promotes), a human-invoked promotion helper
+  (`scripts/promote-work.mjs` — requires a reviewed draft AND `--approve`, edits only pure-data
+  files, emits paste-snippets for the hand-curated registries), the known-answer regression
+  (fixture-gated, deterministic path), and a featured-invariants test suite that catches any
+  forgotten paste. Gazetteer consolidated to `scripts/lib/cities.mjs` with a drift test against
+  `src/lib/geocode.ts`. Drafts remain gitignored proposals per ADR 0002.
