@@ -18,7 +18,7 @@ _Last updated 2026-06-27. A factual inventory of what exists and works today. Fo
 | `/demo` | Origin-story / pitch page (scroll-reveal) |
 | `/demo/source` | Structured source document (for NotebookLM ingestion) |
 | `/learn` | Provenance glossary |
-| `/pipeline` | On-site explainer for how provenance data is prepared |
+| `/method` | On-site explainer for how provenance data is prepared (the credibility act) |
 | `/pricing` | Three-tier pricing |
 | `/team` | How the platform + agent team are built |
 | `/workflow` | How the workflow evolved across Stages 1–3 (companion to [docs/WORKFLOW_STAGES.md](WORKFLOW_STAGES.md)) |

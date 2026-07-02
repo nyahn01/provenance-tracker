@@ -308,8 +308,8 @@ export default function LearnPage() {
               Sources: Washington Principles 1998 · Getty Research Institute · Cultural Heritage Administration of Korea · BnF
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-              <Link href="/pipeline" style={{ fontSize: '0.78rem', color: C.gold, fontWeight: 600, borderBottom: `1px solid ${C.gold}`, paddingBottom: 1 }}>
-                Next: see the data →
+              <Link href="/method" style={{ fontSize: '0.78rem', color: C.gold, fontWeight: 600, borderBottom: `1px solid ${C.gold}`, paddingBottom: 1 }}>
+                Next: the method →
               </Link>
               <span style={{ width: 1, height: 14, background: C.border }} />
               <Link href="/feedback" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
