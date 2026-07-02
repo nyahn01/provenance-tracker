@@ -1,5 +1,6 @@
 /**
- * /pipeline — How a provenance chain is prepared.
+ * /method — How a provenance chain is prepared, honestly.
+ * The credibility act of the narrative spine (Explore → Learn → Method → Pricing).
  * Walks the data pipeline: multi-museum search → object record → custody
  * extraction (Claude → deterministic → Wikidata) → merge loans + dealer trail
  * → one sourced, gap-honest timeline. Describes the existing pipeline; it does
@@ -65,7 +66,7 @@ const EXTRACTION = [
   },
 ]
 
-export default function PipelinePage() {
+export default function MethodPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
@@ -99,7 +100,7 @@ export default function PipelinePage() {
         <nav style={{ position: 'sticky', top: 0, zIndex: 10, background: C.bg, borderBottom: `1px solid ${C.border}`, padding: '14px 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
           <Link href="/" style={{ color: C.textMuted, fontSize: '0.8rem', letterSpacing: '0.04em' }}>← Back to journeys</Link>
           <span style={{ color: C.border }}>|</span>
-          <span style={{ fontSize: '0.8rem', color: C.textFaint, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Provenance Tracker · The data</span>
+          <span style={{ fontSize: '0.8rem', color: C.textFaint, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Provenance Tracker · Method</span>
         </nav>
 
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '60px 32px 100px' }}>
