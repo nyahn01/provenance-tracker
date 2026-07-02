@@ -1,6 +1,6 @@
 /**
  * /feedback — in-app feedback form page.
- * Static marketing-page shell (matches /pricing, /learn); the form itself is a
+ * Static marketing-page shell (matches /support, /learn); the form itself is a
  * client component. Submissions file a labeled GitHub issue via /api/feedback,
  * with an email fallback when the service is unavailable.
  */

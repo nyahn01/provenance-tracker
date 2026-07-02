@@ -5,7 +5,7 @@
  * On success the route files a labeled GitHub issue; on 503/502 the form
  * surfaces the email fallback (ahn.ny01@gmail.com).
  *
- * Design tokens mirror the marketing pages (/pricing, /learn).
+ * Design tokens mirror the marketing pages (/support, /learn).
  */
 
 import { useState } from 'react'
