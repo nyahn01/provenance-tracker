@@ -52,7 +52,29 @@ gap-aware, custody-vs-loan dataset compounds as we add works and sources.
 - Per-IP rate limiting on our routes; cache aggressively (we proxy free APIs).
 - Public-domain image gating + attribution + a visible "Data & rights" note (legal).
 
-## 9. Monetization milestones — when to flip BMC → Stripe paid plans
+## 9. Wealth model — what compounds (decided 2026-07-02)
+The realistic long-game is **audience-first**, not sales-first. Enterprise B2B (tiers, seats,
+SLAs) is the least passive business model there is; it stays a cheap *option* (§7.3, §10),
+never the strategy. What actually compounds while the maintainer sleeps:
+
+1. **Indexable content** — every curated work and case study is a static, crawlable,
+   citable page (`/work/[slug]`, `/case/[slug]`; ADR 0005). Search traffic accrues to
+   evergreen provenance stories, and restitution case studies are the highest-value
+   content type (searched, cited by educators and press, never stale).
+2. **The email list** — the audience asset that survives any platform. Captured honestly
+   ("one provenance story, roughly monthly") via `/api/subscribe`.
+3. **The dataset** — the reconciled, gap-flagged custody graph (§5) grows with every work
+   and is the thing a future buyer/licensee would actually pay for.
+4. **Career capital** — the method and the agent-orchestration system are publishable
+   work; public write-ups earn reputation and inbound links.
+
+Sequence: content library → search traffic → list → (only then, if the §10 gates pass)
+paid anything. Where `docs/PITCH.md` / `docs/DEMO_SCRIPT.md` still sell "AML for the art
+world" or lead with the €99/€999 tiers, this section and §2 supersede them — that language
+was demo-day framing, not the operating plan (the live /pricing page was retired for the
+same reason; see issue #61).
+
+## 10. Monetization milestones — when to flip BMC → Stripe paid plans
 We start with Buy Me a Coffee (BMC), not Stripe billing, on purpose. BMC acts as merchant of
 record, so it handles EU VAT on donations automatically — no VAT registration is needed while we
 sit below the EU OSS threshold, and we carry zero compliance burden for collecting from across

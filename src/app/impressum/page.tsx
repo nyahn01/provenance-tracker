@@ -1,6 +1,6 @@
 /**
  * /impressum — Legal notice / imprint (German § 5 DDG / § 18 MStV style).
- * Static server component — no client JS. Design tokens match /about, /pricing, /learn.
+ * Static server component — no client JS. Design tokens match /about, /support, /learn.
  *
  * ⚠ COMPLETE BEFORE RELYING ON THIS LEGALLY:
  *   Fill `OPERATOR.address` and `OPERATOR.email` below with real values. A German
@@ -81,8 +81,8 @@ export default function ImpressumPage() {
             </h1>
             <p style={{ fontSize: '0.9rem', color: C.textMuted, lineHeight: 1.7 }}>
               Provenance Tracker is a <strong style={{ color: C.text }}>non-commercial, educational research project</strong>.
-              It does not sell access or take payment; any pricing shown elsewhere on the site describes a possible future
-              direction, not a current offering.
+              It does not sell access or take payment; the future direction described on the support page is a
+              possibility, not a current offering.
             </p>
           </div>
 

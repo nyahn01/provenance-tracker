@@ -13,7 +13,7 @@
  *   OBS        — the observatory (dark) app chrome used by StoriesApp + the globe.
  *   GAL        — the gallery (light) palette used inside the provenance detail panel.
  *   MARKETING  — the slightly-lighter dark palette used by the static marketing
- *                pages (/about, /learn, /pricing, /demo/source, /feedback).
+ *                pages (/about, /learn, /support, /demo/source, /feedback).
  *
  * KNOWN DRIFT (intentionally preserved — do not unify without design review):
  *   • OBS.surface   #131110  ≠  MARKETING.surface   #111010

@@ -14,6 +14,8 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { MARKETING as C } from '@/lib/design-tokens'
 import { getCase, allCaseSlugs } from '@/lib/case-studies'
+import { JsonLd } from '@/components/JsonLd'
+import { SITE_URL } from '@/lib/site'
 import type { CaseSource, CaseCustodyEntry } from '@/lib/types'
 
 export function generateStaticParams() {
@@ -76,6 +78,23 @@ export default async function CaseStudyPage({
 
   return (
     <>
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline: `${c.title} — a documented restitution`,
+          description: c.summary,
+          url: `${SITE_URL}/case/${c.slug}`,
+          about: {
+            '@type': 'VisualArtwork',
+            name: c.title,
+            creator: { '@type': 'Person', name: c.artist },
+            dateCreated: c.created,
+            artMedium: c.medium,
+          },
+          citation: c.references.filter(r => r.url).map(r => r.url),
+        }}
+      />
       <style
         dangerouslySetInnerHTML={{
           __html: `

@@ -32,7 +32,7 @@ import { fetchEuropeana } from '@/lib/europeana'
 import { fetchClevelandDetail } from '@/lib/cleveland'
 import { extractExhibitionHistoryLoans, extractProvenanceLoans, mergeLoans } from '@/lib/exhibition-loans'
 import { getProseCacheEntry, setProseCacheEntry } from '@/lib/prose-cache'
-import featuredProvenanceData from '@/lib/featured-provenance.json'
+import { getFeaturedChain } from '@/lib/featured-chains'
 import type {
   ArtworkMeta,
   LocationEntry,
@@ -40,10 +40,6 @@ import type {
   GapEntry,
   ProvenanceResponse,
 } from '@/lib/types'
-
-// Pre-parsed ownership chains for the 8 featured artworks (zero runtime Claude cost).
-// Populated by: node scripts/preparse-provenance.mjs
-const FEATURED_PROVENANCE = featuredProvenanceData as Record<string, LocationEntry[]>
 
 // TTL is source-dependent: Met/AIC = 7d, Wikidata = 1d (resolved at request time via CACHE_TTL)
 
@@ -454,9 +450,7 @@ export async function GET(request: NextRequest) {
   const proseCacheKey = `${source}:${id}`
 
   // Check pre-parsed featured JSON (committed, zero cost) then disk cache (survives restarts)
-  const cachedOwnership =
-    (FEATURED_PROVENANCE[proseCacheKey] as LocationEntry[] | undefined) ??
-    getProseCacheEntry(proseCacheKey)
+  const cachedOwnership = getFeaturedChain(source, id) ?? getProseCacheEntry(proseCacheKey)
 
   // Secondary sources run in parallel regardless of ownership cache status
   const [wikiLocs, gettyRecords, rkdRecords] = await Promise.all([

@@ -17,6 +17,8 @@
 export interface FeaturedWork {
   source: 'aic'
   id: string
+  /** URL slug for the work's static landing page (/work/[slug]). */
+  slug: string
   title: string
   artist: string
   year: string
@@ -39,7 +41,7 @@ const AIC_CREDIT = 'The Art Institute of Chicago · Public domain'
 export const FEATURED_WORKS: FeaturedWork[] = [
   {
     // Richest data: 167 Getty/Knoedler records + deep AIC provenance prose
-    source: 'aic', id: '16568',
+    source: 'aic', id: '16568', slug: 'water-lilies',
     title: 'Water Lilies',
     artist: 'Claude Monet', year: '1906',
     hook: 'Knoedler Paris to Bertha Palmer to AIC. The dealer receipt survives.',
@@ -47,7 +49,7 @@ export const FEATURED_WORKS: FeaturedWork[] = [
   },
   {
     // 48 Getty records + iconic status + French pre-donation gap worth exploring
-    source: 'aic', id: '27992',
+    source: 'aic', id: '27992', slug: 'a-sunday-on-la-grande-jatte',
     title: 'A Sunday on La Grande Jatte',
     artist: 'Georges Seurat', year: '1884-86',
     hook: 'Paris to Brussels to Paris to Chicago -- a Neo-Impressionist icon crosses the Atlantic.',
@@ -55,7 +57,7 @@ export const FEATURED_WORKS: FeaturedWork[] = [
   },
   {
     // Degas: 201 Getty/Knoedler records (highest in dataset), Goupil & Cie record in provenance prose
-    source: 'aic', id: '18951',
+    source: 'aic', id: '18951', slug: 'yellow-dancers',
     title: 'Yellow Dancers (In the Wings)',
     artist: 'Edgar Degas', year: '1874-76',
     hook: 'Deschamps London to Goupil Paris to Chicago -- the dealer chain is documented.',
@@ -63,7 +65,7 @@ export const FEATURED_WORKS: FeaturedWork[] = [
   },
   {
     // Visual anchor -- striking even with thinner Getty data
-    source: 'aic', id: '20684',
+    source: 'aic', id: '20684', slug: 'paris-street-rainy-day',
     title: 'Paris Street; Rainy Day',
     artist: 'Gustave Caillebotte', year: '1877',
     hook: 'A Parisian boulevard scene that moved through Berlin and Boston to Chicago.',
@@ -71,7 +73,7 @@ export const FEATURED_WORKS: FeaturedWork[] = [
   },
   {
     // Famous Van Gogh -- good provenance narrative; five owners documented
-    source: 'aic', id: '28560',
+    source: 'aic', id: '28560', slug: 'the-bedroom',
     title: 'The Bedroom',
     artist: 'Vincent van Gogh', year: '1889',
     hook: 'Five owners across Paris, Vienna, New York and Chicago, 1889-1926.',
@@ -79,7 +81,7 @@ export const FEATURED_WORKS: FeaturedWork[] = [
   },
   {
     // Second Monet -- 167 Getty records, Monet series context
-    source: 'aic', id: '64818',
+    source: 'aic', id: '64818', slug: 'stacks-of-wheat',
     title: 'Stacks of Wheat (End of Summer)',
     artist: 'Claude Monet', year: '1890-91',
     hook: "One of Monet's celebrated series -- Paris dealer network to Chicago.",
@@ -90,7 +92,7 @@ export const FEATURED_WORKS: FeaturedWork[] = [
     // Image: replace placeholder with Wikimedia Commons file
     //   Mary_Cassatt_-_The_Child's_Bath_-_1910.2_-_Art_Institute_of_Chicago.jpg
     // imageId: update from AIC API (blocked by Cloudflare in this environment).
-    source: 'aic', id: '111442',
+    source: 'aic', id: '111442', slug: 'the-childs-bath',
     title: "The Child's Bath",
     artist: 'Mary Cassatt', year: '1893',
     hook: 'Cassatt sold to Durand-Ruel Paris, then to Harris Whittemore CT, back to Durand-Ruel New York, then to Chicago -- four owners in 17 years, all receipts dated.',
@@ -101,7 +103,7 @@ export const FEATURED_WORKS: FeaturedWork[] = [
     // Image: replace placeholder with Wikimedia Commons file
     //   Paul_Cézanne,_The_Basket_of_Apples.jpg
     // imageId: update from AIC API (blocked by Cloudflare in this environment).
-    source: 'aic', id: '111436',
+    source: 'aic', id: '111436', slug: 'the-basket-of-apples',
     title: 'The Basket of Apples',
     artist: 'Paul Cézanne', year: 'c. 1893',
     hook: 'Vollard Paris to Bernheim-Jeune to Paul Cassirer Berlin and back, then Hessel, Rosenberg, New York, and Chicago -- eight hands in thirty years.',
@@ -111,4 +113,12 @@ export const FEATURED_WORKS: FeaturedWork[] = [
 
 export function aicImage(imageId: string, width = 600): string {
   return `https://www.artic.edu/iiif/2/${imageId}/full/${width},/0/default.jpg`
+}
+
+export function getFeaturedBySlug(slug: string): FeaturedWork | undefined {
+  return FEATURED_WORKS.find(f => f.slug === slug)
+}
+
+export function allWorkSlugs(): string[] {
+  return FEATURED_WORKS.map(f => f.slug)
 }

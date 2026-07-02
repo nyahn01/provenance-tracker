@@ -3,10 +3,31 @@ import Script from 'next/script'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 import { SiteNav } from '@/components/SiteNav'
+import { SITE_URL, SITE_NAME } from '@/lib/site'
+
+const DESCRIPTION =
+  'Documented chains of custody for famous paintings — every fact sourced, every gap shown honestly.'
 
 export const metadata: Metadata = {
-  title: 'Provenance Tracker',
-  description: 'Where the world\'s greatest art has been',
+  metadataBase: new URL(SITE_URL),
+  title: SITE_NAME,
+  description: DESCRIPTION,
+  openGraph: {
+    siteName: SITE_NAME,
+    type: 'website',
+    locale: 'en_US',
+    title: SITE_NAME,
+    description: DESCRIPTION,
+    // Default social image; per-work pages override with their own hero.
+    // Public-domain work, credited on-page (honesty rule).
+    images: ['/works/water-lilies.jpg'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_NAME,
+    description: DESCRIPTION,
+    images: ['/works/water-lilies.jpg'],
+  },
 }
 
 export default function RootLayout({

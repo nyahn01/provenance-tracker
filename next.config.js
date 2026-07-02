@@ -5,11 +5,13 @@ const nextConfig = {
     // /demo, /team, /workflow merged into one /about colophon — see issue #141.
     // /demo/source is untouched (exact-match source, no wildcard).
     // /pipeline renamed to /method (the credibility act) — see issue #143.
+    // /pricing replaced by the honest /support page — see issue #61.
     return [
       { source: '/demo', destination: '/about', permanent: true },
       { source: '/team', destination: '/about', permanent: true },
       { source: '/workflow', destination: '/about', permanent: true },
       { source: '/pipeline', destination: '/method', permanent: true },
+      { source: '/pricing', destination: '/support', permanent: true },
     ]
   },
   async headers() {

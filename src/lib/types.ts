@@ -217,6 +217,21 @@ export interface RestitutionCase {
   references: CaseSource[]
 }
 
+// ─── Newsletter (Buttondown) ─────────────────────────────────────────────────
+
+export interface NewsletterSubscribeBody {
+  email?: string
+  /** Honeypot — must stay empty; bots that fill it get a silent fake success. */
+  website?: string
+}
+
+export interface NewsletterSubscribeResponse {
+  ok: boolean
+  /** 'email' when the newsletter service is unconfigured/unreachable — the UI shows a mailto fallback. */
+  fallback?: 'email'
+  error?: string
+}
+
 // ─── Reconcile (Claude) ──────────────────────────────────────────────────────
 
 export interface TimelineEntry {
