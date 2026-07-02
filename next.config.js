@@ -1,6 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    // /demo, /team, /workflow merged into one /about colophon — see issue #141.
+    // /demo/source is untouched (exact-match source, no wildcard).
+    return [
+      { source: '/demo', destination: '/about', permanent: true },
+      { source: '/team', destination: '/about', permanent: true },
+      { source: '/workflow', destination: '/about', permanent: true },
+    ]
+  },
   async headers() {
     return [
       {

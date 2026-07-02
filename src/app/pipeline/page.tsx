@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     'How a provenance chain is built: parallel museum APIs, Claude prose extraction with a deterministic fallback, Wikidata location qualifiers, the Getty/RKD dealer trail — merged into one dated timeline where every fact carries its source and every gap is shown, never faked.',
 }
 
-// MARKETING base; sage override matches /team's preserved drift (#4a7a6a).
+// MARKETING base; sage override matches /about's preserved drift (#4a7a6a).
 const C = { ...MARKETING, sage: '#4a7a6a' }
 
 // ─── Pipeline stages (left → right flow) ──────────────────────────────────────

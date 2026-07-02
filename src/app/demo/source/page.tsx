@@ -546,8 +546,8 @@ export default function SourcePage() {
       <main style={{ minHeight: '100vh', background: C.bg, fontFamily: 'var(--font-ui)', color: C.text }}>
         {/* Nav */}
         <nav style={{ position: 'sticky', top: 0, zIndex: 10, background: C.bg, borderBottom: `1px solid ${C.border}`, padding: '14px 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Link href="/demo" style={{ color: C.textMuted, fontSize: '0.8rem', letterSpacing: '0.04em' }}>
-            &larr; Back to story
+          <Link href="/about" style={{ color: C.textMuted, fontSize: '0.8rem', letterSpacing: '0.04em' }}>
+            &larr; Back to about
           </Link>
           <span style={{ color: C.border }}>|</span>
           <span style={{ fontSize: '0.8rem', color: C.textFaint, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
@@ -610,8 +610,8 @@ export default function SourcePage() {
               Sources: Met &middot; AIC &middot; Rijksmuseum &middot; Wikidata &middot; Getty GPI &middot; RKD &middot; BnF &middot; Art Loss Register &middot; UNESCO &middot; Cultural Heritage Administration of Korea
             </div>
             <div style={{ display: 'flex', gap: 20 }}>
-              <Link href="/demo" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-                Story page &rarr;
+              <Link href="/about" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                About page &rarr;
               </Link>
               <Link href="/" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
                 Explore journeys &rarr;
