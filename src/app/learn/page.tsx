@@ -307,18 +307,16 @@ export default function LearnPage() {
             <div style={{ fontSize: '0.72rem', color: C.textFaint }}>
               Sources: Washington Principles 1998 · Getty Research Institute · Cultural Heritage Administration of Korea · BnF
             </div>
-            <div style={{ display: 'flex', gap: 20 }}>
-              <Link href="/demo" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-                Our story →
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+              <Link href="/pipeline" style={{ fontSize: '0.78rem', color: C.gold, fontWeight: 600, borderBottom: `1px solid ${C.gold}`, paddingBottom: 1 }}>
+                Next: see the data →
               </Link>
-              <Link href="/pricing" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-                Pricing →
+              <span style={{ width: 1, height: 14, background: C.border }} />
+              <Link href="/feedback" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                Feedback
               </Link>
-              <Link href="/team" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-                How the platform works →
-              </Link>
-              <Link href="/" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-                Explore journeys →
+              <Link href="/impressum" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                Legal notice
               </Link>
             </div>
           </div>

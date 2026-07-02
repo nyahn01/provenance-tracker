@@ -426,24 +426,16 @@ export default function TeamPage() {
             <div style={{ fontSize: '0.72rem', color: C.textFaint }}>
               Built with Claude Sonnet &amp; Opus · Anthropic · 2026
             </div>
-            <div style={{ display: 'flex', gap: 20 }}>
-              <Link href="/workflow" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-                How it works →
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+              <Link href="/workflow" style={{ fontSize: '0.78rem', color: C.gold, fontWeight: 600, borderBottom: `1px solid ${C.gold}`, paddingBottom: 1 }}>
+                Next: how the workflow evolved →
               </Link>
-              <Link href="/demo" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-                Our story →
-              </Link>
-              <Link href="/pricing" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-                Pricing →
-              </Link>
-              <Link href="/learn" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-                Provenance glossary →
+              <span style={{ width: 1, height: 14, background: C.border }} />
+              <Link href="/feedback" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+                Feedback
               </Link>
               <Link href="/impressum" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-                Legal notice →
-              </Link>
-              <Link href="/" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-                Explore journeys →
+                Legal notice
               </Link>
             </div>
           </div>

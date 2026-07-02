@@ -17,6 +17,7 @@ const LINKS: { href: string; label: string; accent?: boolean }[] = [
   { href: '/', label: 'Explore' },
   { href: '/learn', label: 'Learn' },
   { href: '/pipeline', label: 'The data' },
+  { href: '/case/adele-bloch-bauer-i', label: 'Case study' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/team', label: 'How it\'s built' },
   { href: '/feedback', label: 'Feedback', accent: true },
