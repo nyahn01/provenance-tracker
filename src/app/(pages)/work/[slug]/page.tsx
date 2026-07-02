@@ -23,6 +23,7 @@ import { searchGetty } from '@/lib/getty'
 import { ChainOfCustodyTimeline } from '@/components/provenance/ChainOfCustodyTimeline'
 import { JsonLd } from '@/components/JsonLd'
 import { NewsletterSignup } from '@/components/NewsletterSignup'
+import { PageShell, DisplayHeading, Prose, Card, CTALink, Section } from '@/components/ui'
 import { SITE_URL } from '@/lib/site'
 import type { GapEntry } from '@/lib/types'
 
@@ -106,58 +107,7 @@ export default async function WorkPage({
           creditText: work.credit,
         }}
       />
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { overflow: auto !important; height: auto !important; }
-        body { background: ${C.bg}; }
-        a { text-decoration: none; }
-        .other-work:hover { border-color: ${C.borderMid} !important; }
-      `,
-        }}
-      />
-
-      <main
-        style={{
-          minHeight: '100vh',
-          background: C.bg,
-          fontFamily: 'var(--font-ui)',
-          color: C.text,
-        }}
-      >
-        {/* Nav */}
-        <nav
-          style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 10,
-            background: C.bg,
-            borderBottom: `1px solid ${C.border}`,
-            padding: '14px 32px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-          }}
-        >
-          <Link href="/" style={{ color: C.textMuted, fontSize: '0.8rem', letterSpacing: '0.04em' }}>
-            ← Back to journeys
-          </Link>
-          <span style={{ color: C.border }}>|</span>
-          <span
-            style={{
-              fontSize: '0.8rem',
-              color: C.textFaint,
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-            }}
-          >
-            Provenance Tracker · Featured work
-          </span>
-        </nav>
-
-        <div style={{ maxWidth: 880, margin: '0 auto', padding: '60px 32px 100px' }}>
+      <PageShell>
           {/* Hero */}
           <div style={{ marginBottom: 48 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -176,25 +126,11 @@ export default async function WorkPage({
               }}
             />
             <div style={{ fontSize: '0.68rem', color: C.textFaint, marginBottom: 28 }}>{work.credit}</div>
-            <h1
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(1.9rem, 5vw, 3rem)',
-                fontWeight: 400,
-                color: C.text,
-                lineHeight: 1.12,
-                marginBottom: 14,
-                letterSpacing: '-0.01em',
-              }}
-            >
-              {work.title}
-            </h1>
+            <DisplayHeading size="title" marginBottom={14}>{work.title}</DisplayHeading>
             <div style={{ fontSize: '0.95rem', color: C.textMuted, marginBottom: 24 }}>
               {work.artist} · {work.year}
             </div>
-            <p style={{ fontSize: '1rem', color: C.textMuted, lineHeight: 1.75, maxWidth: 640 }}>
-              {work.hook}
-            </p>
+            <Prose>{work.hook}</Prose>
           </div>
 
           {/* Chain of custody — the gallery (light) panel, same palette as the detail view */}
@@ -219,48 +155,19 @@ export default async function WorkPage({
           </section>
 
           {/* Honest scope note + CTA into the interactive explorer */}
-          <div
-            style={{
-              padding: '18px 22px',
-              background: C.surface,
-              border: `1px solid ${C.border}`,
-              borderRadius: 10,
-              marginBottom: 56,
-            }}
-          >
-            <p style={{ fontSize: '0.85rem', color: C.textMuted, lineHeight: 1.65, marginBottom: 12 }}>
+          <Card padding="18px 22px" style={{ marginBottom: 56 }}>
+            <Prose size="0.85rem" maxWidth={720} marginBottom={12}>
               This page shows the documented ownership chain and dealer sale records from
               committed, sourced data. Exhibition loans and the map view live in the
               interactive explorer — a loan is never shown as a change of custody.
-            </p>
-            <Link
-              href={`/?work=${work.slug}`}
-              style={{
-                fontSize: '0.82rem',
-                color: C.gold,
-                fontWeight: 600,
-                borderBottom: `1px solid ${C.gold}`,
-                paddingBottom: 1,
-              }}
-            >
+            </Prose>
+            <CTALink href={`/?work=${work.slug}`} tone="gold" size="0.82rem">
               Open in the interactive explorer →
-            </Link>
-          </div>
+            </CTALink>
+          </Card>
 
           {/* Other featured journeys — internal link graph */}
-          <section style={{ marginBottom: 56 }}>
-            <h2
-              style={{
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                color: C.textFaint,
-                marginBottom: 18,
-              }}
-            >
-              More featured journeys
-            </h2>
+          <Section eyebrow="More featured journeys">
             <div
               style={{
                 display: 'grid',
@@ -269,45 +176,24 @@ export default async function WorkPage({
               }}
             >
               {others.map(f => (
-                <Link
-                  key={f.slug}
-                  href={`/work/${f.slug}`}
-                  className="other-work"
-                  style={{
-                    padding: '14px 16px',
-                    background: C.surface,
-                    border: `1px solid ${C.border}`,
-                    borderRadius: 10,
-                    transition: 'border-color 0.2s',
-                  }}
-                >
-                  <div style={{ fontSize: '0.9rem', color: C.text, fontWeight: 500, marginBottom: 3 }}>
-                    {f.title}
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: C.textFaint }}>
-                    {f.artist} · {f.year}
-                  </div>
+                <Link key={f.slug} href={`/work/${f.slug}`} style={{ textDecoration: 'none' }}>
+                  <Card hover padding="14px 16px" style={{ height: '100%' }}>
+                    <div style={{ fontSize: '0.9rem', color: C.text, fontWeight: 500, marginBottom: 3 }}>
+                      {f.title}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: C.textFaint }}>
+                      {f.artist} · {f.year}
+                    </div>
+                  </Card>
                 </Link>
               ))}
             </div>
-          </section>
+          </Section>
 
           {/* Newsletter */}
-          <section style={{ marginBottom: 56 }}>
-            <h2
-              style={{
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                color: C.textFaint,
-                marginBottom: 14,
-              }}
-            >
-              Follow the research
-            </h2>
+          <Section eyebrow="Follow the research">
             <NewsletterSignup />
-          </section>
+          </Section>
 
           {/* Footer nav */}
           <div
@@ -325,28 +211,12 @@ export default async function WorkPage({
               Every fact above carries a source; gaps are shown as gaps.
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-              <Link
-                href="/case/adele-bloch-bauer-i"
-                style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}
-              >
-                A full restitution chain →
-              </Link>
-              <Link
-                href="/method"
-                style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}
-              >
-                How this is sourced →
-              </Link>
-              <Link
-                href="/learn"
-                style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}
-              >
-                Provenance glossary →
-              </Link>
+              <CTALink href="/case/adele-bloch-bauer-i" size="0.72rem">A full restitution chain →</CTALink>
+              <CTALink href="/method" size="0.72rem">How this is sourced →</CTALink>
+              <CTALink href="/learn" size="0.72rem">Provenance glossary →</CTALink>
             </div>
           </div>
-        </div>
-      </main>
+      </PageShell>
     </>
   )
 }

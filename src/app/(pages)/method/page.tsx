@@ -11,6 +11,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { MARKETING } from '@/lib/design-tokens'
+import { PageShell, Eyebrow, DisplayHeading, CTALink } from '@/components/ui'
 
 export const metadata: Metadata = {
   title: 'How the data is prepared — Provenance Tracker',
@@ -70,10 +71,6 @@ export default function MethodPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { overflow: auto !important; height: auto !important; }
-        body { background: ${C.bg}; }
         .flow-dot { animation: flow-along 2.8s linear infinite; }
         @keyframes flow-along {
           0%   { opacity: 0; }
@@ -87,32 +84,20 @@ export default function MethodPage() {
         }
         .key-pulse { animation: pulse-key 3s ease-in-out infinite; }
         .src-card:hover { border-color: ${C.borderMid} !important; background: ${C.surface2} !important; }
-        a { text-decoration: none; }
         @media (prefers-reduced-motion: reduce) {
           .flow-dot, .key-pulse { animation: none !important; }
           * { transition-duration: 0.01ms !important; }
         }
       ` }} />
 
-      <main style={{ minHeight: '100vh', background: C.bg, fontFamily: 'var(--font-ui)', color: C.text }}>
-
-        {/* Nav */}
-        <nav style={{ position: 'sticky', top: 0, zIndex: 10, background: C.bg, borderBottom: `1px solid ${C.border}`, padding: '14px 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Link href="/" style={{ color: C.textMuted, fontSize: '0.8rem', letterSpacing: '0.04em' }}>← Back to journeys</Link>
-          <span style={{ color: C.border }}>|</span>
-          <span style={{ fontSize: '0.8rem', color: C.textFaint, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Provenance Tracker · Method</span>
-        </nav>
-
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '60px 32px 100px' }}>
+      <PageShell width={1100}>
 
           {/* Hero */}
           <div style={{ marginBottom: 72 }}>
-            <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 16 }}>
-              How the data is prepared
-            </div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: 400, color: C.text, lineHeight: 1.1, letterSpacing: '-0.01em', marginBottom: 20 }}>
+            <Eyebrow>How the data is prepared</Eyebrow>
+            <DisplayHeading size="hero">
               From eight archives<br />to one honest chain.
-            </h1>
+            </DisplayHeading>
             <p style={{ fontSize: '1rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 600, marginBottom: 16 }}>
               No single museum knows where a painting has been. We read eight public archives,
               extract the ownership story without inventing a word of it, and merge it into one
@@ -120,7 +105,7 @@ export default function MethodPage() {
             </p>
             <div style={{ fontSize: '0.76rem', color: C.textMuted, lineHeight: 1.6 }}>
               The fuller written reference lives in{' '}
-              <Link href="/learn" style={{ color: C.gold, borderBottom: `1px solid ${C.border}` }}>the glossary</Link>;
+              <Link href="/learn" style={{ color: C.gold, textDecoration: 'none', borderBottom: `1px solid ${C.border}` }}>the glossary</Link>;
               this page shows the pipeline itself.
             </div>
           </div>
@@ -293,21 +278,20 @@ export default function MethodPage() {
               Sources: Met · AIC · Rijksmuseum · Cleveland · Getty GPI · RKD · Wikidata · Europeana
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-              <Link href="/support" style={{ fontSize: '0.78rem', color: C.gold, fontWeight: 600, borderBottom: `1px solid ${C.gold}`, paddingBottom: 1 }}>
+              <CTALink tone="gold" href="/support">
                 Next: support the work →
-              </Link>
+              </CTALink>
               <span style={{ width: 1, height: 14, background: C.border }} />
-              <Link href="/feedback" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+              <CTALink tone="muted" href="/feedback" size="0.72rem">
                 Feedback
-              </Link>
-              <Link href="/impressum" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+              </CTALink>
+              <CTALink tone="muted" href="/impressum" size="0.72rem">
                 Legal notice
-              </Link>
+              </CTALink>
             </div>
           </div>
 
-        </div>
-      </main>
+      </PageShell>
     </>
   )
 }

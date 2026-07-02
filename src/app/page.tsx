@@ -6,7 +6,7 @@ import { SITE_URL, SITE_NAME } from '@/lib/site'
 // StoriesApp (a client component) remains the entire interactive surface.
 export default function Home() {
   return (
-    <main className="w-screen h-screen" style={{ backgroundColor: '#0a0908' }}>
+    <main className="w-screen h-screen overflow-hidden" style={{ backgroundColor: '#0a0908' }}>
       <JsonLd
         data={{
           '@context': 'https://schema.org',

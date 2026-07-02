@@ -15,6 +15,7 @@ import type { Metadata } from 'next'
 import { MARKETING as C } from '@/lib/design-tokens'
 import { getCase, allCaseSlugs } from '@/lib/case-studies'
 import { JsonLd } from '@/components/JsonLd'
+import { PageShell } from '@/components/ui'
 import { SITE_URL } from '@/lib/site'
 import type { CaseSource, CaseCustodyEntry } from '@/lib/types'
 
@@ -95,14 +96,12 @@ export default async function CaseStudyPage({
           citation: c.references.filter(r => r.url).map(r => r.url),
         }}
       />
+      {/* Page-specific source-line classes — the approved trimmed style block
+          (generic resets/nav/overflow now live in globals.css + the (pages) shell). */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { overflow: auto !important; height: auto !important; }
-        body { background: ${C.bg}; }
-        a { text-decoration: none; }
+        .case-page a { text-decoration: none; }
         .src-line { margin-top: 12px; font-size: 0.72rem; color: ${C.textFaint}; line-height: 1.5; }
         .src-tag { display: inline-block; font-size: 0.58rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: ${C.textFaint}; border: 1px solid ${C.border}; border-radius: 3px; padding: 1px 5px; margin-right: 8px; vertical-align: middle; }
         .src-item a { color: ${C.textMuted}; border-bottom: 1px solid ${C.border}; }
@@ -113,48 +112,8 @@ export default async function CaseStudyPage({
         }}
       />
 
-      <main
-        style={{
-          minHeight: '100vh',
-          background: C.bg,
-          fontFamily: 'var(--font-ui)',
-          color: C.text,
-        }}
-      >
-        {/* Nav */}
-        <nav
-          style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 10,
-            background: C.bg,
-            borderBottom: `1px solid ${C.border}`,
-            padding: '14px 32px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-          }}
-        >
-          <Link
-            href="/"
-            style={{ color: C.textMuted, fontSize: '0.8rem', letterSpacing: '0.04em' }}
-          >
-            ← Back to journeys
-          </Link>
-          <span style={{ color: C.border }}>|</span>
-          <span
-            style={{
-              fontSize: '0.8rem',
-              color: C.textFaint,
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-            }}
-          >
-            Provenance Tracker · Restitution case study
-          </span>
-        </nav>
-
-        <div style={{ maxWidth: 880, margin: '0 auto', padding: '60px 32px 100px' }}>
+      <div className="case-page">
+        <PageShell>
           {/* Hero */}
           <div style={{ marginBottom: 48 }}>
             <div
@@ -605,8 +564,8 @@ export default async function CaseStudyPage({
               What is a provenance gap? →
             </Link>
           </div>
-        </div>
-      </main>
+        </PageShell>
+      </div>
     </>
   )
 }

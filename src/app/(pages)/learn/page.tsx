@@ -7,6 +7,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { MARKETING as C } from '@/lib/design-tokens'
+import { PageShell, Eyebrow, DisplayHeading, CTALink } from '@/components/ui'
 import { LearnAccordion, type AccordionSection } from './LearnAccordion'
 
 export const metadata: Metadata = {
@@ -165,7 +166,7 @@ const SECTIONS: AccordionSection[] = [
         </p>
         <p>
           For a worked example, see the{' '}
-          <Link href="/case/adele-bloch-bauer-i" style={{ color: C.gold, borderBottom: `1px solid ${C.border}` }}>
+          <Link href="/case/adele-bloch-bauer-i" style={{ color: C.gold, textDecoration: 'none', borderBottom: `1px solid ${C.border}` }}>
             restitution case study of Klimt&rsquo;s Portrait of Adele Bloch-Bauer I
           </Link>{' '}
           — the full custody chain, the falsified-record gap, and the 2006 return, every fact sourced.
@@ -215,10 +216,6 @@ export default function LearnPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { overflow: auto !important; height: auto !important; }
-        body { background: ${C.bg}; }
         .learn-section p { margin-bottom: 1rem; font-size: 0.9rem; color: ${C.textMuted}; line-height: 1.75; }
         .learn-section p:last-child { margin-bottom: 0; }
         .learn-section ul { margin: 0.75rem 0 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; }
@@ -226,35 +223,19 @@ export default function LearnPage() {
         .learn-section strong { color: ${C.text}; font-weight: 600; }
         .learn-section em { color: ${C.textMuted}; font-style: italic; }
         .section-card:hover { border-color: ${C.borderMid} !important; }
-        a { text-decoration: none; }
         @media (min-width: 900px) {
           .toc-sticky { position: sticky; top: 80px; }
         }
       ` }} />
 
-      <main style={{ minHeight: '100vh', background: C.bg, fontFamily: 'var(--font-ui)', color: C.text }}>
-
-        {/* Nav */}
-        <nav style={{ position: 'sticky', top: 0, zIndex: 10, background: C.bg, borderBottom: `1px solid ${C.border}`, padding: '14px 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Link href="/" style={{ color: C.textMuted, fontSize: '0.8rem', letterSpacing: '0.04em' }}>
-            ← Back to journeys
-          </Link>
-          <span style={{ color: C.border }}>|</span>
-          <span style={{ fontSize: '0.8rem', color: C.textFaint, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            Provenance Tracker · Glossary
-          </span>
-        </nav>
-
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '60px 32px 100px' }}>
+      <PageShell width={1100}>
 
           {/* Hero */}
           <div style={{ marginBottom: 72 }}>
-            <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 16 }}>
-              Provenance Glossary
-            </div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: 400, color: C.text, lineHeight: 1.1, marginBottom: 20, letterSpacing: '-0.01em' }}>
+            <Eyebrow>Provenance Glossary</Eyebrow>
+            <DisplayHeading size="hero">
               The language of<br />art ownership
-            </h1>
+            </DisplayHeading>
             <p style={{ fontSize: '1rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 560 }}>
               Six concepts that underpin every arc, gap, and source badge on this platform.
               Understanding them makes the map readable — and the stakes clear.
@@ -308,21 +289,20 @@ export default function LearnPage() {
               Sources: Washington Principles 1998 · Getty Research Institute · Cultural Heritage Administration of Korea · BnF
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-              <Link href="/method" style={{ fontSize: '0.78rem', color: C.gold, fontWeight: 600, borderBottom: `1px solid ${C.gold}`, paddingBottom: 1 }}>
+              <CTALink tone="gold" href="/method">
                 Next: the method →
-              </Link>
+              </CTALink>
               <span style={{ width: 1, height: 14, background: C.border }} />
-              <Link href="/feedback" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+              <CTALink tone="muted" href="/feedback" size="0.72rem">
                 Feedback
-              </Link>
-              <Link href="/impressum" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+              </CTALink>
+              <CTALink tone="muted" href="/impressum" size="0.72rem">
                 Legal notice
-              </Link>
+              </CTALink>
             </div>
           </div>
 
-        </div>
-      </main>
+      </PageShell>
     </>
   )
 }

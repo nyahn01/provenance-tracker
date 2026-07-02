@@ -299,12 +299,21 @@ linear form at every width (never a horizontal "kanban" row). Full spec:
 
 ## 8. Layout grid
 
-Landing (full screen): globe takes 100vw × 100vh. Left sidebar overlays (z-10), right
-panel overlays. Bottom search bar overlays. Globe is always behind (z-0).
+**Landing (editorial column over a quiet globe — supersedes the v1 sidebar/overlay grid):**
+the globe renders full-bleed behind at reduced opacity and *dissolves into the page ground*
+via a gradient in the first viewport — never a flat scrim over a hero. Content is a single
+max-width-1100 editorial column (`LandingEditorial`): eyebrow → display hero → lede →
+honesty strapline → the collection grid (`WorkCard`, poster lead spans 2 columns ≥720px) →
+search → data-rights/newsletter. The globe stays behind (z-0) and its init is untouched
+(GLOBE CONTRACT).
 
-Sidebar widths (desktop): left 280px, right 380px.
-On tablet (< 1024px): left sidebar collapses to icon strip (not implemented in v1 — sidebar hides, museum pins clickable on globe). Right panel: 320px.
-On mobile (< 768px): right panel becomes a bottom sheet (60vh), left sidebar hidden.
+**Pages:** every non-home route lives in the `(pages)` route group whose layout owns
+background/color/font once; pages scroll natively (the home opts INTO `overflow: hidden`,
+not the reverse). SiteNav + SiteFooter are global (both null on `/`). No page renders its
+own nav or style-reset block.
+
+On mobile (< 768px) the open-work panel becomes a bottom sheet (60vh); the landing column
+is unchanged, with the globe at reduced height behind the hero.
 
 ---
 
@@ -377,6 +386,35 @@ On mobile (< 768px): right panel becomes a bottom sheet (60vh), left sidebar hid
   --radius-xl: 16px;
 }
 ```
+
+---
+
+## 11. Shared primitives (`src/components/ui/`) — the styling rule
+
+**The rule:** styling is token-driven inline style objects composed through the
+`src/components/ui` primitives; Tailwind utilities only where already present. Never restate
+a hex, font-size, or letter-spacing literal that a token or primitive already owns.
+Hover/focus states use CSS classes in `globals.css` (`.ui-card-hover`, `.landing-work-card`),
+never JS style mutation.
+
+| Primitive | Owns |
+|---|---|
+| `PageShell` | the centered content column (maxWidth/margin/padding) |
+| `Eyebrow` | the small-caps section label (0.7rem · 600 · 0.16em · uppercase) |
+| `DisplayHeading` | the Cormorant serif ramp (`hero` / `title` / `section`) |
+| `Prose` | body copy at the reading measure |
+| `Card` | surface + border + radius-10 panels (`hover` → CSS class) |
+| `CTALink` | the "label →" link row (`gold` / `clay` / `muted` tones) |
+| `Section` | vertical rhythm + optional Eyebrow head |
+
+All are server-component-safe and take `palette: 'marketing' | 'obs' | 'gal'` (default
+`marketing`). A pattern that doesn't exactly match a primitive stays inline with tokens —
+primitives dedupe, they don't homogenize bespoke content.
+
+**Motion adopted (spec §3, built):** the chain-of-custody timeline assembles oldest→newest —
+`fade-up` staggered by `motion.stagger.chain`, with `motion.stagger.gapBeat` extra after each
+gap band. Reduced-motion collapses durations *and* delays (globals.css kill switch). The gap
+band's weave texture uses the `gapWeave` tokens (OBS + GAL variants).
 
 ---
 
