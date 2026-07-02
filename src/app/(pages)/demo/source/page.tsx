@@ -4,9 +4,9 @@
  * Paste this URL into NotebookLM to generate a presentation or audio overview.
  */
 
-import Link from 'next/link'
 import type { Metadata } from 'next'
 import { MARKETING as C } from '@/lib/design-tokens'
+import { PageShell, Prose, CTALink } from '@/components/ui'
 
 export const metadata: Metadata = {
   title: 'Source Document — Provenance Tracker',
@@ -529,10 +529,6 @@ export default function SourcePage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { overflow: auto !important; height: auto !important; }
-        body { background: ${C.bg}; }
         .source-section p { margin-bottom: 1rem; font-size: 0.88rem; color: ${C.textMuted}; line-height: 1.8; }
         .source-section p:last-child { margin-bottom: 0; }
         .source-section ul, .source-section ol { margin: 0.75rem 0 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.65rem; }
@@ -540,22 +536,9 @@ export default function SourcePage() {
         .source-section strong { color: ${C.text}; font-weight: 600; }
         .source-section em { color: ${C.textMuted}; font-style: italic; }
         .source-section code { font-family: 'Courier New', monospace; font-size: 0.82em; color: ${C.textMuted}; background: rgba(255,255,255,0.05); padding: 1px 4px; border-radius: 3px; }
-        a { text-decoration: none; }
       `}} />
 
-      <main style={{ minHeight: '100vh', background: C.bg, fontFamily: 'var(--font-ui)', color: C.text }}>
-        {/* Nav */}
-        <nav style={{ position: 'sticky', top: 0, zIndex: 10, background: C.bg, borderBottom: `1px solid ${C.border}`, padding: '14px 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Link href="/about" style={{ color: C.textMuted, fontSize: '0.8rem', letterSpacing: '0.04em' }}>
-            &larr; Back to about
-          </Link>
-          <span style={{ color: C.border }}>|</span>
-          <span style={{ fontSize: '0.8rem', color: C.textFaint, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            Provenance Tracker &middot; Source Document
-          </span>
-        </nav>
-
-        <div style={{ maxWidth: 820, margin: '0 auto', padding: '60px 32px 100px' }}>
+      <PageShell width={820}>
 
           {/* NotebookLM notice */}
           <div style={{ padding: '14px 20px', border: `1px solid ${C.borderMid}`, borderRadius: 8, background: 'rgba(212,168,83,0.04)', marginBottom: 56, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
@@ -574,11 +557,11 @@ export default function SourcePage() {
             <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 400, color: C.text, lineHeight: 1.1, letterSpacing: '-0.01em', marginBottom: 16 }}>
               Provenance Tracker
             </h1>
-            <p style={{ fontSize: '0.95rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 560 }}>
+            <Prose size="0.95rem" maxWidth={560}>
               A 3D globe for art provenance. 12 structured sections covering project overview,
               origin story, data engineering, agent team, business model, Korean cultural heritage,
               honesty principles, Q&amp;A prep, and key quotes.
-            </p>
+            </Prose>
           </div>
 
           {/* Content sections */}
@@ -610,16 +593,15 @@ export default function SourcePage() {
               Sources: Met &middot; AIC &middot; Rijksmuseum &middot; Wikidata &middot; Getty GPI &middot; RKD &middot; BnF &middot; Art Loss Register &middot; UNESCO &middot; Cultural Heritage Administration of Korea
             </div>
             <div style={{ display: 'flex', gap: 20 }}>
-              <Link href="/about" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+              <CTALink href="/about" size="0.72rem">
                 About page &rarr;
-              </Link>
-              <Link href="/" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+              </CTALink>
+              <CTALink href="/" size="0.72rem">
                 Explore journeys &rarr;
-              </Link>
+              </CTALink>
             </div>
           </div>
-        </div>
-      </main>
+      </PageShell>
     </>
   )
 }

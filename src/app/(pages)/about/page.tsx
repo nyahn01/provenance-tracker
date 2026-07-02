@@ -9,6 +9,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { MARKETING } from '@/lib/design-tokens'
+import { PageShell, Eyebrow, DisplayHeading, Prose, Card, CTALink } from '@/components/ui'
 
 export const metadata: Metadata = {
   title: 'About — Provenance Tracker',
@@ -63,45 +64,29 @@ export default function AboutPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { overflow: auto !important; height: auto !important; }
-        body { background: ${C.bg}; }
         @keyframes pulse-gate {
           0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,83,0); }
           50%       { box-shadow: 0 0 12px 3px rgba(212,168,83,0.18); }
         }
         .gate-pulse { animation: pulse-gate 3s ease-in-out infinite; }
         .agent-card:hover { border-color: ${C.borderMid} !important; background: ${C.surface2} !important; }
-        a { text-decoration: none; }
       ` }} />
 
-      <main style={{ minHeight: '100vh', background: C.bg, fontFamily: 'var(--font-ui)', color: C.text }}>
-
-        {/* Nav */}
-        <nav style={{ position: 'sticky', top: 0, zIndex: 10, background: C.bg, borderBottom: `1px solid ${C.border}`, padding: '14px 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Link href="/" style={{ color: C.textMuted, fontSize: '0.8rem', letterSpacing: '0.04em' }}>← Back to journeys</Link>
-          <span style={{ color: C.border }}>|</span>
-          <span style={{ fontSize: '0.8rem', color: C.textFaint, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Provenance Tracker · About</span>
-        </nav>
-
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '60px 32px 100px' }}>
+      <PageShell width={1100}>
 
           {/* Hero */}
           <div style={{ marginBottom: 72 }}>
-            <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 16 }}>
-              About
-            </div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: 400, color: C.text, lineHeight: 1.1, marginBottom: 20, letterSpacing: '-0.01em' }}>
+            <Eyebrow>About</Eyebrow>
+            <DisplayHeading size="hero">
               How this was built.
-            </h1>
-            <p style={{ fontSize: '1rem', color: C.textMuted, lineHeight: 1.7, maxWidth: 620 }}>
+            </DisplayHeading>
+            <Prose maxWidth={620}>
               The colophon: why this platform exists, the AI agent team that builds it, and the
               autonomy model it runs under. The provenance product itself lives at{' '}
-              <Link href="/" style={{ color: C.gold, borderBottom: `1px solid ${C.border}` }}>the globe</Link>,{' '}
-              <Link href="/learn" style={{ color: C.gold, borderBottom: `1px solid ${C.border}` }}>the glossary</Link>, and{' '}
-              <Link href="/case/adele-bloch-bauer-i" style={{ color: C.gold, borderBottom: `1px solid ${C.border}` }}>a full restitution chain</Link> — this page is about the making, not the art.
-            </p>
+              <Link href="/" style={{ color: C.gold, borderBottom: `1px solid ${C.border}`, textDecoration: 'none' }}>the globe</Link>,{' '}
+              <Link href="/learn" style={{ color: C.gold, borderBottom: `1px solid ${C.border}`, textDecoration: 'none' }}>the glossary</Link>, and{' '}
+              <Link href="/case/adele-bloch-bauer-i" style={{ color: C.gold, borderBottom: `1px solid ${C.border}`, textDecoration: 'none' }}>a full restitution chain</Link> — this page is about the making, not the art.
+            </Prose>
           </div>
 
           {/* ── §01 Origin ───────────────────────────────────────────────── */}
@@ -146,15 +131,15 @@ export default function AboutPage() {
 
             {/* Two intake lanes */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 28 }}>
-              <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderTop: `2px solid ${C.sage}`, borderRadius: 10, padding: '18px 20px' }}>
+              <Card padding="18px 20px" style={{ borderTop: `2px solid ${C.sage}` }}>
                 <div style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.sage, marginBottom: 6 }}>Lane A · feedback</div>
                 <div style={{ fontSize: '0.85rem', color: C.textMuted, lineHeight: 1.6 }}>
-                  You send the in-app <Link href="/feedback" style={{ color: C.sage, borderBottom: `1px solid ${C.border}` }}>feedback form</Link>. It opens a GitHub issue tagged{' '}
+                  You send the in-app <Link href="/feedback" style={{ color: C.sage, borderBottom: `1px solid ${C.border}`, textDecoration: 'none' }}>feedback form</Link>. It opens a GitHub issue tagged{' '}
                   <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.85em', color: C.sage }}>feedback</code>; the{' '}
                   <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.85em', color: C.textMuted }}>feedback-triage</code> agent reviews and documents it — reads only, never edits the product, never closes your issue. A human decides what gets promoted.
                 </div>
-              </div>
-              <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderTop: `2px solid ${C.gold}`, borderRadius: 10, padding: '18px 20px' }}>
+              </Card>
+              <Card padding="18px 20px" style={{ borderTop: `2px solid ${C.gold}` }}>
                 <div style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.gold, marginBottom: 6 }}>Lane B · build queue</div>
                 <div style={{ fontSize: '0.85rem', color: C.textMuted, lineHeight: 1.6 }}>
                   A maintainer — or a Claude Code planning session — writes an issue tagged{' '}
@@ -162,7 +147,7 @@ export default function AboutPage() {
                   <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.85em', color: C.gold }}>agent:&lt;domain&gt;</code>. It routes to the matching specialist agent, which builds and opens a PR that says{' '}
                   <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.85em', color: C.gold }}>Closes&nbsp;#N</code> — merging auto-closes it.
                 </div>
-              </div>
+              </Card>
             </div>
             <p style={{ fontSize: '0.78rem', color: C.textFaint, lineHeight: 1.6, marginBottom: 40 }}>
               Both lanes meet at the same blocking honesty gate, and a human always merges. Nothing reaches the site without that merge.
@@ -237,7 +222,7 @@ export default function AboutPage() {
             </p>
             <p style={{ fontSize: '0.78rem', color: C.textFaint, lineHeight: 1.6, marginBottom: 36 }}>
               The full walkthrough lives in{' '}
-              <a href="https://github.com/nyahn01/provenance-tracker/blob/main/docs/WORKFLOW_STAGES.md" style={{ color: C.textMuted, borderBottom: `1px solid ${C.border}` }}>docs/WORKFLOW_STAGES.md</a>.
+              <a href="https://github.com/nyahn01/provenance-tracker/blob/main/docs/WORKFLOW_STAGES.md" style={{ color: C.textMuted, borderBottom: `1px solid ${C.border}`, textDecoration: 'none' }}>docs/WORKFLOW_STAGES.md</a>.
               One config file switches the stage —{' '}
               <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.85em', color: C.gold }}>.claude/orchestration.json</code>{' '}
               holds <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.85em', color: C.text }}>mode</code> (which stage) and{' '}
@@ -247,14 +232,14 @@ export default function AboutPage() {
             {/* Stage cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 44 }}>
               {STAGES.map(s => (
-                <div key={s.tag} style={{ background: C.surface, border: `1px solid ${C.border}`, borderTop: `2px solid ${s.accent}`, borderRadius: 10, padding: '18px 20px' }}>
+                <Card key={s.tag} padding="18px 20px" style={{ borderTop: `2px solid ${s.accent}` }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
                     <span style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: s.accent }}>{s.tag}</span>
                     <span style={{ fontSize: '0.54rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '2px 7px', borderRadius: 4, background: `${s.accent}1a`, border: `1px solid ${s.accent}40`, color: s.accent }}>{s.status}</span>
                   </div>
                   <div style={{ fontSize: '0.95rem', fontWeight: 500, color: C.text, marginBottom: 10 }}>{s.title}</div>
                   <div style={{ fontSize: '0.78rem', color: C.textMuted, lineHeight: 1.55 }}>{s.body}</div>
-                </div>
+                </Card>
               ))}
             </div>
 
@@ -347,24 +332,23 @@ export default function AboutPage() {
               Built with Claude Sonnet &amp; Opus · Anthropic · 2026
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-              <Link href="/" style={{ fontSize: '0.78rem', color: C.gold, fontWeight: 600, borderBottom: `1px solid ${C.gold}`, paddingBottom: 1 }}>
+              <CTALink href="/" tone="gold">
                 Next: explore journeys &rarr;
-              </Link>
+              </CTALink>
               <span style={{ width: 1, height: 14, background: C.border }} />
-              <Link href="/demo/source" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}` }}>
+              <CTALink href="/demo/source" size="0.72rem">
                 Full source doc
-              </Link>
-              <Link href="/feedback" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}` }}>
+              </CTALink>
+              <CTALink href="/feedback" size="0.72rem">
                 Feedback
-              </Link>
-              <Link href="/impressum" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}` }}>
+              </CTALink>
+              <CTALink href="/impressum" size="0.72rem">
                 Legal notice
-              </Link>
+              </CTALink>
             </div>
           </div>
 
-        </div>
-      </main>
+      </PageShell>
     </>
   )
 }
