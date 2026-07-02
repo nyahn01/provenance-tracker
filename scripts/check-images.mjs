@@ -16,18 +16,10 @@
  */
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { magicOf, MIN_BYTES } from './lib/image-magic.mjs'
 
 const DIR = 'public/works'
-const MIN_BYTES = 4 * 1024 // a real artwork JPEG is tens-to-hundreds of KB
 const IMG_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif'])
-
-function magicOf(buf) {
-  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'JPEG'
-  if (buf.length >= 4 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'PNG'
-  if (buf.length >= 12 && buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') return 'WebP'
-  if (buf.length >= 4 && buf.toString('ascii', 0, 4) === 'GIF8') return 'GIF'
-  return null
-}
 
 const GRN = '\x1b[32m', RED = '\x1b[31m', YLW = '\x1b[33m', RST = '\x1b[0m', DIM = '\x1b[2m'
 let files = []
