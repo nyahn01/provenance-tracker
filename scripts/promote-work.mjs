@@ -29,7 +29,7 @@ import { readFileSync, writeFileSync, copyFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { spawnSync } from 'child_process'
-import { validateChain, geocode } from './curate.mjs'
+import { validateChain } from './curate.mjs'
 import { validateImageBuffer } from './lib/image-magic.mjs'
 
 const __dir = dirname(fileURLToPath(import.meta.url))
@@ -118,7 +118,7 @@ function main() {
     source: 'aic', id: '${id}', slug: '${slug}',
     title: '${title}',
     artist: '${artist}', year: '${creationYear}',
-    hook: '${hook.replace(/'/g, "\\'")}',
+    hook: '${hook.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}',
     imageId: '${argValue(args, '--image-id') ?? 'TODO-from-aic-api'}', localSrc: '/works/${slug}.jpg', credit: AIC_CREDIT,
   },
 
