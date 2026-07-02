@@ -7,6 +7,7 @@ import { OBS } from '@/lib/design-tokens'
 import { GlobeContainer } from './provenance/GlobeContainer'
 import { SourceBadge } from './provenance/SourceBadge'
 import { ProvenanceDetail } from './provenance/ProvenanceDetail'
+import { NewsletterSignup } from './NewsletterSignup'
 
 // ─── Responsive breakpoints ───────────────────────────────────────────────────
 const BP_TABLET = 1024  // px — sidebar collapses to drawer below this
@@ -66,9 +67,19 @@ export default function StoriesApp() {
     } finally { setLoading(false) }
   }, [])
 
-  const selectFeatured = (f: FeaturedWork) =>
+  const selectFeatured = useCallback((f: FeaturedWork) =>
     openWork({ id: `${f.source}-${f.id}`, source: f.source, title: f.title, artist: f.artist, date: f.year, thumbnail: null },
-      f.localSrc, f.credit)
+      f.localSrc, f.credit), [openWork])
+
+  // Deep link from the static /work/[slug] pages: /?work=<slug> opens that
+  // featured story on mount. window.location (not useSearchParams) so the
+  // client home page needs no Suspense boundary.
+  useEffect(() => {
+    const slug = new URLSearchParams(window.location.search).get('work')
+    if (!slug) return
+    const f = FEATURED_WORKS.find(w => w.slug === slug)
+    if (f) selectFeatured(f)
+  }, [selectFeatured])
 
   const selectResult = (r: SearchResult) => openWork(r, r.thumbnail, null)
 
@@ -282,8 +293,8 @@ export default function StoriesApp() {
                 <a href="/learn" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
                   Provenance glossary →
                 </a>
-                <a href="/pricing" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
-                  Pricing →
+                <a href="/support" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
+                  Support →
                 </a>
                 <a href="/feedback" style={{ color: OBS.clay, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
                   Feedback →
@@ -291,6 +302,9 @@ export default function StoriesApp() {
                 <a href="https://buymeacoffee.com/nyahn" target="_blank" rel="noopener noreferrer" style={{ color: OBS.clay, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
                   ☕ Buy me a coffee →
                 </a>
+              </div>
+              <div style={{ marginTop: 24 }}>
+                <NewsletterSignup palette="obs" />
               </div>
             </div>
           </div>
