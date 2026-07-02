@@ -4,7 +4,7 @@
 - Date: 2026-06-27
 
 ## Context
-The platform runs in two stages today (see `/team`):
+The platform runs in two stages today (see `/about`):
 - **Stage 1 · Active** — agents invoked per session in Claude Code.
 - **Stage 2 · Scheduled** — the batch workflow reads the GitHub-Issues queue
   (`priority` + `agent:<domain>`), routes to specialists, opens PRs; a human merges.

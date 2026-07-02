@@ -13,14 +13,14 @@
  *   OBS        — the observatory (dark) app chrome used by StoriesApp + the globe.
  *   GAL        — the gallery (light) palette used inside the provenance detail panel.
  *   MARKETING  — the slightly-lighter dark palette used by the static marketing
- *                pages (/team, /learn, /pricing, /demo, /demo/source, /feedback).
+ *                pages (/about, /learn, /pricing, /demo/source, /feedback).
  *
  * KNOWN DRIFT (intentionally preserved — do not unify without design review):
  *   • OBS.surface   #131110  ≠  MARKETING.surface   #111010
  *   • OBS.borderMid #3d3228  ≠  MARKETING.borderMid #3a3028
  *   • OBS.textFaint #5c5449  ≠  MARKETING.textFaint #5a5248
  *   • GAL.sage      #4a7a6a  ≠  globals.css --gal-sage #4a6b5e  (JS value is what renders)
- *   • /team uses MARKETING with sage overridden to #4a7a6a (see usage note below).
+ *   • /about uses MARKETING with sage overridden to #4a7a6a (see usage note below).
  *
  * The globe trio (ocean/land/border) is governed by the GLOBE CONTRACT in
  * the root CLAUDE.md — these are the values that actually render.
@@ -47,7 +47,7 @@ export const GAL = {
 
 // ─── Marketing (dark, lighter surfaces) — static pages ───────────────────────
 // Superset of every marketing `C` object. Pages reference only the keys they
-// need; unused keys are harmless. /team must override sage:
+// need; unused keys are harmless. /about must override sage:
 //   const C = { ...MARKETING, sage: '#4a7a6a' }
 export const MARKETING = {
   bg: '#0a0908', surface: '#111010', surface2: '#161413',

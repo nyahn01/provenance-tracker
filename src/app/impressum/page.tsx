@@ -1,6 +1,6 @@
 /**
  * /impressum — Legal notice / imprint (German § 5 DDG / § 18 MStV style).
- * Static server component — no client JS. Design tokens match /team, /pricing, /learn.
+ * Static server component — no client JS. Design tokens match /about, /pricing, /learn.
  *
  * ⚠ COMPLETE BEFORE RELYING ON THIS LEGALLY:
  *   Fill `OPERATOR.address` and `OPERATOR.email` below with real values. A German

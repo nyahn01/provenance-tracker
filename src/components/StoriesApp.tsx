@@ -276,7 +276,7 @@ export default function StoriesApp() {
                 <a href="/case/adele-bloch-bauer-i" style={{ color: OBS.gold, fontWeight: 600, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
                   See a full restitution chain →
                 </a>
-                <a href="/team" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
+                <a href="/about" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
                   How this platform works →
                 </a>
                 <a href="/learn" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
