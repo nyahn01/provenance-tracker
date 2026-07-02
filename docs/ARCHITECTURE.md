@@ -47,7 +47,7 @@ _Last updated 2026-06-27. A factual inventory of what exists and works today. Fo
 - **Provenance Intelligence card** — deterministic FLAG/REVIEW/CLEAR risk tier + Getty price sparkline.
 - **Per-source TTL cache + per-IP rate limiting** ([src/lib/cache.ts](src/lib/cache.ts)).
 - **Feedback → GitHub issue** with email fallback ([src/components/FeedbackForm.tsx](src/components/FeedbackForm.tsx)).
-- **8 curated featured works** (public-domain, deep Tier-A provenance) in [src/lib/featured.ts](src/lib/featured.ts). Custody chains pre-parsed and committed to [src/lib/featured-provenance.json](src/lib/featured-provenance.json) — zero Claude runtime cost for featured works.
+- **Curated featured works** (public-domain, deep Tier-A provenance) in [src/lib/featured.ts](src/lib/featured.ts). Custody chains pre-parsed and committed to [src/lib/featured-provenance.json](src/lib/featured-provenance.json) — zero Claude runtime cost for featured works. Grown via the STORM pipeline: `npm run discover` → `npm run curate` → human review → `npm run promote` (ADR 0003).
 - **Prose extraction cache** — disk-backed ([src/lib/prose-cache.ts](src/lib/prose-cache.ts)) so each user-searched artwork is parsed by Claude at most once per server instance.
 
 ## Component architecture (post-refactor)
@@ -68,7 +68,7 @@ Every fact carries a source. Custody ≠ exhibition loans (separate arrays + UI)
 - `npm run dev` · `npm run build`
 - `node scripts/ship.mjs [--commit "…"] [--push]` — build → serve → verify gate (agents never commit raw)
 - `npm run honesty` — over-claim / invented-data grep on the diff
-- `npm run preparse` — re-run Claude Haiku over the 8 featured works; commit the output to lock in results
+- `npm run preparse` — re-run Claude Haiku over the featured works; commit the output to lock in results
 
 ## Known constraints
 

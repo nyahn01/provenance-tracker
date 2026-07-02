@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vitest'
+import { existsSync, readFileSync } from 'node:fs'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {
   detectConflicts,
   gatherGetty,
@@ -7,9 +10,12 @@ import {
   sameName,
   applyArtistOriginFix,
   gettyYear,
+  validateChain,
 } from '../scripts/curate.mjs'
+import committedChains from '../src/lib/featured-provenance.json'
 
 const AIC = 'AIC provenance'
+const __dir = dirname(fileURLToPath(import.meta.url))
 
 describe('detectConflicts (the ADR-0003 honesty rule)', () => {
   const chain = [{ name: 'Chicago', institution: 'Bertha Palmer', startDate: '1895', endDate: '1922', source: AIC }]
@@ -122,5 +128,111 @@ describe('helpers', () => {
     expect(gettyYear({ saleDate: '1892-03-03', entryDate: '1891-04-04' })).toBe('1892')
     expect(gettyYear({ saleDate: null, entryDate: '1891-04-04' })).toBe('1891')
     expect(gettyYear({ saleDate: null, entryDate: null })).toBeNull()
+  })
+})
+
+describe('validateChain (the Stage-5 gate, ADR 0003 §5)', () => {
+  const good = [
+    { name: 'Paris', institution: 'Claude Monet', lat: 48.8566, lng: 2.3522, startDate: '1906', endDate: '1909', source: AIC },
+    { name: 'Chicago', institution: 'The Art Institute of Chicago', lat: 41.8781, lng: -87.6298, startDate: '1933', endDate: null, source: AIC },
+  ]
+
+  it('accepts a well-formed chain', () => {
+    const g = validateChain(good)
+    expect(g.ok).toBe(true)
+    expect(g.errors).toEqual([])
+    expect(g.stats).toEqual({ entries: 2, mapped: 2, datedStart: 2 })
+  })
+
+  it('rejects an empty or non-array chain', () => {
+    expect(validateChain([]).ok).toBe(false)
+    expect(validateChain(null).ok).toBe(false)
+  })
+
+  it('rejects a missing source (every fact carries a source)', () => {
+    const g = validateChain([{ ...good[0], source: '' }, good[1]])
+    expect(g.ok).toBe(false)
+    expect(g.errors.join()).toMatch(/source/)
+  })
+
+  it('rejects null-island coordinates (honesty rule: null, never 0)', () => {
+    const g = validateChain([{ ...good[0], lat: 0 }, good[1]])
+    expect(g.ok).toBe(false)
+    expect(g.errors.join()).toMatch(/null-island/)
+  })
+
+  it('rejects non-4-digit dates', () => {
+    const g = validateChain([{ ...good[0], startDate: '06' }, good[1]])
+    expect(g.ok).toBe(false)
+    expect(g.errors.join()).toMatch(/4-digit/)
+  })
+
+  it('rejects out-of-order dated entries but allows same-year handoffs', () => {
+    expect(validateChain([{ ...good[1] }, { ...good[0] }]).ok).toBe(false)
+    const sameYear = [{ ...good[0], startDate: '1906' }, { ...good[1], startDate: '1906' }]
+    expect(validateChain(sameYear).errors).toEqual([])
+  })
+
+  it('rejects fewer than 2 mapped entries (reads as an honest gap, not a featured journey)', () => {
+    const g = validateChain([good[0], { ...good[1], lat: null, lng: null }])
+    expect(g.ok).toBe(false)
+    expect(g.errors.join()).toMatch(/mapped/)
+  })
+
+  it('warns (never errors) on unmapped cities, missing institutions, and documented gaps', () => {
+    const g = validateChain([
+      { ...good[0], endDate: '1909' },
+      { name: 'Giverny', lat: null, lng: null, startDate: '1920', endDate: null, source: AIC },
+      { ...good[1], startDate: '1933' },
+    ])
+    expect(g.ok).toBe(true)
+    expect(g.warnings.join()).toMatch(/unmapped/)
+    expect(g.warnings.join()).toMatch(/gap/)
+  })
+})
+
+describe('committed featured chains (known-answer regression)', () => {
+  it('every committed chain passes the Stage-5 gate', () => {
+    for (const [key, chain] of Object.entries(committedChains)) {
+      const g = validateChain(chain)
+      expect(g.errors, `${key}: ${g.errors.join(' | ')}`).toEqual([])
+    }
+  })
+
+  it('the Water Lilies chain (aic:16568) ends at the Art Institute of Chicago', () => {
+    const chain = committedChains['aic:16568']
+    const last = chain[chain.length - 1]
+    expect(last.name).toBe('Chicago')
+    expect(last.institution).toMatch(/Art Institute/)
+  })
+})
+
+// ADR 0003's known-answer test: re-mine the REAL Water Lilies provenance prose
+// (deterministic path — Claude output is nondeterministic and CI has no key)
+// and compare against the committed chain. The fixture is a verbatim capture of
+// the AIC API's provenance_text — capture it from a machine that can reach AIC:
+//   curl -s 'https://api.artic.edu/api/v1/artworks/16568?fields=provenance_text' \
+//     -H 'User-Agent: provenance-tracker/fixture' | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const j=JSON.parse(s);console.log(JSON.stringify({id:'16568',title:'Water Lilies',artist:'Claude Monet',creationYear:1906,capturedAt:new Date().toISOString().slice(0,10),prose:j.data.provenance_text},null,2))})" \
+//     > tests/fixtures/aic-16568.provenance.json
+// NEVER reconstruct the prose from the committed chain — that would be circular.
+const FIXTURE = join(__dir, 'fixtures', 'aic-16568.provenance.json')
+describe.skipIf(!existsSync(FIXTURE))('known-answer: Water Lilies prose → deterministic extraction', () => {
+  it('re-mined chain agrees with the committed chain (cities ⊆ committed set, dates in range)', () => {
+    const fixture = JSON.parse(readFileSync(FIXTURE, 'utf8'))
+    const mined = deterministicExtract(fixture)
+    expect(mined.length).toBeGreaterThanOrEqual(3)
+    // The miner segments clause-by-clause, Claude segments holder-by-holder —
+    // assert set relationships and date bounds, not entry-count equality.
+    const committedCities = new Set(committedChains['aic:16568'].map(e => e.name))
+    for (const e of mined) {
+      expect(committedCities.has(e.name), `unexpected city "${e.name}"`).toBe(true)
+      expect(e.source).toBe(AIC)
+      expect(e.lat === 0 || e.lng === 0).toBe(false)
+      if (e.startDate) {
+        expect(Number(e.startDate)).toBeGreaterThanOrEqual(1906)
+        expect(Number(e.startDate)).toBeLessThanOrEqual(1933)
+      }
+    }
+    expect(mined[mined.length - 1].name).toBe('Chicago')
   })
 })

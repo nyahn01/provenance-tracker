@@ -6,6 +6,10 @@
  * records. A place we don't know resolves to null coords — the entry still shows
  * in the timeline, it just isn't mapped on the globe. That is the honest behavior
  * (we never invent a coordinate).
+ *
+ * Scripts-side mirror: scripts/lib/cities.mjs (the curation pipeline can't
+ * import TS). Drift is guarded by a subset assertion in
+ * tests/geocode-drift.test.ts — add cities in BOTH places.
  */
 
 export interface GeoPoint {
@@ -13,7 +17,7 @@ export interface GeoPoint {
   lng: number
 }
 
-const CITIES: Record<string, GeoPoint> = {
+export const CITIES: Record<string, GeoPoint> = {
   paris: { lat: 48.8566, lng: 2.3522 },
   london: { lat: 51.5074, lng: -0.1278 },
   'new york': { lat: 40.7128, lng: -74.006 },

@@ -17,6 +17,8 @@
     "preparse": "node scripts/preparse-provenance.mjs",
     "metrics": "node scripts/metrics.mjs",
     "curate": "node scripts/curate.mjs",
+    "discover": "node scripts/discover-works.mjs",
+    "promote": "node scripts/promote-work.mjs",
     "orchestrate": "node scripts/orchestrate.mjs",
     "plan-to-issue": "node scripts/plan-to-issue.mjs",
     "build-issue": "node scripts/build-issue.mjs",

@@ -20,7 +20,12 @@
  *   node scripts/curate.mjs aic:16568            # curate one work → vault/agents/drafts/
  *   node scripts/curate.mjs aic:16568 --stdout   # print the chain JSON only, write nothing
  *   node scripts/curate.mjs aic:16568 --dry-run  # run + summarise, write nothing
+ *   node scripts/curate.mjs --batch 5            # discover → draft the top 5 new candidates
  *   node scripts/curate.mjs --selftest           # prove the conflict detector (offline)
+ *
+ * Every draft is checked by the Stage-5 gate (validateChain, ADR 0003 §5) —
+ * shape, chronology, no null-island coords, ≥2 mapped entries. Batch mode
+ * NEVER promotes; promotion is per-work via scripts/promote-work.mjs.
  *
  * Reuses the extraction prompt, geocoder, and artist-origin fix from
  * scripts/preparse-provenance.mjs / src/app/api/provenance/route.ts.
@@ -33,6 +38,7 @@ import { writeFile, readFile, mkdir } from 'fs/promises'
 import { readFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { geocodeKey } from './lib/cities.mjs'
 
 const __dir = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dir, '..')
@@ -54,46 +60,10 @@ async function loadEnv() {
   } catch { /* .env.local optional */ }
 }
 
-// ─── Geocoder (mirrors src/lib/geocode.ts via preparse) ──────────────────────
-const CITIES = {
-  paris: { lat: 48.8566, lng: 2.3522 }, london: { lat: 51.5074, lng: -0.1278 },
-  'new york': { lat: 40.7128, lng: -74.006 }, chicago: { lat: 41.8781, lng: -87.6298 },
-  amsterdam: { lat: 52.3676, lng: 4.9041 }, brussels: { lat: 50.8503, lng: 4.3517 },
-  'the hague': { lat: 52.0705, lng: 4.3007 }, rotterdam: { lat: 51.9244, lng: 4.4777 },
-  antwerp: { lat: 51.2194, lng: 4.4025 }, bruges: { lat: 51.2093, lng: 3.2247 },
-  madrid: { lat: 40.4168, lng: -3.7038 }, barcelona: { lat: 41.3874, lng: 2.1686 },
-  lisbon: { lat: 38.7223, lng: -9.1393 }, florence: { lat: 43.7696, lng: 11.2558 },
-  rome: { lat: 41.9028, lng: 12.4964 }, venice: { lat: 45.4408, lng: 12.3155 },
-  milan: { lat: 45.4642, lng: 9.19 }, naples: { lat: 40.8518, lng: 14.2681 },
-  vienna: { lat: 48.2082, lng: 16.3738 }, berlin: { lat: 52.52, lng: 13.405 },
-  munich: { lat: 48.1351, lng: 11.582 }, cologne: { lat: 50.9375, lng: 6.9603 },
-  dresden: { lat: 51.0504, lng: 13.7373 }, 'st petersburg': { lat: 59.9311, lng: 30.3609 },
-  'saint petersburg': { lat: 59.9311, lng: 30.3609 }, moscow: { lat: 55.7558, lng: 37.6173 },
-  geneva: { lat: 46.2044, lng: 6.1432 }, zurich: { lat: 47.3769, lng: 8.5417 },
-  basel: { lat: 47.5596, lng: 7.5886 }, copenhagen: { lat: 55.6761, lng: 12.5683 },
-  stockholm: { lat: 59.3293, lng: 18.0686 }, oslo: { lat: 59.9139, lng: 10.7522 },
-  dublin: { lat: 53.3498, lng: -6.2603 }, edinburgh: { lat: 55.9533, lng: -3.1883 },
-  prague: { lat: 50.0755, lng: 14.4378 }, budapest: { lat: 47.4979, lng: 19.0402 },
-  warsaw: { lat: 52.2297, lng: 21.0122 }, athens: { lat: 37.9838, lng: 23.7275 },
-  istanbul: { lat: 41.0082, lng: 28.9784 }, cairo: { lat: 30.0444, lng: 31.2357 },
-  washington: { lat: 38.9072, lng: -77.0369 }, 'washington dc': { lat: 38.9072, lng: -77.0369 },
-  boston: { lat: 42.3601, lng: -71.0589 }, philadelphia: { lat: 39.9526, lng: -75.1652 },
-  'los angeles': { lat: 34.0522, lng: -118.2437 }, 'san francisco': { lat: 37.7749, lng: -122.4194 },
-  detroit: { lat: 42.3314, lng: -83.0458 }, toronto: { lat: 43.6532, lng: -79.3832 },
-  montreal: { lat: 45.5017, lng: -73.5673 }, 'mexico city': { lat: 19.4326, lng: -99.1332 },
-  'buenos aires': { lat: -34.6037, lng: -58.3816 }, tokyo: { lat: 35.6762, lng: 139.6503 },
-  kyoto: { lat: 35.0116, lng: 135.7681 }, beijing: { lat: 39.9042, lng: 116.4074 },
-  shanghai: { lat: 31.2304, lng: 121.4737 }, taipei: { lat: 25.033, lng: 121.5654 },
-  'hong kong': { lat: 22.3193, lng: 114.1694 }, provins: { lat: 48.5597, lng: 3.2972 },
-  'lake forest': { lat: 42.2597, lng: -87.8398 },
-}
-const SORTED = Object.keys(CITIES).sort((a, b) => b.length - a.length)
-
+// ─── Geocoder (shared gazetteer — scripts/lib/cities.mjs) ────────────────────
 export function geocode(place) {
-  if (!place) return null
-  const s = place.toLowerCase()
-  for (const city of SORTED) if (s.includes(city)) return { name: city, ...CITIES[city] }
-  return null
+  const hit = geocodeKey(place)
+  return hit ? { name: hit.key, lat: hit.lat, lng: hit.lng } : null
 }
 
 /** Loose name match (case/punctuation-insensitive) — mirrors sameName in timeline.ts. */
@@ -134,7 +104,7 @@ async function fetchAic(id) {
 }
 
 /** Getty GPI dealer records (Knoedler + Goupil), loaded from the seeded JSON. */
-function loadGetty() {
+export function loadGetty() {
   const out = []
   for (const f of ['getty-knoedler.json', 'getty-goupil.json']) {
     try { out.push(...JSON.parse(readFileSync(join(ROOT, 'public', 'data', f), 'utf8'))) } catch { /* seed optional */ }
@@ -330,6 +300,65 @@ export function detectConflicts(chain, sameWorkGetty) {
   return conflicts
 }
 
+/**
+ * Stage-5 gate (ADR 0003 §5) — validates a draft chain's shape and honesty
+ * invariants before it can be considered for promotion. Pure and exported so
+ * promote-work.mjs and the featured-invariants test reuse the same rules.
+ *
+ * Hard errors (block promotion): bad entry shape, null-island coords,
+ * out-of-order dated entries, fewer than 2 mapped entries (a work below that
+ * reads as an honest gap, not a featured journey).
+ * Warnings (visible, never blocking): unmapped cities, missing institutions,
+ * thin dated coverage, documented gaps (gaps are honest — never errors).
+ */
+export function validateChain(chain) {
+  const errors = []
+  const warnings = []
+
+  if (!Array.isArray(chain) || chain.length === 0) {
+    return { ok: false, errors: ['chain is not a non-empty array'], warnings, stats: { entries: 0, mapped: 0, datedStart: 0 } }
+  }
+
+  const yearRe = /^\d{4}$/
+  chain.forEach((e, i) => {
+    const at = `entry ${i} (${e?.institution ?? e?.name ?? '?'})`
+    if (!e || typeof e !== 'object') { errors.push(`${at}: not an object`); return }
+    if (typeof e.name !== 'string' || !e.name.trim()) errors.push(`${at}: "name" must be a non-empty string`)
+    if (typeof e.source !== 'string' || !e.source.trim()) errors.push(`${at}: "source" must be a non-empty string (every fact carries a source)`)
+    for (const d of ['startDate', 'endDate']) {
+      if (e[d] !== null && e[d] !== undefined && !(typeof e[d] === 'string' && yearRe.test(e[d]))) {
+        errors.push(`${at}: "${d}" must be null or a 4-digit year string, got ${JSON.stringify(e[d])}`)
+      }
+    }
+    for (const c of ['lat', 'lng']) {
+      if (e[c] !== null && !Number.isFinite(e[c])) errors.push(`${at}: "${c}" must be null or a finite number`)
+    }
+    if (e.lat === 0 || e.lng === 0) errors.push(`${at}: null-island coordinate (lat/lng of 0) — use null for unknown, never 0`)
+    if (!e.institution) warnings.push(`${at}: no "institution" — the timeline will fall back to the city name`)
+    if (e.lat === null || e.lng === null) {
+      warnings.push(`${at}: unmapped ("${e.name}") — add the city to scripts/lib/cities.mjs if it's a real place`)
+    }
+  })
+
+  for (let i = 0; i < chain.length - 1; i++) {
+    const a = chain[i]?.startDate, b = chain[i + 1]?.startDate
+    if (a && b && yearRe.test(a) && yearRe.test(b) && Number(b) < Number(a)) {
+      errors.push(`entries ${i}→${i + 1}: startDates out of chronological order (${a} → ${b})`)
+    }
+  }
+
+  const mapped = chain.filter(e => Number.isFinite(e?.lat) && Number.isFinite(e?.lng)).length
+  if (mapped < 2) errors.push(`only ${mapped} mapped entr${mapped === 1 ? 'y' : 'ies'} — under 2, the work reads as an honest gap and is not promotable as featured`)
+
+  const datedStart = chain.filter(e => e?.startDate).length
+  if (chain.length > 0 && datedStart / chain.length < 0.6) {
+    warnings.push(`dated-start coverage ${datedStart}/${chain.length} (<60%) — thin dating weakens the timeline`)
+  }
+  for (const g of chainGaps(chain)) warnings.push(`documented gap: ${g.note} (honest — shown, never bridged)`)
+
+  return { ok: errors.length === 0, errors, warnings, stats: { entries: chain.length, mapped, datedStart } }
+}
+
 /** Undocumented spans between consecutive dated custody entries. */
 export function chainGaps(chain) {
   const gaps = []
@@ -434,43 +463,32 @@ function selftest() {
   console.error('selftest: FAIL', { conflicts, agree }); process.exit(1)
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
-async function main() {
-  const args = process.argv.slice(2)
-  if (args.includes('--help') || args.length === 0) {
-    console.log('Usage: node scripts/curate.mjs aic:<id> [--stdout|--dry-run|--out <dir>|--date <YYYY-MM-DD>]\n       node scripts/curate.mjs --selftest')
-    process.exit(args.length === 0 ? 1 : 0)
+// ─── Curate one work (shared by single-work mode and --batch) ────────────────
+function printGate(gate) {
+  if (gate.ok) {
+    console.log(`  GATE: PASS — ${gate.stats.entries} entries, ${gate.stats.mapped} mapped, ${gate.stats.datedStart} dated`)
+  } else {
+    console.log('  GATE: FAIL')
+    for (const e of gate.errors) console.log(`    ✗ ${e}`)
   }
-  if (args.includes('--selftest')) return selftest()
+  for (const w of gate.warnings) console.log(`    ⚠ ${w}`)
+}
 
-  await loadEnv()
-  const ref = args.find(a => !a.startsWith('--'))
-  const id = (ref || '').replace(/^aic:/, '')
-  if (!/^\d+$/.test(id)) { console.error(`Bad work ref "${ref}" — expected aic:<numeric id>`); process.exit(1) }
-  const stdout = args.includes('--stdout')
-  const dryRun = args.includes('--dry-run')
-  const outDir = argValue(args, '--out') || join(ROOT, 'vault', 'agents', 'drafts')
-  const dateArg = argValue(args, '--date')
-  // Only an ISO date is allowed in the filename; anything else falls back to today.
-  const date = dateArg && /^\d{4}-\d{2}-\d{2}$/.test(dateArg) ? dateArg : new Date().toISOString().slice(0, 10)
-
-  const key = process.env.ANTHROPIC_API_KEY
-  const client = key ? new Anthropic({ apiKey: key }) : null
-  if (!stdout) console.log(`[curate] aic:${id} — ${client ? 'Claude' : 'deterministic (no ANTHROPIC_API_KEY)'} extraction`)
-
+async function curateOne(client, id, { stdout = false, dryRun = false, outDir, date }) {
   const meta = await fetchAic(id)
   const chain = await extractChain(client, meta)
   const getty = gatherGetty(loadGetty(), meta.artist, meta.title)
   const conflicts = detectConflicts(chain, getty.sameWork)
-  const questions = client ? await claudeQuestions(client, meta, chain, getty) : deterministicQuestions(meta, chain, getty)
+  const gate = validateChain(chain)
 
-  if (stdout) { console.log(JSON.stringify(chain, null, 2)); return }
+  if (stdout) { console.log(JSON.stringify(chain, null, 2)); return { meta, chain, conflicts, gate } }
 
   console.log(`  ${meta.title} — ${meta.artist} (${meta.creationYear ?? 'year?'})`)
   console.log(`  chain: ${chain.length} entries · getty: ${getty.sameWork.length} same-work / ${getty.context.length} context · conflicts: ${conflicts.length}`)
 
-  if (dryRun) { console.log('  --dry-run: nothing written'); return }
+  if (dryRun) { printGate(gate); console.log('  --dry-run: nothing written'); return { meta, chain, conflicts, gate } }
 
+  const questions = client ? await claudeQuestions(client, meta, chain, getty) : deterministicQuestions(meta, chain, getty)
   const essay = buildEssay(meta, chain, getty, conflicts, questions, date, !!client)
   await mkdir(outDir, { recursive: true })
   // Filenames derive ONLY from the validated numeric id + sanitized date — never
@@ -482,7 +500,79 @@ async function main() {
   await writeFile(essayPath, essay, 'utf8')
   console.log(`  wrote ${chainPath.replace(ROOT, '.')}`)
   console.log(`  wrote ${essayPath.replace(ROOT, '.')}`)
-  console.log('  → DRAFT for review. Run `npm run honesty` then promote into featured-provenance.json + vault/agents/findings/.')
+  // The draft is written BEFORE the gate verdict prints — a failing draft is
+  // reviewable evidence, not discarded work.
+  printGate(gate)
+  console.log('  → DRAFT for review. Run `npm run honesty`, then `npm run promote aic:' + id + ' …` after a human review.')
+  return { meta, chain, conflicts, gate }
+}
+
+// ─── Batch mode (discovery → curate loop) ────────────────────────────────────
+// Drafts only — batch NEVER promotes. Promotion is per-work and human-invoked
+// (ADR 0002: autonomy is a dial on initiation, never veto).
+async function runBatch(client, n, { dryRun, outDir, date }) {
+  const { discoverCandidates } = await import('./discover-works.mjs')
+  console.log(`[curate] --batch ${n} — discovering candidates…`)
+  const candidates = await discoverCandidates()
+  const { existsSync } = await import('fs')
+  const fresh = candidates.filter(c => !existsSync(join(outDir, `aic-${c.id}.chain.json`))).slice(0, n)
+  if (fresh.length === 0) { console.log('  no new candidates (all top-ranked works already have drafts)'); return }
+
+  const results = []
+  for (const c of fresh) {
+    console.log(`\n[curate] aic:${c.id} (score ${c.score}) — ${c.title}`)
+    try {
+      const r = await curateOne(client, c.id, { dryRun, outDir, date })
+      results.push({ id: c.id, title: c.title, entries: r.chain.length, conflicts: r.conflicts.length, gate: r.gate.ok ? 'PASS' : 'FAIL' })
+    } catch (err) {
+      console.error(`  ERROR: ${err.message}`)
+      results.push({ id: c.id, title: c.title, entries: 0, conflicts: 0, gate: 'ERROR' })
+    }
+    await new Promise(res => setTimeout(res, 1500)) // AIC asks ≤60 req/min; each work is 1 fetch + optional Claude calls
+  }
+
+  console.log('\n─── batch summary ───')
+  for (const r of results) console.log(`  aic:${r.id} · ${r.gate.padEnd(5)} · ${r.entries} entries · ${r.conflicts} conflict(s) · ${r.title}`)
+  console.log('\nDrafts are proposals — review each essay, then promote per work with `npm run promote`.')
+  if (!results.some(r => r.gate === 'PASS')) process.exit(1)
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+async function main() {
+  const args = process.argv.slice(2)
+  if (args.includes('--help') || args.length === 0) {
+    console.log(`Usage: node scripts/curate.mjs aic:<id> [--stdout|--dry-run|--out <dir>|--date <YYYY-MM-DD>]
+       node scripts/curate.mjs --batch <N> [--dry-run]   # discover → draft top N new candidates
+       node scripts/curate.mjs --selftest`)
+    process.exit(args.length === 0 ? 1 : 0)
+  }
+  if (args.includes('--selftest')) return selftest()
+
+  await loadEnv()
+  const stdout = args.includes('--stdout')
+  const dryRun = args.includes('--dry-run')
+  const outDir = argValue(args, '--out') || join(ROOT, 'vault', 'agents', 'drafts')
+  const dateArg = argValue(args, '--date')
+  // Only an ISO date is allowed in the filename; anything else falls back to today.
+  const date = dateArg && /^\d{4}-\d{2}-\d{2}$/.test(dateArg) ? dateArg : new Date().toISOString().slice(0, 10)
+
+  const key = process.env.ANTHROPIC_API_KEY
+  const client = key ? new Anthropic({ apiKey: key }) : null
+
+  const batchN = argValue(args, '--batch')
+  if (batchN !== null) {
+    const n = Number(batchN)
+    if (!Number.isInteger(n) || n < 1 || n > 25) { console.error(`--batch expects 1–25, got "${batchN}"`); process.exit(1) }
+    return runBatch(client, n, { dryRun, outDir, date })
+  }
+
+  const ref = args.find(a => !a.startsWith('--'))
+  const id = (ref || '').replace(/^aic:/, '')
+  if (!/^\d+$/.test(id)) { console.error(`Bad work ref "${ref}" — expected aic:<numeric id>`); process.exit(1) }
+  if (!stdout) console.log(`[curate] aic:${id} — ${client ? 'Claude' : 'deterministic (no ANTHROPIC_API_KEY)'} extraction`)
+
+  const { gate } = await curateOne(client, id, { stdout, dryRun, outDir, date })
+  if (!gate.ok && !stdout) process.exit(1)
 }
 
 function argValue(args, flag) {
