@@ -5,8 +5,6 @@ import type { SearchResult, SearchByMode, ProvenanceResponse } from '@/lib/types
 import { FEATURED_WORKS, type FeaturedWork } from '@/lib/featured'
 import { OBS } from '@/lib/design-tokens'
 import { GlobeContainer } from './provenance/GlobeContainer'
-import { GlobeGapBadge } from './provenance/GlobeGapBadge'
-import { countUnresolvedGaps } from './provenance/globe-data'
 import { SourceBadge } from './provenance/SourceBadge'
 import { ProvenanceDetail } from './provenance/ProvenanceDetail'
 
@@ -92,17 +90,11 @@ export default function StoriesApp() {
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: OBS.bg }}>
-      {/* Globe — owns its own refs + the locked GLOBE CONTRACT init (see GlobeContainer) */}
-      <GlobeContainer prov={prov} globeHeightPct={globeHeightPct} />
-
-      {/* No arc-tier legend on the idle hero: with no work selected the globe shows no
-          arcs, so the legend explained nothing and read as persistent chrome. Once a story
-          opens, ProvenanceDetail carries its own contextual arc legend. (Removed per the
-          timeline-led redesign — the globe is being demoted from the hero; ADR 0004.) */}
-
-      {/* Undocumented-gap badge — sibling to GlobeContainer, story view only
-          (gaps are per-work). Never drawn as an arc; see GlobeGapBadge. */}
-      {inStory && prov && <GlobeGapBadge count={countUnresolvedGaps(prov.gaps)} />}
+      {/* Globe — the landing backdrop only (ADR 0004: no longer the hero). When a
+          work opens it unmounts, freeing the WebGL context for the on-demand "see this
+          journey on a map" reveal inside the open-work view (ProvenanceDetail, Stage 2b).
+          Owns its own refs + the locked GLOBE CONTRACT init (see GlobeContainer). */}
+      {!inStory && <GlobeContainer prov={prov} globeHeightPct={globeHeightPct} />}
 
       {/* Overlay only covers the globe area */}
       {!inStory && (

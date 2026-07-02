@@ -14,7 +14,7 @@
  *
  * StoriesApp owns all state; this component receives it via props.
  */
-import { useRef, type Dispatch, type SetStateAction } from 'react'
+import { useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import type { SearchResult, ProvenanceResponse } from '@/lib/types'
 import type { RkdRecord } from '@/lib/rkd'
 import { OBS, GAL } from '@/lib/design-tokens'
@@ -22,6 +22,7 @@ import { PriceSparkline } from './PriceSparkline'
 import { useFocusTrap } from './useFocusTrap'
 import { detectWWIIGap } from './timeline'
 import { ChainOfCustodyTimeline } from './ChainOfCustodyTimeline'
+import { GlobeContainer } from './GlobeContainer'
 
 interface ProvenanceDetailProps {
   selected: SearchResult
@@ -42,6 +43,15 @@ export function ProvenanceDetail({
   onClose, isMobile, drawerOpen, setDrawerOpen,
 }: ProvenanceDetailProps) {
   const sources = prov ? [...new Set(prov.locations.map(l => l.source))] : []
+
+  // Stage 2b — the "see this journey on a map" reveal. The globe (Globe.gl) is no
+  // longer the hero; it re-enters here, on demand, only for a work that actually has
+  // mapped locations (else there's nothing honest to plot).
+  const [showMap, setShowMap] = useState(false)
+  const hasMappable = !!prov && (
+    prov.locations.some(l => l.lat != null && l.lng != null) ||
+    prov.exhibitions.some(l => l.lat != null && l.lng != null)
+  )
 
   // On mobile the panel is a modal slide-in drawer — trap focus inside it while
   // open and close on Escape. On desktop/tablet it is an always-visible
@@ -169,6 +179,40 @@ export function ProvenanceDetail({
                 artwork={prov.artwork}
               />
             </div>
+
+            {/* ── "See this journey on a map" — the on-demand Globe.gl reveal (Stage 2b,
+                ADR 0004 §4.5). Second chair to the timeline, never the hero. Only offered
+                when the work has mapped locations. The globe honours the honesty rules it
+                already enforces (custody gold / loan sage; gaps shown as breaks, never
+                bridged). No live-tracking claim — this is documented history. */}
+            {hasMappable && (
+              <div style={{ padding: '22px 24px 0' }}>
+                <button
+                  onClick={() => setShowMap(v => !v)}
+                  aria-expanded={showMap}
+                  style={{
+                    width: '100%', textAlign: 'left', cursor: 'pointer', padding: '11px 16px',
+                    background: showMap ? GAL.surface2 : GAL.surface, border: `1px solid ${GAL.borderMid}`,
+                    borderRadius: 8, fontFamily: 'var(--font-ui)', fontSize: '0.82rem', color: GAL.text,
+                    display: 'flex', alignItems: 'center', gap: 10,
+                  }}>
+                  <span aria-hidden style={{ color: GAL.clay }}>◍</span>
+                  {showMap ? 'Hide the map' : 'See this journey on a map'}
+                  <span aria-hidden style={{ marginLeft: 'auto', color: GAL.textFaint }}>{showMap ? '×' : '→'}</span>
+                </button>
+                {showMap && (
+                  <figure style={{ margin: '12px 0 0' }}>
+                    <div style={{ position: 'relative', height: 'min(52vh, 460px)', borderRadius: 10, overflow: 'hidden', background: OBS.bg, border: `1px solid ${OBS.border}` }}>
+                      <GlobeContainer prov={prov} globeHeightPct="100%" />
+                    </div>
+                    <figcaption style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, marginTop: 8, lineHeight: 1.5 }}>
+                      Ownership locations (gold) and exhibition loans (sage) across this work&apos;s documented history.
+                      Undocumented gaps are shown as breaks in the chain, never bridged. Drag to rotate; scroll to zoom.
+                    </figcaption>
+                  </figure>
+                )}
+              </div>
+            )}
 
             {/* RKD Netherlands Art Institute records */}
             {prov.rkdRecords && prov.rkdRecords.length > 0 && (
