@@ -273,6 +273,9 @@ export default function StoriesApp() {
               (Knoedler &amp; Goupil dealer records, CC0 1.0).
               Images are shown only for public-domain works, credited to their institution. Gaps are shown, never invented.
               <div style={{ marginTop: 10, display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+                <a href="/case/adele-bloch-bauer-i" style={{ color: OBS.gold, fontWeight: 600, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
+                  See a full restitution chain →
+                </a>
                 <a href="/team" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
                   How this platform works →
                 </a>

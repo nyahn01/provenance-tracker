@@ -351,12 +351,16 @@ export default function DemoPage() {
           <div style={{ fontSize: '0.72rem', color: C.textFaint }}>
             Sources: Met · AIC · Rijksmuseum · Wikidata · Getty GPI · BnF · Art Loss Register
           </div>
-          <div style={{ display: 'flex', gap: 20 }}>
-            <Link href="/demo/source" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-              Full source doc &rarr;
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+            <Link href="/pricing" style={{ fontSize: '0.78rem', color: C.gold, fontWeight: 600, borderBottom: `1px solid ${C.gold}`, paddingBottom: 1 }}>
+              Next: see pricing &rarr;
             </Link>
-            <Link href="/pricing" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
-              Pricing &rarr;
+            <span style={{ width: 1, height: 14, background: C.border }} />
+            <Link href="/demo/source" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+              Full source doc
+            </Link>
+            <Link href="/feedback" style={{ fontSize: '0.72rem', color: C.textMuted, borderBottom: `1px solid ${C.border}`, paddingBottom: 1 }}>
+              Feedback
             </Link>
           </div>
         </div>
