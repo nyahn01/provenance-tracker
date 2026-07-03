@@ -22,6 +22,17 @@
  *   • GAL.sage      #4a7a6a  ≠  globals.css --gal-sage #4a6b5e  (JS value is what renders)
  *   • /about uses MARKETING with sage overridden to #4a7a6a (see usage note below).
  *
+ * FILM-WARM GRADE (issue #184, scoped pass — see ADR 0006 follow-up 3):
+ *   Every OBS/MARKETING neutral, and GAL.bg/surface2/text/textMuted/textFaint, already
+ *   carry a warm undertone (R>G>B) — the "quiet archive" register was mostly already
+ *   in place. The one conspicuously cool, "screen-plastic" value was GAL.surface, a
+ *   pure #ffffff used for cards/badges/image wells — graded to #fcfaf5 (a barely-warm
+ *   off-white, still reads as "white," loses the flat plastic quality). WCAG AA
+ *   verified unaffected (GAL.text/textMuted/textFaint/gold contrast shifts ≤0.14,
+ *   nothing crosses a pass/fail threshold). Data hues (gold/sage/dealer) and the clay
+ *   interaction color are explicitly OUT of scope — the issue calls for protecting
+ *   the encoding, not restyling it. Documented drift above is otherwise untouched.
+ *
  * The globe trio (ocean/land/border) is governed by the GLOBE CONTRACT in
  * the root CLAUDE.md — these are the values that actually render.
  */
@@ -40,7 +51,7 @@ export const OBS = {
 
 // ─── Gallery (light) — provenance detail panel ───────────────────────────────
 export const GAL = {
-  bg: '#f7f4ee', surface: '#ffffff', surface2: '#ede9e2', border: '#d8d2c8', borderMid: '#b8afa3',
+  bg: '#f7f4ee', surface: '#fcfaf5', surface2: '#ede9e2', border: '#d8d2c8', borderMid: '#b8afa3',
   text: '#1a1714', textMuted: '#6b6460', textFaint: '#9e9790',
   clay: '#b06840', sage: '#4a7a6a', gold: '#a07830',
   // Light-mode sibling of OBS.gapWeave (timeline-hero spec §2): a dimmed warm

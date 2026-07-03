@@ -237,9 +237,17 @@ export function ChainOfCustodyTimeline({
               ))}
 
               {attachedLoans.map((l, li) => (
-                <div key={`l-${li}`} style={{ position: 'relative', marginTop: 14, ...branchGap, ...assemble() }}>
-                  <span aria-hidden style={{ position: 'absolute', left: -24, top: 6, width: 12, height: 12, borderRadius: '50%', background: GAL.sage }} />
-                  <EventBody node={l} tag="Loan · not a move" tagColor={GAL.sage} artwork={artwork} />
+                // Gutter dot anchors to this non-animated wrapper — same reason as the
+                // custody dot (#156): a div carrying assemble()'s fade-up animation
+                // keeps `transform` applied (animation-fill-mode "both"), which makes
+                // it its own containing block and throws off an absolutely-positioned
+                // child's `left`. The dot sits on the branch's own dashed line (not the
+                // main spine) — the loan track visibly branches off custody (spec §4.2).
+                <div key={`l-${li}`} style={{ position: 'relative', marginTop: 14 }}>
+                  <span aria-hidden style={{ position: 'absolute', left: 17, top: 6, width: 12, height: 12, borderRadius: '50%', background: GAL.sage }} />
+                  <div style={{ ...branchGap, ...assemble() }}>
+                    <EventBody node={l} tag="Loan · not a move" tagColor={GAL.sage} artwork={artwork} />
+                  </div>
                 </div>
               ))}
 
