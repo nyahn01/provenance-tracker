@@ -1,5 +1,5 @@
 {
-  "$schema_note": "Stage-3 orchestration dial. Read by .github/workflows/orchestrate.yml. Flipping `mode` switches Stage 1/2/3. SAFE DEFAULT: manual = no autonomous runs. See docs/decisions/0002-stage3-autonomy-model.md.",
+  "$schema_note": "Stage-3 orchestration dial. Read by orchestrate.yml (scheduled Sense/Decide loop) AND build-agent.yml (event-driven Act loop). Flipping `mode` switches Stage 1/2/3: manual=off, scheduled=Stage 2 (sense/decide on cron; the autonomous builder stays inert), event-driven=Stage 3 (the `ready-to-build` label triggers Claude Code to open a draft PR — a human still merges). `paused: true` is the global kill-switch for both. To ACTIVATE Stage 3: set mode to \"event-driven\" (one line) with ANTHROPIC_API_KEY + the Claude GitHub App configured. See docs/decisions/0002-stage3-autonomy-model.md.",
   "mode": "scheduled",
   "paused": false,
   "cadence": {
@@ -34,7 +34,7 @@
     "_doc": "The Decide step. Ranks open `proposal` issues into a single in-place 'Decision digest' and recommends the next promotion. `auto_promote` grants graduated autonomy: the high-stakes/low-ambiguity sentinels (security, honesty) may auto-promote proposal→priority within max_prs_per_run; everything else stays the human's button. NEVER merges — a human always merges.",
     "digest": { "enabled": true },
     "auto_promote": { "enabled": true, "kinds": ["security", "honesty"] },
-    "auto_build": { "enabled": true, "_doc": "ACT step (ON). The runner dispatches each buildable `priority` issue to a bring-your-own coding agent (env BUILD_AGENT_CMD) that opens a DRAFT PR; with no agent cmd it posts the build brief + `ready-to-build` label for a human/session. A human ALWAYS merges. Bounded by max_prs_per_run; skips `paused`. Revert = set enabled:false (or paused:true)." }
+    "auto_build": { "enabled": true, "_doc": "ACT step (ON). The runner posts each buildable `priority` issue's build brief + `ready-to-build` label. In Stage 3 (mode=event-driven) that label triggers .github/workflows/build-agent.yml — Claude Code implements the issue and opens a DRAFT PR (the BUILD_AGENT_CMD child-process path in build-issue.mjs remains as a self-hosted alternative). In Stage 2 (mode=scheduled) the label is just a human/session cue — the builder is inert. A human ALWAYS merges. Bounded by max_prs_per_run and the build model's --max-turns; skips `paused`. Revert = set enabled:false (or paused:true, or mode back to scheduled)." }
   },
   "outcome": {
     "_doc": "The Act+Outcome loop. `npm run metrics` computes metrics/latest.json (offline, runnable now); the `retro` agent turns merges+metrics into docs/INSIGHTS.md lessons. Cadence applies in scheduled/event-driven mode.",

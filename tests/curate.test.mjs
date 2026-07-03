@@ -158,14 +158,23 @@ describe('parseJsonObject (tolerant extraction of the model response)', () => {
 })
 
 describe('extraction model selection (CURATE_MODEL, honest request shape)', () => {
-  it('defaults to a Sonnet tier when CURATE_MODEL is unset', () => {
+  it('defaults to the Haiku tier when CURATE_MODEL is unset (cheap first pass; drafts are human-reviewed)', () => {
     const saved = process.env.CURATE_MODEL
     delete process.env.CURATE_MODEL
-    expect(curateModel()).toBe('claude-sonnet-5')
+    expect(curateModel()).toBe('claude-haiku-4-5')
     if (saved !== undefined) process.env.CURATE_MODEL = saved
   })
 
-  it('disables thinking for Sonnet/Opus/Haiku (structured extraction), omits it for Fable/Mythos', () => {
+  it('honours CURATE_MODEL when set (bump to Sonnet/Opus for a hard audited case)', () => {
+    const saved = process.env.CURATE_MODEL
+    process.env.CURATE_MODEL = 'claude-opus-4-8'
+    expect(curateModel()).toBe('claude-opus-4-8')
+    if (saved !== undefined) process.env.CURATE_MODEL = saved
+    else delete process.env.CURATE_MODEL
+  })
+
+  it('disables thinking for Haiku/Sonnet/Opus (structured extraction), omits it for Fable/Mythos', () => {
+    expect(thinkingFor('claude-haiku-4-5')).toEqual({ type: 'disabled' })
     expect(thinkingFor('claude-sonnet-5')).toEqual({ type: 'disabled' })
     expect(thinkingFor('claude-opus-4-8')).toEqual({ type: 'disabled' })
     // Fable/Mythos reject a disabled thinking block — must be omitted.

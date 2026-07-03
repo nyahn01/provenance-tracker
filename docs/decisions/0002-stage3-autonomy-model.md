@@ -104,3 +104,28 @@ The loop now runs **Sense → Feedback → Auto-promote → Decide → Act** on 
   it posts the build brief + `ready-to-build`. **A human always merges** — the moat is unchanged.
 All autonomy is opt-in per flag and reversible in one line. The coding agent itself is BYO and not
 bundled/verified in CI.
+
+## Update — Stage-3 build loop wired (event-driven Act) + cheaper curation
+Two changes turn the ACT loop from brief-only into a real, still-human-gated builder, and cut
+recurring cost:
+- **`.github/workflows/build-agent.yml` (new).** The `ready-to-build` label the runner already
+  emits now triggers the official Claude Code Action (`anthropics/claude-code-action@v1`) to
+  implement the issue on a branch and open a **draft** PR. This replaces the synchronous
+  `BUILD_AGENT_CMD` child-process hook with a decoupled, properly-permissioned workflow (that hook
+  remains as a self-hosted alternative). The workflow reads the **same one dial**: it is **inert
+  unless `mode` = `event-driven`**, `paused` = false, `auto_build.enabled` = true, and an
+  `ANTHROPIC_API_KEY` secret exists — so merging it changes nothing at today's `scheduled` mode.
+  **Activation is one deliberate line** (`mode` → `event-driven`), reversible the same way. The
+  blocking honesty + build + test gates still stand between a draft PR and merge, and **a human
+  always merges** — the moat is unchanged. Note: for the gates to auto-run on the agent's PR, the
+  Claude GitHub App should author it (`/install-github-app`); otherwise `protect-main` holds the PR
+  unmergeable until the checks run — it fails **safe**.
+- **Curation cost.** `CURATE_MODEL` now defaults to `claude-haiku-4-5` (was `claude-sonnet-5`):
+  prose→chain is structured extraction and every draft is human-reviewed before promotion, so the
+  cheapest tier carries the first pass; bump to Sonnet/Opus via the env var for a hard audited case.
+  The autonomous *builder* stays on a capable tier (Sonnet, via `BUILD_MODEL`) — cheap extraction,
+  capable coding.
+
+Cost note (unchanged principle): the Sense/Decide/Feedback/metrics loop is deterministic and free;
+the only metered spend is interactive sessions (Max plan) and — once Stage 3 is activated — the
+per-issue build runs (Anthropic API credits, bounded by `max_prs_per_run` × the model's `--max-turns`).
