@@ -13,7 +13,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { MARKETING as C } from '@/lib/design-tokens'
-import { getCase, allCaseSlugs } from '@/lib/case-studies'
+import { getCase, allCaseSlugs, CASE_STUDIES } from '@/lib/case-studies'
 import { JsonLd } from '@/components/JsonLd'
 import { PageShell } from '@/components/ui'
 import { SITE_URL } from '@/lib/site'
@@ -76,6 +76,7 @@ export default async function CaseStudyPage({
   const { slug } = await params
   const c = getCase(slug)
   if (!c) notFound()
+  const otherCases = Object.values(CASE_STUDIES).filter(o => o.slug !== c.slug)
 
   return (
     <>
@@ -534,6 +535,43 @@ export default async function CaseStudyPage({
               ))}
             </ul>
           </section>
+
+          {/* Other case studies — internal link graph */}
+          {otherCases.length > 0 && (
+            <section style={{ marginTop: 40, marginBottom: 40 }}>
+              <h2
+                style={{
+                  fontSize: '0.7rem',
+                  fontWeight: 600,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  color: C.textFaint,
+                  marginBottom: 16,
+                }}
+              >
+                Other documented restitutions
+              </h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {otherCases.map(o => (
+                  <Link
+                    key={o.slug}
+                    href={`/case/${o.slug}`}
+                    style={{
+                      display: 'block',
+                      padding: '14px 18px',
+                      background: C.surface,
+                      border: `1px solid ${C.border}`,
+                      borderRadius: 10,
+                      color: C.text,
+                    }}
+                  >
+                    <div style={{ fontSize: '0.9rem', fontWeight: 500, marginBottom: 3 }}>{o.title} →</div>
+                    <div style={{ fontSize: '0.75rem', color: C.textFaint }}>{o.artist} · {o.created}</div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Footer nav */}
           <div
