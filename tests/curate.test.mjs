@@ -11,6 +11,9 @@ import {
   applyArtistOriginFix,
   gettyYear,
   validateChain,
+  parseJsonObject,
+  thinkingFor,
+  curateModel,
 } from '../scripts/curate.mjs'
 import committedChains from '../src/lib/featured-provenance.json'
 
@@ -128,6 +131,46 @@ describe('helpers', () => {
     expect(gettyYear({ saleDate: '1892-03-03', entryDate: '1891-04-04' })).toBe('1892')
     expect(gettyYear({ saleDate: null, entryDate: '1891-04-04' })).toBe('1891')
     expect(gettyYear({ saleDate: null, entryDate: null })).toBeNull()
+  })
+})
+
+describe('parseJsonObject (tolerant extraction of the model response)', () => {
+  it('parses a clean JSON object', () => {
+    expect(parseJsonObject('{"entries":[]}')).toEqual({ entries: [] })
+  })
+
+  it('strips ```json code fences', () => {
+    expect(parseJsonObject('```json\n{"a":1}\n```')).toEqual({ a: 1 })
+  })
+
+  it('ignores prose/preamble before and after the object', () => {
+    const raw = 'Here is the chain you asked for:\n{"entries":[{"place":"Paris"}]}\nLet me know if you need more.'
+    expect(parseJsonObject(raw)).toEqual({ entries: [{ place: 'Paris' }] })
+  })
+
+  it('handles braces inside string values without truncating', () => {
+    expect(parseJsonObject('{"note":"a {nested} brace","n":2}')).toEqual({ note: 'a {nested} brace', n: 2 })
+  })
+
+  it('throws when there is no JSON object at all', () => {
+    expect(() => parseJsonObject('no json here')).toThrow()
+  })
+})
+
+describe('extraction model selection (CURATE_MODEL, honest request shape)', () => {
+  it('defaults to a Sonnet tier when CURATE_MODEL is unset', () => {
+    const saved = process.env.CURATE_MODEL
+    delete process.env.CURATE_MODEL
+    expect(curateModel()).toBe('claude-sonnet-5')
+    if (saved !== undefined) process.env.CURATE_MODEL = saved
+  })
+
+  it('disables thinking for Sonnet/Opus/Haiku (structured extraction), omits it for Fable/Mythos', () => {
+    expect(thinkingFor('claude-sonnet-5')).toEqual({ type: 'disabled' })
+    expect(thinkingFor('claude-opus-4-8')).toEqual({ type: 'disabled' })
+    // Fable/Mythos reject a disabled thinking block — must be omitted.
+    expect(thinkingFor('claude-fable-5')).toBeUndefined()
+    expect(thinkingFor('claude-mythos-5')).toBeUndefined()
   })
 })
 
