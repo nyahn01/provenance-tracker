@@ -109,6 +109,46 @@ export const FEATURED_WORKS: FeaturedWork[] = [
     hook: 'Vollard Paris to Bernheim-Jeune to Paul Cassirer Berlin and back, then Hessel, Rosenberg, New York, and Chicago -- eight hands in thirty years.',
     imageId: 'fe25bfef-1c5a-4b9e-a3d8-6c7f0d2e4a89', localSrc: '/works/basket-of-apples.jpg', credit: AIC_CREDIT,
   },
+  {
+    // Monet beach scene: clean nine-entry chain Paris→Chicago, 1867–1933.
+    source: 'aic', id: '14598', slug: 'beach-sainte-adresse',
+    title: 'The Beach at Sainte-Adresse',
+    artist: 'Claude Monet', year: '1867',
+    hook: 'Monet\'s beach scene traveled from Paris dealers through Impressionist collectors to Chicago.',
+    imageId: 'TODO-from-aic-api', localSrc: '/works/beach-sainte-adresse.jpg', credit: AIC_CREDIT,
+  },
+  {
+    // Matisse still life: clean New York dealer chain (Quinn, Dudensing) to Chicago.
+    source: 'aic', id: '64001', slug: 'apples-matisse',
+    title: 'Apples',
+    artist: 'Henri Matisse', year: '1916',
+    hook: 'Matisse\'s still life passed through New York dealer circles (Quinn, Dudensing) to Chicago.',
+    imageId: 'TODO-from-aic-api', localSrc: '/works/apples-matisse.jpg', credit: AIC_CREDIT,
+  },
+  {
+    // Sánchez Cotán: Spanish still life, Toledo→Madrid→Escorial, major gaps documented.
+    source: 'aic', id: '84709', slug: 'still-life-game-fowl',
+    title: 'Still Life with Game Fowl',
+    artist: 'Juan Sánchez Cotán', year: 'c. 1600',
+    hook: 'Cotán\'s Spanish still life traveled from 17th-century Toledo through royal collections to 20th-century Munich dealers.',
+    imageId: 'TODO-from-aic-api', localSrc: '/works/still-life-game-fowl.jpg', credit: AIC_CREDIT,
+  },
+  {
+    // Matisse still life: Bernheim-Jeune→Moll (Breslau)→Valentine Gallery, wartime gap.
+    source: 'aic', id: '87045', slug: 'still-life-geranium',
+    title: 'Still Life with Geranium',
+    artist: 'Henri Matisse', year: '1907',
+    hook: 'Matisse\'s intimate still life moved from Parisian gallery to Berlin collectors to American patrons.',
+    imageId: 'TODO-from-aic-api', localSrc: '/works/still-life-geranium.jpg', credit: AIC_CREDIT,
+  },
+  {
+    // Rembrandt portrait: 18th–19th-century Amsterdam→London dealer chain, major gaps.
+    source: 'aic', id: '95998', slug: 'old-man-gold-chain',
+    title: 'Old Man with a Gold Chain',
+    artist: 'Rembrandt van Rijn', year: 'c. 1630',
+    hook: 'Rembrandt\'s portrait crossed from 18th-century Amsterdam through English collectors and London dealers to Chicago.',
+    imageId: 'TODO-from-aic-api', localSrc: '/works/old-man-gold-chain.jpg', credit: AIC_CREDIT,
+  },
 ]
 
 export function aicImage(imageId: string, width = 600): string {

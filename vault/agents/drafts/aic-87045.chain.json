@@ -1,0 +1,76 @@
+{
+  "aic:87045": [
+    {
+      "name": "Paris",
+      "institution": "The artist",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": null,
+      "endDate": "1907",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Bernheim-Jeune",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1907",
+      "endDate": "1908",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Breslau",
+      "institution": "Oskar and Greta Moll",
+      "lat": null,
+      "lng": null,
+      "startDate": "1908",
+      "endDate": "1927",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Valentine Gallery",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1927",
+      "endDate": "1928",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Frank Crowninshield",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1928",
+      "endDate": "1928",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Valentine Gallery",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1928",
+      "endDate": "1928",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Frederick Clay Bartlett",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1928",
+      "endDate": "1932",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1932",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 /**
- * Pre-parse provenance prose for the 8 featured artworks with Claude.
+ * Pre-parse provenance prose for the 13 featured artworks with Claude.
  * Commit the output — featured works then have zero runtime Claude cost.
  *
  * Run: node scripts/preparse-provenance.mjs
@@ -73,6 +73,11 @@ const FEATURED = [
   { id: '64818',  title: 'Stacks of Wheat (End of Summer)', artist: 'Claude Monet',        creationYear: 1890 },
   { id: '111442', title: "The Child's Bath",              artist: 'Mary Cassatt',          creationYear: 1893 },
   { id: '111436', title: 'The Basket of Apples',          artist: 'Paul Cézanne',          creationYear: 1893 },
+  { id: '14598',  title: 'The Beach at Sainte-Adresse',   artist: 'Claude Monet',          creationYear: 1867 },
+  { id: '64001',  title: 'Apples',                        artist: 'Henri Matisse',         creationYear: 1916 },
+  { id: '84709',  title: 'Still Life with Game Fowl',     artist: 'Juan Sánchez Cotán',    creationYear: 1600 },
+  { id: '87045',  title: 'Still Life with Geranium',      artist: 'Henri Matisse',         creationYear: 1907 },
+  { id: '95998',  title: 'Old Man with a Gold Chain',      artist: 'Rembrandt van Rijn',    creationYear: 1630 },
 ]
 
 // ─── Extraction prompt (identical to route.ts extractOwnershipLocations) ─────

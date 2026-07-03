@@ -1,0 +1,112 @@
+{
+  "aic:95998": [
+    {
+      "name": "Amsterdam",
+      "institution": "Jacob Alewijn",
+      "lat": 52.3676,
+      "lng": 4.9041,
+      "startDate": null,
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Amsterdam",
+      "institution": "Margaretha Helena Graafland",
+      "lat": 52.3676,
+      "lng": 4.9041,
+      "startDate": null,
+      "endDate": "1766",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Amsterdam",
+      "institution": "Ketelaar",
+      "lat": 52.3676,
+      "lng": 4.9041,
+      "startDate": "1767",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Oxfordshire",
+      "institution": "Matthew Piers Watt Boulton",
+      "lat": null,
+      "lng": null,
+      "startDate": null,
+      "endDate": "1911",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "London",
+      "institution": "Shepherd",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "startDate": "1911",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "London",
+      "institution": "Lippmann",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "startDate": null,
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "London",
+      "institution": "P. and D. Colnaghi",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "startDate": "1912",
+      "endDate": "1912",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "London",
+      "institution": "Lippmann, Knoedler, and Julius Böhler",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "startDate": "1912",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Budapest",
+      "institution": "Marczell de Nemes",
+      "lat": 47.4979,
+      "lng": 19.0402,
+      "startDate": "1912",
+      "endDate": "1913",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Reinhardt",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": null,
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Mrs. W. W. Kimball",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1914",
+      "endDate": "1921",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1921",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ]
+}

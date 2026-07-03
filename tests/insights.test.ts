@@ -81,10 +81,10 @@ describe('dealer bipartite (deterministic, ledger-true)', () => {
 })
 
 describe('featured-collection pipeline', () => {
-  it('aggregates all 8 chains, 53 entries, with exclusions stated not hidden', () => {
+  it('aggregates all 13 chains, 103 entries, with exclusions stated not hidden', () => {
     const p = pipelineFlows()
-    expect(p.workCount).toBe(8)
-    expect(p.totalEntries).toBe(53)
+    expect(p.workCount).toBe(13)
+    expect(p.totalEntries).toBe(103)
     expect(p.flows.length).toBeGreaterThan(0)
     for (const f of p.flows) {
       expect(f.fromName).not.toBe(f.toName)

@@ -1,0 +1,103 @@
+{
+  "aic:64001": [
+    {
+      "name": "Paris",
+      "institution": "The artist",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": null,
+      "endDate": "1916",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Galerie Bernheim-Jeune",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1916",
+      "endDate": "1917",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Henry Bernstein",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1917",
+      "endDate": "1917",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Galerie Bernheim-Jeune",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1917",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Marius de Zayas",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1919",
+      "endDate": "1919",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "John Quinn",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1919",
+      "endDate": "1924",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "John Quinn Estate",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1924",
+      "endDate": "1927",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "F. Valentine Dudensing",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1927",
+      "endDate": "1931",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Pierre Matisse",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1931",
+      "endDate": "1940",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Samuel A. Marx and Florene May Schoenborn",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1940",
+      "endDate": "1948",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1948",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ]
+}
