@@ -1,0 +1,138 @@
+name: Build agent (Stage-3 Act loop)
+
+# The event-driven ACT step (ADR 0002). When the orchestrator (or a human) applies
+# the `ready-to-build` label to a queued issue, Claude Code implements it on a branch
+# and opens a DRAFT pull request. This is the real builder behind the `ready-to-build`
+# label that scripts/build-issue.mjs already emits — it replaces the synchronous
+# BUILD_AGENT_CMD child-process hook with a decoupled, properly-permissioned workflow.
+#
+# ACTIVATION (deliberate, one line): this stays INERT until a human flips
+# .claude/orchestration.json `mode` → "event-driven" (Stage 3). At the current
+# "scheduled" (Stage 2) the guard no-ops, so merging this workflow changes NOTHING
+# until you make that explicit switch. That flip is the single, reversible activation.
+#
+# GUARDRAILS (non-negotiable, per ADR 0002 — the same single dial governs this):
+#  - Reads .claude/orchestration.json; NO-OP unless mode == "event-driven",
+#    paused=false, AND decision.auto_build.enabled=true. Flip any of those → off.
+#  - Only builds issues carrying `ready-to-build` (the runner applies it only to
+#    `priority` issues); skips any issue also labeled `paused`.
+#  - Opens a **DRAFT** PR that `Closes #N`. It NEVER merges — a human merges (the moat).
+#  - The blocking honesty gate + build + unit tests still gate the PR before a human
+#    can merge. If the PR is authored by the default GITHUB_TOKEN those checks don't
+#    auto-trigger, so protect-main holds the PR unmergeable until they run — it fails
+#    SAFE. Install the Claude GitHub App (`/install-github-app`) so the app authors the
+#    PR and the gates run automatically. Provisioning the ANTHROPIC_API_KEY secret +
+#    that app is the one manual setup step; until then this workflow no-ops on auth.
+#  - Bounded by the model's --max-turns; cost is real (see ADR 0002 Consequences).
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to build (manual run, bypasses the label trigger)"
+        required: true
+
+permissions:
+  contents: write        # branch + commits
+  pull-requests: write   # open the draft PR
+  issues: write          # read the issue, comment status
+
+concurrency:
+  # One build per issue at a time; never cancel an in-flight build.
+  group: build-agent-${{ github.event.issue.number || github.event.inputs.issue_number }}
+  cancel-in-progress: false
+
+jobs:
+  guard:
+    # Cheap gate: only proceed for the ready-to-build label (or a manual dispatch),
+    # and only when the one dial says the Act loop is active and unpaused.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issues' && github.event.label.name == 'ready-to-build')
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: decide
+        shell: bash
+        run: |
+          cfg=.claude/orchestration.json
+          mode=$(jq -r '.mode' "$cfg")
+          paused=$(jq -r '.paused' "$cfg")
+          autobuild=$(jq -r '.decision.auto_build.enabled' "$cfg")
+          echo "mode=$mode paused=$paused auto_build=$autobuild"
+          run=true
+          [ "$paused" = "true" ] && run=false
+          [ "$autobuild" != "true" ] && run=false
+          # Stage 3 only: the autonomous builder is inert until mode=event-driven.
+          [ "$mode" != "event-driven" ] && run=false
+          if [ -z "${ANTHROPIC_API_KEY}" ]; then
+            echo "::notice::No ANTHROPIC_API_KEY secret — build agent inert (setup step pending)."
+            run=false
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+          [ "$run" = "true" ] && echo "::notice::Build agent active." || echo "::notice::Build agent no-op."
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+  build:
+    needs: guard
+    if: needs.guard.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Skip if the issue is paused
+        id: pausecheck
+        shell: bash
+        run: |
+          labels='${{ toJSON(github.event.issue.labels.*.name) }}'
+          if echo "$labels" | grep -q '"paused"'; then
+            echo "::notice::Issue is paused — skipping build."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Implement the issue and open a draft PR
+        if: steps.pausecheck.outputs.skip != 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Building code needs capability, so default to Sonnet (configurable via the
+          # repo variable BUILD_MODEL). Curation stays on cheap Haiku (CURATE_MODEL);
+          # this is the deliberate cost split — cheap extraction, capable coding.
+          claude_args: --max-turns 20 --model ${{ vars.BUILD_MODEL || 'claude-sonnet-5' }}
+          prompt: |
+            You are the autonomous build agent for the provenance-tracker repo.
+            Implement GitHub issue #${{ github.event.issue.number || github.event.inputs.issue_number }} as ONE coherent change.
+
+            Title: ${{ github.event.issue.title }}
+
+            Description:
+            ${{ github.event.issue.body }}
+
+            NON-NEGOTIABLE RULES (this project sells credibility — see CLAUDE.md):
+            - Read CLAUDE.md and AGENTS.md first and obey the honesty contract: every
+              on-screen fact carries a visible source; no invented dates/coords/scores;
+              custody (ownership) is never conflated with an exhibition loan; images only
+              for public-domain works.
+            - Types-first: new data shapes go in src/lib/types.ts before any other file.
+            - Do NOT touch the globe init (see the GLOBE CONTRACT in CLAUDE.md).
+            - Create a feature branch named feat/<domain>/<slug> (domain from the issue's
+              agent:<domain> label). Use conventional commits.
+            - Make ALL gates pass before opening the PR:
+              npm ci && npm run honesty && npm run build && npm test
+            - Open a **DRAFT** pull request whose body contains "Closes #${{ github.event.issue.number || github.event.inputs.issue_number }}".
+              Run: gh pr create --draft --fill --base main
+            - Do NOT merge. A human always merges. If you cannot make the gates pass,
+              open the draft PR anyway and clearly list what is red and why.

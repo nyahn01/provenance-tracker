@@ -31,9 +31,10 @@
  * scripts/preparse-provenance.mjs / src/app/api/provenance/route.ts.
  * Claude is used when ANTHROPIC_API_KEY is set; otherwise a deterministic prose
  * miner runs so the pipeline still works offline. The extraction model is
- * env-configurable via CURATE_MODEL (default: claude-sonnet-5) — prose→chain is
- * a structured-extraction task, so a Sonnet-tier model is the right fit for
- * curating volume; bump to an Opus tier for a hand-audited hard case.
+ * env-configurable via CURATE_MODEL (default: claude-haiku-4-5) — prose→chain is
+ * a structured-extraction task and every draft is human-reviewed before promotion,
+ * so a Haiku tier is the right cost/quality fit for curating volume cheaply; bump
+ * to a Sonnet or Opus tier via CURATE_MODEL for a hand-audited hard case.
  */
 
 import Anthropic from '@anthropic-ai/sdk'
@@ -47,13 +48,15 @@ const __dir = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dir, '..')
 
 // Extraction model — env-configurable so the maintainer can pick the tier that
-// fits the run (Sonnet for volume curation; an Opus tier for a hard audited case)
-// without a code change. Resolved lazily (not at import) so CURATE_MODEL set in
-// .env.local — loaded by loadEnv() at runtime, same place as ANTHROPIC_API_KEY —
-// is honoured. Volume prose→chain is a structured task, so thinking is disabled
-// for speed/determinism — EXCEPT on the Fable/Mythos family, which have thinking
-// always on and reject a `{type:"disabled"}` block, so we omit it there.
-const DEFAULT_MODEL = 'claude-sonnet-5'
+// fits the run (Haiku for cheap volume curation; a Sonnet/Opus tier for a hard
+// audited case) without a code change. Default is the smallest tier on purpose:
+// prose→chain is a structured task and every draft is human-reviewed before it can
+// be promoted, so the cheap model carries the first pass. Resolved lazily (not at
+// import) so CURATE_MODEL set in .env.local — loaded by loadEnv() at runtime, same
+// place as ANTHROPIC_API_KEY — is honoured. Thinking is disabled for
+// speed/determinism — EXCEPT on the Fable/Mythos family, which have thinking always
+// on and reject a `{type:"disabled"}` block, so we omit it there.
+const DEFAULT_MODEL = 'claude-haiku-4-5'
 export const curateModel = () => process.env.CURATE_MODEL || DEFAULT_MODEL
 export const thinkingFor = (m) => (/fable|mythos/i.test(m) ? undefined : { type: 'disabled' })
 

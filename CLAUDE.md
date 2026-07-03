@@ -59,7 +59,8 @@ Do not put hex values in markdown — they rot (see the file header note).
 ## Tech stack
 Next.js 16 (App Router) · TypeScript (strict) · Tailwind · Globe.gl (dynamic import, `ssr:false`)
 · Pretendard (CDN) · Anthropic SDK (curation pipeline model set by `CURATE_MODEL`, default
-`claude-sonnet-5`; thinking disabled for structured extraction) · Vercel (auto-deploy on push to
+`claude-haiku-4-5` — cheap first pass, every draft is human-reviewed; bump to Sonnet/Opus for a
+hard case; thinking disabled for structured extraction) · Vercel (auto-deploy on push to
 main; preview per PR via `vercel[bot]`).
 
 ## APIs (all keyless unless noted — full detail in docs/DATA_SOURCES.md)

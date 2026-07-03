@@ -11,7 +11,9 @@
  * Guardrails (ADR 0002): OFF by default (`decision.auto_build.enabled`); bounded by
  * max_prs_per_run; skips `paused` issues; the agent opens a DRAFT PR that `Closes #N`
  * and **a human always merges**. When no agent command is configured, this posts the
- * brief onto the issue and labels it `ready-to-build` for a human/session to pick up.
+ * brief onto the issue and labels it `ready-to-build`. In Stage 3 (mode=event-driven)
+ * that label triggers .github/workflows/build-agent.yml (Claude Code opens the draft
+ * PR); in Stage 2 it is a human/session cue. Either way, a human always merges.
  *
  * Usage:
  *   node scripts/build-issue.mjs <issue-number>   # prepare/dispatch one issue
