@@ -491,5 +491,465 @@
       "endDate": null,
       "source": "AIC provenance"
     }
+  ],
+  "aic:14598": [
+    {
+      "name": "Paris",
+      "institution": "Claude Monet",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1867",
+      "endDate": "1873",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Durand-Ruel",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1873",
+      "endDate": "1876",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Jean-Baptiste Faure",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1876",
+      "endDate": "1893",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Durand-Ruel",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1893",
+      "endDate": "1893",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Henri Véver",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1893",
+      "endDate": "1897",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Georges Kohn",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1897",
+      "endDate": "1920",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Durand-Ruel and Bernheim-Jeune",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1920",
+      "endDate": "1923",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Annie Swan Coburn",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1923",
+      "endDate": "1932",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1933",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ],
+  "aic:64001": [
+    {
+      "name": "Paris",
+      "institution": "The artist",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": null,
+      "endDate": "1916",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Galerie Bernheim-Jeune",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1916",
+      "endDate": "1917",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Henry Bernstein",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1917",
+      "endDate": "1917",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Galerie Bernheim-Jeune",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1917",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Marius de Zayas",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1919",
+      "endDate": "1919",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "John Quinn",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1919",
+      "endDate": "1924",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "John Quinn Estate",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1924",
+      "endDate": "1927",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "F. Valentine Dudensing",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1927",
+      "endDate": "1931",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Pierre Matisse",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1931",
+      "endDate": "1940",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Samuel A. Marx and Florene May Schoenborn",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1940",
+      "endDate": "1948",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1948",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ],
+  "aic:84709": [
+    {
+      "name": "Toledo",
+      "institution": "Juan Sánchez Cotán",
+      "lat": null,
+      "lng": null,
+      "startDate": "1600",
+      "endDate": "1603",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Toledo",
+      "institution": "Diego de Valdivieso",
+      "lat": null,
+      "lng": null,
+      "startDate": "1603",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Toledo or Huerta de Sandoval",
+      "institution": "Cardinal Bernardo de Sandoval y Rojas",
+      "lat": null,
+      "lng": null,
+      "startDate": null,
+      "endDate": "1618",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "El Pardo",
+      "institution": "Royal hunting lodge of El Pardo",
+      "lat": null,
+      "lng": null,
+      "startDate": "1619",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Madrid",
+      "institution": "Spanish royal collection",
+      "lat": 40.4168,
+      "lng": -3.7038,
+      "startDate": "1653",
+      "endDate": "1701",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Escorial",
+      "institution": "Escorial Royal Collection",
+      "lat": null,
+      "lng": null,
+      "startDate": "1809",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Munich",
+      "institution": "August L. Mayer",
+      "lat": 48.1351,
+      "lng": 11.582,
+      "startDate": null,
+      "endDate": "1933",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Germany",
+      "institution": "Private collection (wartime provenance gap, 1933–1955)",
+      "lat": null,
+      "lng": null,
+      "startDate": "1933",
+      "endDate": "1955",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Frederick Mont and Newhouse Galleries",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": null,
+      "endDate": "1955",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Art Institute",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1955",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ],
+  "aic:87045": [
+    {
+      "name": "Paris",
+      "institution": "The artist",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": null,
+      "endDate": "1907",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Bernheim-Jeune",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1907",
+      "endDate": "1908",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Breslau",
+      "institution": "Oskar and Greta Moll",
+      "lat": null,
+      "lng": null,
+      "startDate": "1908",
+      "endDate": "1927",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Valentine Gallery",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1927",
+      "endDate": "1928",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Frank Crowninshield",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1928",
+      "endDate": "1928",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Valentine Gallery",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": "1928",
+      "endDate": "1928",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Frederick Clay Bartlett",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1928",
+      "endDate": "1932",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1932",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ],
+  "aic:95998": [
+    {
+      "name": "Amsterdam",
+      "institution": "Jacob Alewijn",
+      "lat": 52.3676,
+      "lng": 4.9041,
+      "startDate": null,
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Amsterdam",
+      "institution": "Margaretha Helena Graafland",
+      "lat": 52.3676,
+      "lng": 4.9041,
+      "startDate": null,
+      "endDate": "1766",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Amsterdam",
+      "institution": "Ketelaar",
+      "lat": 52.3676,
+      "lng": 4.9041,
+      "startDate": "1767",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Oxfordshire",
+      "institution": "Matthew Piers Watt Boulton",
+      "lat": null,
+      "lng": null,
+      "startDate": null,
+      "endDate": "1911",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "London",
+      "institution": "Shepherd",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "startDate": "1911",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "London",
+      "institution": "Lippmann",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "startDate": null,
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "London",
+      "institution": "P. and D. Colnaghi",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "startDate": "1912",
+      "endDate": "1912",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "London",
+      "institution": "Lippmann, Knoedler, and Julius Böhler",
+      "lat": 51.5074,
+      "lng": -0.1278,
+      "startDate": "1912",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Budapest",
+      "institution": "Marczell de Nemes",
+      "lat": 47.4979,
+      "lng": 19.0402,
+      "startDate": "1912",
+      "endDate": "1913",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Reinhardt",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": null,
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Mrs. W. W. Kimball",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1914",
+      "endDate": "1921",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1921",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
   ]
 }
