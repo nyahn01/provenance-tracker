@@ -225,13 +225,15 @@
       "source": "AIC provenance"
     },
     {
-      "name": "the Netherlands",
+      "name": "Bussum",
       "institution": "Johanna van Gogh-Bonger",
-      "lat": null,
-      "lng": null,
+      "lat": 52.2825,
+      "lng": 5.16,
       "startDate": "1891",
       "endDate": "1901",
-      "source": "AIC provenance"
+      "source": "AIC provenance",
+      "confidence": "low",
+      "note": "AIC's record names only \"the Netherlands\"; Bussum (Villa Helma) is per Wikipedia and The Art Newspaper, matching this 1891–1901 span"
     },
     {
       "name": "Paris",

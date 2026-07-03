@@ -86,6 +86,8 @@ export const CITIES: Record<string, GeoPoint> = {
   escorial: { lat: 40.5885, lng: -4.1379 },
   // German/Polish town (historic German name as recorded in the source)
   breslau: { lat: 51.1079, lng: 17.0385 },
+  // Dutch town that appears in provenance records
+  bussum: { lat: 52.2825, lng: 5.16 },
 }
 
 /**
