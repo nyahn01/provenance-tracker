@@ -202,7 +202,7 @@ export function buildUnifiedTimeline(
       type,
       who,
       where,
-      detail: isArtistOrigin ? 'Origin — the artist' : (heldUntil ? `Held until ${fmtYear(loc.endDate ?? undefined)}` : undefined),
+      detail: isArtistOrigin ? 'Origin — the artist' : (heldUntil ? `Held until ${fmtYear(loc.endDate ?? undefined)}` : loc.note),
       source: label,
       confidence: loc.confidence ?? sourceConfidence(label, loc.startDate != null),
       unmapped: loc.lat == null || loc.lng == null,

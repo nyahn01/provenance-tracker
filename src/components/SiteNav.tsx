@@ -3,11 +3,22 @@
 /**
  * SiteNav — a sticky global top bar for cross-page navigation.
  *
- * Renders on every page EXCEPT the full-screen globe home (`/`), which has its
- * own hero + footer nav and where a top bar would half-overlap the detail panel.
- * Sticky (not fixed) so it occupies flow space on the scrolling marketing pages
- * and never overlaps their content. Mirrors the footer-link styling in
- * StoriesApp and uses the shared design tokens.
+ * Hidden on the immersive globe landing (`/` with no work open) — a top bar
+ * there would compete with the full-bleed hero. Once a work opens on desktop/
+ * tablet, ProvenanceDetail is a real full-width content view (#134), so the
+ * nav should be back — its absence is what #160 flagged ("works like a page
+ * but opens as a side panel with no merit"). StoriesApp toggles the
+ * `--site-nav-display` custom property (desktop/tablet only, never on the
+ * mobile drawer) rather than lifting `inStory` through React state: a shared
+ * context or router-searchParams round trip would either force a Suspense
+ * boundary onto every statically-generated page that renders this nav (a
+ * useSearchParams read here de-opts those routes from static rendering) or add
+ * a new cross-tree context just to flip one boolean. `usePathname()` alone is
+ * enough for every OTHER route, since only `/` has this landing-vs-open-work
+ * ambiguity at one URL.
+ * z-index sits above ProvenanceDetail's full-width panel (150) so it paints on
+ * top instead of being covered; the panel's own top offset makes room for it
+ * (see ProvenanceDetail.tsx).
  */
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -26,14 +37,18 @@ const LINKS: { href: string; label: string; accent?: boolean }[] = [
 
 export function SiteNav() {
   const pathname = usePathname()
-  if (pathname === '/') return null
+  const onHome = pathname === '/'
 
   return (
     <nav
       aria-label="Primary"
       style={{
-        position: 'sticky', top: 0, zIndex: 100,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+        position: 'sticky', top: 0, zIndex: 160,
+        // On every other route this is always 'flex'. On `/` it defers to the
+        // CSS var StoriesApp sets — 'flex' once a work is open (desktop/tablet
+        // only), 'none' on the pure landing view.
+        display: onHome ? 'var(--site-nav-display, none)' : 'flex',
+        alignItems: 'center', justifyContent: 'space-between', gap: 16,
         padding: '0 clamp(16px, 4vw, 32px)', height: 52,
         background: 'rgba(10,9,8,0.92)',
         backdropFilter: 'blur(10px)',

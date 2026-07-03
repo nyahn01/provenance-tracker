@@ -111,7 +111,12 @@ export function ProvenanceDetail({
         aria-label="Provenance details"
         tabIndex={-1}
         style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0,
+        position: 'fixed',
+        // Desktop/tablet leaves room for SiteNav (52px, now shown whenever a
+        // work is open — #160); the mobile drawer is unaffected, nav stays
+        // hidden there and the drawer keeps covering the full height.
+        top: isMobile ? 0 : 52,
+        right: 0, bottom: 0,
         // Desktop/tablet: always-visible full-width host. Mobile: slide-in drawer.
         left: isMobile ? undefined : 0,
         width: isMobile ? 'min(400px, 92vw)' : '100%',

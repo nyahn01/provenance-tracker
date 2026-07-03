@@ -48,6 +48,14 @@ export default function StoriesApp() {
 
   const inStory = !!selected
 
+  // SiteNav (root layout, outside this component's tree) reads this custom
+  // property to decide whether to show itself on `/` — see SiteNav.tsx for why
+  // a CSS var instead of context/router state. Desktop/tablet only: the mobile
+  // drawer stays the existing narrow, hamburger-driven experience unchanged.
+  useEffect(() => {
+    document.documentElement.style.setProperty('--site-nav-display', inStory && !isMobile ? 'flex' : 'none')
+  }, [inStory, isMobile])
+
   // ── Data actions ───────────────────────────────────────────────────────────
   const openWork = useCallback(async (r: SearchResult, heroUrl: string | null, creditLine: string | null) => {
     setSelected(r); setHero(heroUrl); setCredit(creditLine); setProv(null); setLoading(true); setShowInsight(false); setDrawerOpen(true)

@@ -69,6 +69,13 @@ export interface LocationEntry {
    * - low:    inferred from prose without explicit dates
    */
   confidence?: 'high' | 'medium' | 'low'
+  /**
+   * Optional visible annotation shown under the location on the timeline —
+   * e.g. to disclose that a specific place was corroborated from a secondary
+   * source when the primary `source` only names a country/region. Never used
+   * to invent a date; see `confidence` for that fact's certainty tier.
+   */
+  note?: string
 }
 
 /**
