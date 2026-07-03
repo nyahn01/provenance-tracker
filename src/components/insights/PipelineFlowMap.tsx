@@ -2,8 +2,8 @@
  * PipelineFlowMap — the featured collection as one weighted flow map.
  *
  * A schematic equirectangular SVG (linear lon→x / lat→y) over the coarse
- * 33-polygon basemap the globe already ships. It aggregates all 53 committed
- * custody entries from the 8 featured works into one image: the Europe→Chicago
+ * 33-polygon basemap the globe already ships. It aggregates every committed
+ * custody entry from the featured works into one image: the Europe→Chicago
  * pipeline the collection actually is. Static, no globe init touched (this is a
  * separate 2D surface). Every line is a dated, sourced custody transition;
  * transitions without coordinates are counted in the caption, never drawn.

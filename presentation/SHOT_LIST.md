@@ -8,7 +8,7 @@ localhost, so a populated custody chain and the globe arcs only render against t
 
 | File | Page / state | Used on slide |
 |---|---|---|
-| `home-globe.png` | `/` landing — gallery of 8 works + globe + arc legend | Demo · the landing |
+| `home-globe.png` | `/` landing — gallery of the featured works + globe + arc legend | Demo · the landing |
 | `detail-water-lilies.png` | `/` → Water Lilies detail panel (honest gap state, sources, "Spot an error") | Demo · what makes it different |
 | `top-team.png` | `/team` top fold — "Autonomous by design", Stage 1/2/3, intake lanes | The roster is a real page |
 | `top-workflow.png` | `/workflow` top fold — three stages of autonomy | The autonomy dial |
