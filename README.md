@@ -101,6 +101,7 @@ npm run metrics      # Outcome-loop snapshot → metrics/latest.json (offline)
 | [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) | Visual contract (palettes, type, layout) |
 | [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md) | Every API and dataset, with credibility tiers |
 | [docs/INSIGHTS.md](docs/INSIGHTS.md) | Running knowledge log — what was learned/decided/dead-ended |
+| [docs/WRITEUP.md](docs/WRITEUP.md) | Public write-up: running a supervised-autonomy agent team as a solo dev |
 
 ## License
 
