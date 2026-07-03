@@ -217,6 +217,107 @@ export interface RestitutionCase {
   references: CaseSource[]
 }
 
+// ─── Collection-level insights (Getty GPI + featured chains) ────────────────
+
+/**
+ * A price string parsed from a GPI ledger field. Currencies are NEVER
+ * converted or mixed on one axis (honesty rule) — the currency travels with
+ * the amount so every consumer must handle it explicitly.
+ */
+export interface ParsedPrice {
+  amount: number
+  currency: 'USD' | 'GBP' | 'FRF' | 'DEM' | 'unknown'
+}
+
+/** Getty transactions in one year, split by recorded outcome. */
+export interface YearActivity {
+  year: number
+  sold: number
+  unsold: number
+  other: number
+}
+
+/** One artist's transaction activity over time (for small multiples). */
+export interface ArtistActivity {
+  artist: string
+  total: number
+  years: YearActivity[]
+}
+
+/** Median USD sale price for one year (Knoedler only; n = bucket size, shown). */
+export interface PriceYearStat {
+  year: number
+  medianUsd: number
+  n: number
+}
+
+/**
+ * One francs-bought → dollars-sold Knoedler record. Prices are the VERBATIM
+ * ledger strings — never converted between currencies.
+ */
+export interface ArbitragePair {
+  piRecordNo: string | null
+  title: string | null
+  artist: string | null
+  year: number | null
+  purchase: string
+  sale: string
+  sourceUrl: string | null
+  sourceLabel: string
+}
+
+/** A counted seller→buyer relationship from the Knoedler stock books. */
+export interface DealerLink {
+  seller: string
+  buyer: string
+  count: number
+}
+
+/** Deterministic rank-based layout for the bipartite dealer ribbons. */
+export interface BipartiteNode {
+  name: string
+  count: number
+  /** 0..1 vertical position, rank-based — no force simulation, no pseudo-geometry. */
+  y: number
+}
+
+export interface BipartiteLayout {
+  sellers: BipartiteNode[]
+  buyers: BipartiteNode[]
+  links: DealerLink[]
+  /** Honest exclusions: totals beyond the shown top-N / min-link threshold. */
+  totalSellers: number
+  totalBuyers: number
+  minLinkCount: number
+}
+
+/** One weighted custody transition between two mapped cities (featured chains). */
+export interface PipelineFlow {
+  fromName: string
+  toName: string
+  fromLat: number
+  fromLng: number
+  toLat: number
+  toLng: number
+  count: number
+}
+
+export interface PipelineCity {
+  name: string
+  lat: number
+  lng: number
+  count: number
+}
+
+export interface PipelineData {
+  flows: PipelineFlow[]
+  cities: PipelineCity[]
+  /** Transitions that could not be drawn (missing coordinates) — stated, never hidden. */
+  excludedCount: number
+  totalEntries: number
+  workCount: number
+}
+
 // ─── Newsletter (Buttondown) ─────────────────────────────────────────────────
 
 export interface NewsletterSubscribeBody {

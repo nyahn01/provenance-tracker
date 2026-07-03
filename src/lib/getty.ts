@@ -40,6 +40,15 @@ function getRecords(): GettyRecord[] {
 }
 
 /**
+ * Every seeded GPI record (Knoedler + Goupil), for collection-level insight
+ * aggregation. Datasets split downstream via sourceLabel ("Knoedler" vs
+ * "Goupil") — the label every record carries by the honesty contract.
+ */
+export function allGettyRecords(): GettyRecord[] {
+  return getRecords()
+}
+
+/**
  * Extract the last name from display strings like "Claude Monet (French, 1840–1926)"
  * Returns uppercase last name for matching Knoedler "LASTNAME, FIRSTNAME" authority field.
  */
