@@ -29,8 +29,11 @@
  *
  * Reuses the extraction prompt, geocoder, and artist-origin fix from
  * scripts/preparse-provenance.mjs / src/app/api/provenance/route.ts.
- * Claude (claude-haiku-4-5) is used when ANTHROPIC_API_KEY is set; otherwise a
- * deterministic prose miner runs so the pipeline still works offline.
+ * Claude is used when ANTHROPIC_API_KEY is set; otherwise a deterministic prose
+ * miner runs so the pipeline still works offline. The extraction model is
+ * env-configurable via CURATE_MODEL (default: claude-sonnet-5) — prose→chain is
+ * a structured-extraction task, so a Sonnet-tier model is the right fit for
+ * curating volume; bump to an Opus tier for a hand-audited hard case.
  */
 
 import Anthropic from '@anthropic-ai/sdk'
@@ -42,7 +45,47 @@ import { geocodeKey } from './lib/cities.mjs'
 
 const __dir = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dir, '..')
-const MODEL = 'claude-haiku-4-5-20251001'
+
+// Extraction model — env-configurable so the maintainer can pick the tier that
+// fits the run (Sonnet for volume curation; an Opus tier for a hard audited case)
+// without a code change. Resolved lazily (not at import) so CURATE_MODEL set in
+// .env.local — loaded by loadEnv() at runtime, same place as ANTHROPIC_API_KEY —
+// is honoured. Volume prose→chain is a structured task, so thinking is disabled
+// for speed/determinism — EXCEPT on the Fable/Mythos family, which have thinking
+// always on and reject a `{type:"disabled"}` block, so we omit it there.
+const DEFAULT_MODEL = 'claude-sonnet-5'
+export const curateModel = () => process.env.CURATE_MODEL || DEFAULT_MODEL
+export const thinkingFor = (m) => (/fable|mythos/i.test(m) ? undefined : { type: 'disabled' })
+
+/** First text block of a Claude response (skips any leading thinking block). */
+export function firstText(msg) {
+  const b = (msg?.content ?? []).find(x => x.type === 'text')
+  return b ? b.text : ''
+}
+
+/** Pull the first balanced top-level JSON object out of a model response.
+ *  Tolerates code fences and any prose before/after the object, so a stray
+ *  preamble (or a thinking summary) never fails the parse. Throws if none found. */
+export function parseJsonObject(raw) {
+  const text = String(raw ?? '').replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
+  try { return JSON.parse(text) } catch { /* not the whole string — scan for the object */ }
+  const start = text.indexOf('{')
+  if (start < 0) throw new Error('no JSON object in response')
+  let depth = 0, inStr = false, esc = false
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i]
+    if (inStr) {
+      if (esc) esc = false
+      else if (ch === '\\') esc = true
+      else if (ch === '"') inStr = false
+      continue
+    }
+    if (ch === '"') inStr = true
+    else if (ch === '{') depth++
+    else if (ch === '}') { if (--depth === 0) return JSON.parse(text.slice(start, i + 1)) }
+  }
+  throw new Error('unbalanced JSON object in response')
+}
 
 // ─── Load .env.local (mirrors preparse-provenance.mjs) ───────────────────────
 async function loadEnv() {
@@ -182,10 +225,9 @@ Return ONLY JSON: {"scholarship":[string,string],"risk":[string,string],"market"
 - risk = title/transit risk implied by gaps
 - market = market trajectory and dealer evidence`
   try {
-    const msg = await client.messages.create({ model: MODEL, max_tokens: 600, messages: [{ role: 'user', content: prompt }] })
-    const block = msg.content[0]
-    const raw = block.type === 'text' ? block.text : ''
-    const parsed = JSON.parse(raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim())
+    const model = curateModel(), thinking = thinkingFor(model)
+    const msg = await client.messages.create({ model, max_tokens: 900, ...(thinking ? { thinking } : {}), messages: [{ role: 'user', content: prompt }] })
+    const parsed = parseJsonObject(firstText(msg))
     if (parsed.scholarship && parsed.risk && parsed.market) return parsed
   } catch (err) { console.warn(`  question gen fell back to deterministic: ${err.message}`) }
   return deterministicQuestions(meta, chain, getty)
@@ -252,10 +294,9 @@ async function extractChain(client, meta) {
   if (!meta.prose || meta.prose.length < 20) return []
   if (!client) return deterministicExtract(meta)
   try {
-    const msg = await client.messages.create({ model: MODEL, max_tokens: 800, messages: [{ role: 'user', content: buildPrompt(meta.title, meta.artist, meta.prose) }] })
-    const block = msg.content[0]
-    const raw = block.type === 'text' ? block.text : ''
-    const parsed = JSON.parse(raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim())
+    const model = curateModel(), thinking = thinkingFor(model)
+    const msg = await client.messages.create({ model, max_tokens: 1500, ...(thinking ? { thinking } : {}), messages: [{ role: 'user', content: buildPrompt(meta.title, meta.artist, meta.prose) }] })
+    const parsed = parseJsonObject(firstText(msg))
     return toEntries(parsed.entries, meta)
   } catch (err) {
     console.warn(`  extraction fell back to deterministic: ${err.message}`)
@@ -375,7 +416,7 @@ export function chainGaps(chain) {
 function titleCase(s) { return s.replace(/\b\w/g, c => c.toUpperCase()) }
 
 function buildEssay(meta, chain, getty, conflicts, questions, date, usedClaude) {
-  const sourceLine = usedClaude ? 'Claude (claude-haiku-4-5) over AIC tier-A prose' : 'deterministic prose miner over AIC tier-A prose'
+  const sourceLine = usedClaude ? `Claude (${curateModel()}) over AIC tier-A prose` : 'deterministic prose miner over AIC tier-A prose'
   const holders = chain.map(e => `- **${e.institution || e.name}** — ${e.name}, ${e.startDate ?? '?'}–${e.endDate ?? 'present'} _(source: ${e.source})_`).join('\n')
   const gaps = chainGaps(chain)
   const q = (arr) => (arr ?? []).map(s => `- ${s}`).join('\n')

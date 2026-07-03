@@ -1,9 +1,10 @@
 /**
- * Pre-parse provenance prose for the 8 featured artworks using Claude Haiku.
+ * Pre-parse provenance prose for the 8 featured artworks with Claude.
  * Commit the output — featured works then have zero runtime Claude cost.
  *
  * Run: node scripts/preparse-provenance.mjs
  * Requires: ANTHROPIC_API_KEY in .env.local
+ * Model: CURATE_MODEL (default claude-sonnet-5) — shared with scripts/curate.mjs.
  */
 
 import Anthropic from '@anthropic-ai/sdk'
@@ -11,6 +12,8 @@ import { writeFile, readFile } from 'fs/promises'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { geocodeKey } from './lib/cities.mjs'
+// One home for the extraction model + request shape + JSON parsing (curate.mjs).
+import { curateModel, thinkingFor, firstText, parseJsonObject } from './curate.mjs'
 
 const __dir = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dir, '..')
@@ -126,27 +129,27 @@ async function main() {
     }
     console.log(`  Prose: ${prose.length} chars`)
 
-    // Call Claude Haiku
+    // Call Claude (model set by CURATE_MODEL, default claude-sonnet-5)
     let raw = ''
     try {
+      const model = curateModel(), thinking = thinkingFor(model)
       const msg = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 800,
+        model,
+        max_tokens: 1500,
+        ...(thinking ? { thinking } : {}),
         messages: [{ role: 'user', content: buildPrompt(work.title, work.artist, prose) }],
       })
-      const block = msg.content[0]
-      raw = block.type === 'text' ? block.text : ''
+      raw = firstText(msg)
     } catch (err) {
       console.error('  Claude error:', err.message)
       results[`aic:${work.id}`] = []
       continue
     }
 
-    // Parse JSON response
+    // Parse JSON response (tolerant of fences / preamble)
     let parsed
     try {
-      const clean = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
-      parsed = JSON.parse(clean)
+      parsed = parseJsonObject(raw)
     } catch {
       console.warn('  JSON parse failed — raw:', raw.slice(0, 200))
       results[`aic:${work.id}`] = []
