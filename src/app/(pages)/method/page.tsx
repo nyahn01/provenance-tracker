@@ -278,8 +278,8 @@ export default function MethodPage() {
               Sources: Met · AIC · Rijksmuseum · Cleveland · Getty GPI · RKD · Wikidata · Europeana
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-              <CTALink tone="gold" href="/support">
-                Next: support the work →
+              <CTALink tone="gold" href="/insights">
+                Next: explore the aggregate ledger →
               </CTALink>
               <span style={{ width: 1, height: 14, background: C.border }} />
               <CTALink tone="muted" href="/feedback" size="0.72rem">

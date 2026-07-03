@@ -94,6 +94,17 @@ export function LandingEditorial({
             </div>
           </section>
 
+          {/* ── INSIGHTS cross-link ── */}
+          <a href="/insights" className="landing-work-card" style={{ display: 'block', marginTop: 28, padding: '18px 22px', background: OBS.surface, border: `1px solid ${OBS.border}`, borderRadius: 10, textDecoration: 'none' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', color: OBS.text, lineHeight: 1.2 }}>
+              The market, in aggregate
+            </div>
+            <div style={{ fontSize: '0.82rem', color: OBS.textMuted, marginTop: 4, lineHeight: 1.5 }}>
+              4,388 dated dealer records, 1859&ndash;1971 — transactions, prices, the dealer network, and the Paris&ndash;Chicago pipeline.{' '}
+              <span style={{ color: OBS.gold }}>See the insights &rarr;</span>
+            </div>
+          </a>
+
           {/* ── SEARCH ── */}
           <section style={{ marginTop: 64, borderTop: `1px solid ${OBS.border}`, paddingTop: 28 }}>
             <h2 style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: OBS.textFaint, marginBottom: 12 }}>
