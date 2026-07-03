@@ -223,8 +223,16 @@ export default function LearnPage() {
         .learn-section strong { color: ${C.text}; font-weight: 600; }
         .learn-section em { color: ${C.textMuted}; font-style: italic; }
         .section-card:hover { border-color: ${C.borderMid} !important; }
+        .toc-link:hover { color: ${C.text} !important; border-left-color: ${C.borderMid} !important; }
+        /* Below 900px the glossary is one column and the TOC hides — the
+           accordion headers are the primary navigation there (spec: mobile
+           unchanged). At/above 900px a persistent left rail appears: this is
+           the concrete shape-level difference from /about's linear single-
+           column layout that #161 asked for ("deduplicate and improve" —
+           the two pages no longer just look like the same template twice). */
         @media (min-width: 900px) {
-          .toc-sticky { position: sticky; top: 80px; }
+          .learn-layout { grid-template-columns: 200px minmax(0,1fr) !important; }
+          .toc-sticky { display: flex !important; position: sticky; top: 80px; }
         }
       ` }} />
 
@@ -242,12 +250,28 @@ export default function LearnPage() {
             </p>
           </div>
 
-          {/* Main layout: TOC sidebar + content */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: 48 }}>
+          {/* Main layout: TOC sidebar + content. Single column below 900px (the
+              accordion headers are the nav there); a persistent left rail
+              appears at/above 900px — see .learn-layout / .toc-sticky above. */}
+          <div className="learn-layout" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: 48 }}>
 
-            {/* TOC — shown inline on mobile, sticky on desktop via CSS */}
-            <nav aria-label="Table of contents" style={{ display: 'none' }} className="toc-sticky">
-              {/* Desktop TOC is hidden on mobile; content is the primary nav */}
+            {/* TOC — hidden below 900px (display:none default, flex-column
+                override in the media query above); each link jumps to its
+                accordion section by id (LearnAccordion sets id={section.id}
+                on every header, open or collapsed, so the anchor always
+                resolves). */}
+            <nav aria-label="Table of contents" className="toc-sticky" style={{ display: 'none', flexDirection: 'column', gap: 2, height: 'fit-content' }}>
+              {SECTIONS.map(s => (
+                <a key={s.id} href={`#${s.id}`} className="toc-link" style={{
+                  display: 'flex', alignItems: 'baseline', gap: 10,
+                  padding: '7px 4px 7px 12px', borderLeft: `2px solid ${C.border}`,
+                  fontSize: '0.8rem', color: C.textMuted, textDecoration: 'none',
+                  lineHeight: 1.35, transition: 'color 0.15s, border-color 0.15s',
+                }}>
+                  <span style={{ fontFamily: "'Courier New', monospace", fontSize: '0.62rem', color: C.textFaint, flexShrink: 0 }}>{s.label}</span>
+                  <span>{s.title}</span>
+                </a>
+              ))}
             </nav>
 
             {/* Sections — collapsible accordion (client component) */}
