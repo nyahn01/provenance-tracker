@@ -161,9 +161,14 @@ export default async function WorkPage({
               committed, sourced data. Exhibition loans and the map view live in the
               interactive explorer — a loan is never shown as a change of custody.
             </Prose>
-            <CTALink href={`/?work=${work.slug}`} tone="gold" size="0.82rem">
-              Open in the interactive explorer →
-            </CTALink>
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+              <CTALink href={`/?work=${work.slug}`} tone="gold" size="0.82rem">
+                Open in the interactive explorer →
+              </CTALink>
+              <CTALink href="/insights#network" size="0.82rem">
+                This dealer world in aggregate →
+              </CTALink>
+            </div>
           </Card>
 
           {/* Other featured journeys — internal link graph */}

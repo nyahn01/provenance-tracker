@@ -13,7 +13,7 @@ import { allCaseSlugs } from '@/lib/case-studies'
 import { allWorkSlugs } from '@/lib/featured'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticPaths = ['', '/learn', '/method', '/about', '/support', '/feedback', '/impressum', '/demo/source']
+  const staticPaths = ['', '/learn', '/method', '/insights', '/about', '/support', '/feedback', '/impressum', '/demo/source']
 
   return [
     ...staticPaths.map(p => ({
