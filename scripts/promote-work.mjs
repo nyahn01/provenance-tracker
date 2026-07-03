@@ -109,8 +109,8 @@ function main() {
   const firstDated = chain.find(e => e.startDate)
   const creationYear = argValue(args, '--year') ?? firstDated?.startDate ?? 'TODO'
   const draftEssays = `${DRAFTS.replace(ROOT, '.')}/aic-${id}-*.md`
-  const title = 'TODO — title from the draft essay'
-  const artist = 'TODO — artist from the draft essay'
+  const title = 'TODO — title from the draft essay' // honesty-ok: intentional paste-snippet placeholder, not tech debt
+  const artist = 'TODO — artist from the draft essay' // honesty-ok: intentional paste-snippet placeholder, not tech debt
   console.log(`
 ── paste into src/lib/featured.ts (FEATURED_WORKS) ─────────────────────────────
   {
@@ -140,7 +140,7 @@ function main() {
 
   console.log(`
 Next (human checklist):
-  1. Fill the TODO title/artist in both snippets from the draft essay (${draftEssays}) and paste them.
+  1. Fill the placeholder title/artist in both snippets from the draft essay (${draftEssays}) and paste them.
   2. Move the reviewed essay from vault/agents/drafts/ into vault/agents/findings/.
   3. npm test && npm run check:images && npm run build && npm run honesty
   4. Commit on a feat/data/* branch and open a PR — the human merges (ADR 0001).`)
