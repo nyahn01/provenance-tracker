@@ -143,11 +143,23 @@ export function ChainOfCustodyTimeline({
   const leadingGaps = chainGaps.filter(g => g.afterIndex === -1)
   const branchGap = { marginLeft: 22, borderLeft: `2px dashed ${GAL.sage}`, paddingLeft: 12 }
 
-  // One spine dot + its content block.
+  // One spine dot + its content block. The dot anchors to the <li> gutter, so it
+  // must NOT live inside the animated (transformed) content div — a CSS transform
+  // makes that div the containing block, which would shift `left` by the li's
+  // padding and drop the dot on top of the year text (the #156 overlap bug).
   const dotStyle = (fill: string, border: string): CSSProperties => ({
     position: 'absolute', left: SPINE_LEFT - DOT / 2, top: 4,
     width: DOT, height: DOT, borderRadius: '50%', background: fill, border: `2px solid ${border}`,
   })
+
+  // The sale ◆ (legend: "Sale — how custody changed"). A standalone sale block is
+  // itself transformed (it animates), so it is its own containing block: offset
+  // the marker back from its content-box origin (at paddingLeft) to the spine.
+  const SALE_MARK = DOT - 2
+  const saleMarkStyle: CSSProperties = {
+    position: 'absolute', left: SPINE_LEFT - (SPINE_LEFT + 22) - SALE_MARK / 2, top: 6,
+    width: SALE_MARK, height: SALE_MARK, background: accent.dealer, transform: 'rotate(45deg)', borderRadius: 2,
+  }
 
   // "The chain assembles" (spec §3): each event fades up oldest→newest with a
   // 90ms stagger; a gap holds an extra 250ms beat before the chain resumes.
@@ -192,13 +204,15 @@ export function ChainOfCustodyTimeline({
           const following = chainGaps.filter(g => g.afterIndex === i)
           return (
             <li key={`c-${i}`} style={{ position: 'relative', paddingLeft: SPINE_LEFT + 22, paddingBottom: 22 }}>
+              {/* Gutter dot anchors to the <li> (non-transformed), never inside the animated div. */}
+              <span aria-hidden style={dotStyle(GAL.bg, GAL.gold)} />
               <div style={assemble()}>
-                <span aria-hidden style={dotStyle(GAL.bg, GAL.gold)} />
                 <EventBody node={node} tag={custodyTag(node)} tagColor={GAL.gold} artwork={artwork} />
               </div>
 
               {attachedSales.map((s, si) => (
                 <div key={`s-${si}`} style={{ position: 'relative', marginTop: 14, ...assemble() }}>
+                  <span aria-hidden style={saleMarkStyle} />
                   <EventBody node={s} tag="Sale" tagColor={accent.dealer} artwork={artwork} />
                 </div>
               ))}
