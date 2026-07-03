@@ -23,6 +23,7 @@ import { searchGetty } from '@/lib/getty'
 import { ChainOfCustodyTimeline } from '@/components/provenance/ChainOfCustodyTimeline'
 import { JsonLd } from '@/components/JsonLd'
 import { NewsletterSignup } from '@/components/NewsletterSignup'
+import { EmbedSnippet } from '@/components/EmbedSnippet'
 import { PageShell, DisplayHeading, Prose, Card, CTALink, Section } from '@/components/ui'
 import { SITE_URL } from '@/lib/site'
 import type { GapEntry } from '@/lib/types'
@@ -169,6 +170,7 @@ export default async function WorkPage({
                 This dealer world in aggregate →
               </CTALink>
             </div>
+            <EmbedSnippet slug={work.slug} title={work.title} siteUrl={SITE_URL} />
           </Card>
 
           {/* Other featured journeys — internal link graph */}

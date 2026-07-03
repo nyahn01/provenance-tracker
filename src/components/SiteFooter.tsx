@@ -13,7 +13,7 @@ import { OBS, MARKETING } from '@/lib/design-tokens'
 
 export function SiteFooter() {
   const pathname = usePathname()
-  if (pathname === '/') return null
+  if (pathname === '/' || pathname?.startsWith('/embed')) return null
 
   return (
     <footer

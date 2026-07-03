@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import Script from 'next/script'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { SiteNav } from '@/components/SiteNav'
 import { SiteFooter } from '@/components/SiteFooter'
+import { BuyMeACoffeeButton } from '@/components/BuyMeACoffeeButton'
 import { SITE_URL, SITE_NAME } from '@/lib/site'
 
 const DESCRIPTION =
@@ -72,19 +72,7 @@ export default function RootLayout({
           {children}
         </main>
         <SiteFooter />
-        <Script
-          src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js"
-          data-name="bmc-button"
-          data-slug="nyahn"
-          data-color="#FFDD00"
-          data-emoji=""
-          data-font="Comic"
-          data-text="Buy me a coffee"
-          data-outline-color="#000000"
-          data-font-color="#000000"
-          data-coffee-color="#ffffff"
-          strategy="afterInteractive"
-        />
+        <BuyMeACoffeeButton />
         <SpeedInsights />
         <Analytics />
       </body>
