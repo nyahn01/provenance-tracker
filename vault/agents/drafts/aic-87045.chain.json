@@ -1,10 +1,10 @@
 {
   "aic:87045": [
     {
-      "name": null,
+      "name": "Paris",
       "institution": "The artist",
-      "lat": null,
-      "lng": null,
+      "lat": 48.8566,
+      "lng": 2.3522,
       "startDate": null,
       "endDate": "1907",
       "source": "AIC provenance"
@@ -24,7 +24,7 @@
       "lat": null,
       "lng": null,
       "startDate": "1908",
-      "endDate": null,
+      "endDate": "1927",
       "source": "AIC provenance"
     },
     {
@@ -37,19 +37,19 @@
       "source": "AIC provenance"
     },
     {
-      "name": "Paris",
+      "name": "New York",
       "institution": "Frank Crowninshield",
-      "lat": 48.8566,
-      "lng": 2.3522,
+      "lat": 40.7128,
+      "lng": -74.006,
       "startDate": "1928",
       "endDate": "1928",
       "source": "AIC provenance"
     },
     {
-      "name": "Paris",
+      "name": "New York",
       "institution": "Valentine Gallery",
-      "lat": 48.8566,
-      "lng": 2.3522,
+      "lat": 40.7128,
+      "lng": -74.006,
       "startDate": "1928",
       "endDate": "1928",
       "source": "AIC provenance"

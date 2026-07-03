@@ -98,6 +98,15 @@
       "startDate": "1914",
       "endDate": "1921",
       "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1921",
+      "endDate": null,
+      "source": "AIC provenance"
     }
   ]
 }

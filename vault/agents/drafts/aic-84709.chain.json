@@ -47,6 +47,7 @@
     },
     {
       "name": "Escorial",
+      "institution": "Escorial Royal Collection",
       "lat": null,
       "lng": null,
       "startDate": "1809",
@@ -64,11 +65,11 @@
     },
     {
       "name": "Germany",
-      "institution": "Private collection",
+      "institution": "Private collection (wartime provenance gap, 1933–1955)",
       "lat": null,
       "lng": null,
-      "startDate": null,
-      "endDate": null,
+      "startDate": "1933",
+      "endDate": "1955",
       "source": "AIC provenance"
     },
     {
