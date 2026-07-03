@@ -18,7 +18,7 @@
 import type { CSSProperties } from 'react'
 import type { LocationEntry, ExhibitionLoan, GapEntry, GettyRecord, ArtworkMeta } from '@/lib/types'
 import { GAL, accent, motion } from '@/lib/design-tokens'
-import { buildChainLayout, type ChainNode, type ChainGap, type SaleAnnotation } from './chain-timeline'
+import { buildChainLayout, buildChainScale, CAPTION_MIN_YEARS, type ChainNode, type ChainGap, type SaleAnnotation } from './chain-timeline'
 import { sourceRecordUrl } from './timeline'
 import { SourceBadge } from './SourceBadge'
 import { ConfidenceDot } from './ConfidenceDot'
@@ -95,7 +95,7 @@ function EventBody({ node, tag, tagColor, artwork }: {
   )
 }
 
-function GapBand({ gap }: { gap: ChainGap }) {
+function GapBand({ gap, heightPx }: { gap: ChainGap; heightPx?: number }) {
   const years = gap.openStart && gap.openEnd ? 'undocumented'
     : gap.openStart ? `until ${gap.to}`
     : gap.openEnd ? `${gap.from} onward`
@@ -103,7 +103,10 @@ function GapBand({ gap }: { gap: ChainGap }) {
   return (
     <div role="group" aria-label={`Provenance gap, ${years}. ${gap.note}`}
       style={{
-        padding: '12px 14px', borderRadius: 8, fontFamily: 'var(--font-ui)',
+        // Drawn to scale (spec §4.3): the weave stretches to the gap's measured
+        // span, so a long silence is physically larger than a short one. The label
+        // stays at the top; the empty span below reads as the undocumented years.
+        minHeight: heightPx, padding: '12px 14px', borderRadius: 8, fontFamily: 'var(--font-ui)',
         // The gap weave (spec §2): texture in the gapWeave neutral, never a data hue.
         background: `repeating-linear-gradient(135deg, ${GAL.gapWeave}55 0 6px, transparent 6px 12px)`,
         border: `1px dashed ${GAL.borderMid}`,
@@ -124,6 +127,8 @@ export function ChainOfCustodyTimeline({
   locations, exhibitions, gettyRecords, gaps, artist, creationYear, artwork,
 }: ChainOfCustodyTimelineProps) {
   const { custody, loans, unmatchedSales, gaps: chainGaps } = buildChainLayout(locations, exhibitions, gettyRecords, gaps, artist, creationYear)
+  // To-scale time axis (spec §4.1/§4.3): proportional spacing + gaps drawn to span.
+  const { spacerPx, intervalYears, gapHeightPx } = buildChainScale(custody, chainGaps)
   const isEmpty = custody.length === 0 && loans.length === 0 && unmatchedSales.length === 0 && chainGaps.length === 0
 
   if (isEmpty) {
@@ -142,6 +147,15 @@ export function ChainOfCustodyTimeline({
 
   const leadingGaps = chainGaps.filter(g => g.afterIndex === -1)
   const branchGap = { marginLeft: 22, borderLeft: `2px dashed ${GAL.sage}`, paddingLeft: 12 }
+
+  // A faint interval measure centered in the proportional empty span — the light
+  // reference that makes the to-scale spacing legible AS an axis (a Tufte
+  // micro-annotation), shown only for spans worth calling out (spec §4.1).
+  const intervalCaption: CSSProperties = {
+    position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
+    fontFamily: 'var(--font-ui)', fontSize: '0.6rem', letterSpacing: '0.08em',
+    color: GAL.textFaint, whiteSpace: 'nowrap',
+  }
 
   // One spine dot + its content block. The dot anchors to the <li> gutter, so it
   // must NOT live inside the animated (transformed) content div — a CSS transform
@@ -195,15 +209,20 @@ export function ChainOfCustodyTimeline({
         <span aria-hidden style={{ position: 'absolute', left: SPINE_LEFT - 1, top: 6, bottom: 10, width: 2, background: GAL.borderMid }} />
 
         {leadingGaps.map((g, i) => (
-          <li key={`lead-${i}`} style={{ position: 'relative', paddingLeft: SPINE_LEFT + 22, paddingBottom: 22, ...assemble(true) }}><GapBand gap={g} /></li>
+          <li key={`lead-${i}`} style={{ position: 'relative', paddingLeft: SPINE_LEFT + 22, paddingBottom: 22, ...assemble(true) }}><GapBand gap={g} heightPx={gapHeightPx.get(g)} /></li>
         ))}
 
         {custody.map((node, i) => {
           const attachedLoans = loans.filter(l => l.anchorIndex === i)
           const attachedSales = unmatchedSales.filter(s => s.anchorIndex === i)
           const following = chainGaps.filter(g => g.afterIndex === i)
+          // Proportional empty span to the next event — but only when no gap
+          // follows (a gap already carries that span, drawn to scale).
+          const gapFollows = following.length > 0
+          const years = intervalYears[i]
+          const showCaption = !gapFollows && years != null && years >= CAPTION_MIN_YEARS
           return (
-            <li key={`c-${i}`} style={{ position: 'relative', paddingLeft: SPINE_LEFT + 22, paddingBottom: 22 }}>
+            <li key={`c-${i}`} style={{ position: 'relative', paddingLeft: SPINE_LEFT + 22 }}>
               {/* Gutter dot anchors to the <li> (non-transformed), never inside the animated div. */}
               <span aria-hidden style={dotStyle(GAL.bg, GAL.gold)} />
               <div style={assemble()}>
@@ -225,8 +244,13 @@ export function ChainOfCustodyTimeline({
               ))}
 
               {following.map((g, gi) => (
-                <div key={`g-${gi}`} style={{ marginTop: 14, ...assemble(true) }}><GapBand gap={g} /></div>
+                <div key={`g-${gi}`} style={{ marginTop: 14, ...assemble(true) }}><GapBand gap={g} heightPx={gapHeightPx.get(g)} /></div>
               ))}
+
+              {/* Proportional spacer — the empty span IS the elapsed time (spec §4.1). */}
+              <div aria-hidden style={{ position: 'relative', height: spacerPx[i] }}>
+                {showCaption && <span style={intervalCaption}>{years} years</span>}
+              </div>
             </li>
           )
         })}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildChainLayout } from '../src/components/provenance/chain-timeline'
+import { buildChainLayout, buildChainScale } from '../src/components/provenance/chain-timeline'
 import type { LocationEntry, ExhibitionLoan, GapEntry } from '../src/lib/types'
 
 const loc = (name: string, institution: string, startDate: string | null, endDate: string | null): LocationEntry =>
@@ -100,5 +100,69 @@ describe('buildChainLayout — gap placement never fabricates a date (#130)', ()
     const layout = buildChainLayout(locations, [], [], gaps)
     expect(layout.gaps[0].openEnd).toBe(true)
     expect(layout.gaps[0].afterIndex).toBe(0)
+  })
+})
+
+describe('buildChainScale — to-scale time axis (ADR 0006, spec §4.1/§4.3)', () => {
+  it('spaces events in proportion to the years between them (monotonic)', () => {
+    const locations = [
+      loc('A', 'A', '1900', null), // 2-year hand-off to B …
+      loc('B', 'B', '1902', null), // … then a 60-year hold to C
+      loc('C', 'C', '1962', null),
+    ]
+    const { custody, gaps } = buildChainLayout(locations, [], [], [])
+    const { spacerPx, intervalYears } = buildChainScale(custody, gaps)
+    expect(intervalYears[0]).toBe(2)
+    expect(intervalYears[1]).toBe(60)
+    // The long interval leaves visibly more empty space than the short one.
+    expect(spacerPx[1]).toBeGreaterThan(spacerPx[0])
+    // Last node has no "next" — no trailing space.
+    expect(spacerPx[2]).toBe(0)
+  })
+
+  it('floors a tiny interval and caps a huge one (to scale, softly bounded)', () => {
+    const locations = [
+      loc('A', 'A', '1900', null), // 1-year interval → floored, never a hairline
+      loc('B', 'B', '1901', null), // 400-year interval → capped, never off-screen
+      loc('C', 'C', '2301', null),
+    ]
+    const { custody, gaps } = buildChainLayout(locations, [], [], [])
+    const { spacerPx } = buildChainScale(custody, gaps)
+    expect(spacerPx[0]).toBeGreaterThanOrEqual(16) // MIN_STEP floor
+    expect(spacerPx[1]).toBeLessThanOrEqual(200)   // MAX_STEP ceiling
+    expect(spacerPx[1]).toBeGreaterThan(spacerPx[0])
+  })
+
+  it('draws a documented gap to its measured span — a longer silence is taller', () => {
+    const locations = [
+      loc('A', 'A', '1900', '1910'),
+      loc('B', 'B', '1985', null),
+    ]
+    const shortGap: GapEntry[] = [{ from: '1910', to: '1915', note: '5-year gap.' }]
+    const longGap: GapEntry[] = [{ from: '1910', to: '1960', note: '50-year gap.' }]
+    const short = buildChainLayout(locations, [], [], shortGap)
+    const long = buildChainLayout(locations, [], [], longGap)
+    const hShort = buildChainScale(short.custody, short.gaps).gapHeightPx.get(short.gaps[0])!
+    const hLong = buildChainScale(long.custody, long.gaps).gapHeightPx.get(long.gaps[0])!
+    expect(hShort).toBeGreaterThanOrEqual(56) // GAP_MIN — always substantial
+    expect(hLong).toBeGreaterThan(hShort)     // drawn to scale
+    // A node followed by a gap stays tight — the gap carries the span, not double-counted.
+    const { spacerPx } = buildChainScale(long.custody, long.gaps)
+    expect(spacerPx[0]).toBeLessThan(hLong)
+  })
+
+  it('never invents a date: an open-ended gap gets a fixed dignified height', () => {
+    const locations = [loc('A', 'A', '1902', null)]
+    const gaps: GapEntry[] = [{ from: '1910', to: null, note: 'No records after 1910.' }]
+    const { custody, gaps: chainGaps } = buildChainLayout(locations, [], [], gaps)
+    const h = buildChainScale(custody, chainGaps).gapHeightPx.get(chainGaps[0])!
+    expect(h).toBeGreaterThanOrEqual(56)
+  })
+
+  it('collapses to a uniform rhythm for a single dated event (no NaN, no crash)', () => {
+    const { custody, gaps } = buildChainLayout([loc('A', 'A', '1902', null)], [], [], [])
+    const { spacerPx, intervalYears } = buildChainScale(custody, gaps)
+    expect(spacerPx).toEqual([0])          // one node → nothing after it
+    expect(intervalYears).toEqual([null])  // no "next" → no interval
   })
 })
