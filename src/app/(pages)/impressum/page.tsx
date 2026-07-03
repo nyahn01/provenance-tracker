@@ -111,6 +111,12 @@ export default function ImpressumPage() {
         never filled with invented data.
       </Section>
 
+      <Section title="Analytics (Analyse)">
+        This site uses <a href="https://vercel.com/docs/analytics" style={{ color: C.textMuted, borderBottom: `1px solid ${C.border}`, textDecoration: 'none' }}>Vercel Web Analytics</a>,
+        a cookieless, privacy-friendly service that counts page views and referrers without tracking individuals or
+        storing personal data across sites.
+      </Section>
+
       <Section title="Liability for links (Haftung für Links)">
         This site links to external sources (museums, research institutes, archives). Their content is the
         responsibility of their respective operators; no continuous monitoring of linked pages is performed without
