@@ -1,0 +1,85 @@
+{
+  "aic:14598": [
+    {
+      "name": "Paris",
+      "institution": "Claude Monet",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1867",
+      "endDate": "1873",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Durand-Ruel",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1873",
+      "endDate": "1876",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Jean-Baptiste Faure",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1876",
+      "endDate": "1893",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Durand-Ruel",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1893",
+      "endDate": "1893",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Henri Véver",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1893",
+      "endDate": "1897",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Georges Kohn",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1897",
+      "endDate": "1920",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Paris",
+      "institution": "Durand-Ruel and Bernheim-Jeune",
+      "lat": 48.8566,
+      "lng": 2.3522,
+      "startDate": "1920",
+      "endDate": "1923",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Annie Swan Coburn",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1923",
+      "endDate": "1932",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Art Institute of Chicago",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1933",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ]
+}

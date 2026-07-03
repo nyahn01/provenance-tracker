@@ -1,0 +1,92 @@
+{
+  "aic:84709": [
+    {
+      "name": "Toledo",
+      "institution": "Juan Sánchez Cotán",
+      "lat": null,
+      "lng": null,
+      "startDate": "1600",
+      "endDate": "1603",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Toledo",
+      "institution": "Diego de Valdivieso",
+      "lat": null,
+      "lng": null,
+      "startDate": "1603",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Toledo or Huerta de Sandoval",
+      "institution": "Cardinal Bernardo de Sandoval y Rojas",
+      "lat": null,
+      "lng": null,
+      "startDate": null,
+      "endDate": "1618",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "El Pardo",
+      "institution": "Royal hunting lodge of El Pardo",
+      "lat": null,
+      "lng": null,
+      "startDate": "1619",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Madrid",
+      "lat": 40.4168,
+      "lng": -3.7038,
+      "startDate": "1653",
+      "endDate": "1701",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Escorial",
+      "lat": null,
+      "lng": null,
+      "startDate": "1809",
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Munich",
+      "institution": "August L. Mayer",
+      "lat": 48.1351,
+      "lng": 11.582,
+      "startDate": null,
+      "endDate": "1933",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Germany",
+      "institution": "Private collection",
+      "lat": null,
+      "lng": null,
+      "startDate": null,
+      "endDate": null,
+      "source": "AIC provenance"
+    },
+    {
+      "name": "New York",
+      "institution": "Frederick Mont and Newhouse Galleries",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "startDate": null,
+      "endDate": "1955",
+      "source": "AIC provenance"
+    },
+    {
+      "name": "Chicago",
+      "institution": "Art Institute",
+      "lat": 41.8781,
+      "lng": -87.6298,
+      "startDate": "1955",
+      "endDate": null,
+      "source": "AIC provenance"
+    }
+  ]
+}
