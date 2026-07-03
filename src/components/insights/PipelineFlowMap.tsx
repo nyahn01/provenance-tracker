@@ -10,7 +10,7 @@
  */
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import { MARKETING as C, OBS } from '@/lib/design-tokens'
+import { OBS } from '@/lib/design-tokens'
 import type { PipelineData } from '@/lib/types'
 import { ChartFrame } from './ChartFrame'
 
