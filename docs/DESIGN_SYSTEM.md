@@ -60,7 +60,7 @@ The transition between modes is a key moment: ~400 ms ease-out into the warm gal
 | Token                | Hex / rgba                     | Use |
 |----------------------|-------------------------------|-----|
 | `--gal-bg`           | `#f7f4ee`                     | Page / panel background |
-| `--gal-surface`      | `#ffffff`                     | Card / image well |
+| `--gal-surface`      | `#fcfaf5`                     | Card / image well |
 | `--gal-surface-2`    | `#ede9e2`                     | Timeline track, alt rows |
 | `--gal-border`       | `#d8d2c8`                     | Hairline dividers |
 | `--gal-border-mid`   | `#b8afa3`                     | Emphasis lines |
@@ -358,7 +358,7 @@ is unchanged, with the globe at reduced height behind the hero.
 
   /* Gallery (light) */
   --gal-bg:           #f7f4ee;
-  --gal-surface:      #ffffff;
+  --gal-surface:      #fcfaf5;
   --gal-surface-2:    #ede9e2;
   --gal-border:       #d8d2c8;
   --gal-border-mid:   #b8afa3;

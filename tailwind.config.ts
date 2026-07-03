@@ -23,7 +23,7 @@ const config: Config = {
         'obs-sage':        '#6f8d7d',
         // Gallery (light) tokens
         'gal-bg':          '#f7f4ee',
-        'gal-surface':     '#ffffff',
+        'gal-surface':     '#fcfaf5',
         'gal-surface-2':   '#ede9e2',
         'gal-border':      '#d8d2c8',
         'gal-border-mid':  '#b8afa3',
