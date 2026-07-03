@@ -38,6 +38,10 @@ const LINKS: { href: string; label: string; accent?: boolean }[] = [
 export function SiteNav() {
   const pathname = usePathname()
   const onHome = pathname === '/'
+  // Embeds are iframed into someone else's page — cross-site chrome would be
+  // both wasted space and confusing (the nav's links would navigate the host
+  // page's iframe, not the visitor's tab).
+  if (pathname?.startsWith('/embed')) return null
 
   return (
     <nav

@@ -15,26 +15,37 @@ const nextConfig = {
     ]
   },
   async headers() {
+    // /embed/* is designed to be iframed into someone else's page (issue
+    // #151), so it's excluded from the global X-Frame-Options: SAMEORIGIN —
+    // it gets its own block below with every OTHER security header intact.
+    // The exclusion regex must come before the catch-all so each path
+    // matches exactly one of the two blocks (Next.js merges headers from
+    // every matching source, so two matching blocks that disagree on one key
+    // would NOT reliably resolve to "last one wins").
+    const commonHeaders = [
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'X-XSS-Protection', value: '1; mode=block' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      {
+        key: 'Permissions-Policy',
+        value: 'camera=(), microphone=(), geolocation=()',
+      },
+      {
+        key: 'Strict-Transport-Security',
+        value: 'max-age=63072000; includeSubDomains; preload',
+      },
+      // Note: Content-Security-Policy is intentionally omitted.
+      // Globe.gl WebGL requires 'unsafe-eval' in script-src, which defeats
+      // CSP's XSS protection. A CSP with that exception provides false assurance.
+    ]
     return [
       {
-        source: '/(.*)',
-        headers: [
-          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-XSS-Protection', value: '1; mode=block' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
-          },
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
-          },
-          // Note: Content-Security-Policy is intentionally omitted.
-          // Globe.gl WebGL requires 'unsafe-eval' in script-src, which defeats
-          // CSP's XSS protection. A CSP with that exception provides false assurance.
-        ],
+        source: '/embed/:path*',
+        headers: commonHeaders,
+      },
+      {
+        source: '/((?!embed).*)',
+        headers: [{ key: 'X-Frame-Options', value: 'SAMEORIGIN' }, ...commonHeaders],
       },
     ]
   },
