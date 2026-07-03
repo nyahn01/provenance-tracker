@@ -680,8 +680,8 @@
     {
       "name": "Toledo",
       "institution": "Juan Sánchez Cotán",
-      "lat": null,
-      "lng": null,
+      "lat": 39.8628,
+      "lng": -4.0273,
       "startDate": "1600",
       "endDate": "1603",
       "source": "AIC provenance"
@@ -689,8 +689,8 @@
     {
       "name": "Toledo",
       "institution": "Diego de Valdivieso",
-      "lat": null,
-      "lng": null,
+      "lat": 39.8628,
+      "lng": -4.0273,
       "startDate": "1603",
       "endDate": null,
       "source": "AIC provenance"
@@ -698,8 +698,8 @@
     {
       "name": "Toledo or Huerta de Sandoval",
       "institution": "Cardinal Bernardo de Sandoval y Rojas",
-      "lat": null,
-      "lng": null,
+      "lat": 39.8628,
+      "lng": -4.0273,
       "startDate": null,
       "endDate": "1618",
       "source": "AIC provenance"
@@ -707,8 +707,8 @@
     {
       "name": "El Pardo",
       "institution": "Royal hunting lodge of El Pardo",
-      "lat": null,
-      "lng": null,
+      "lat": 40.5273,
+      "lng": -3.7702,
       "startDate": "1619",
       "endDate": null,
       "source": "AIC provenance"
@@ -725,8 +725,8 @@
     {
       "name": "Escorial",
       "institution": "Escorial Royal Collection",
-      "lat": null,
-      "lng": null,
+      "lat": 40.5885,
+      "lng": -4.1379,
       "startDate": "1809",
       "endDate": null,
       "source": "AIC provenance"
@@ -790,8 +790,8 @@
     {
       "name": "Breslau",
       "institution": "Oskar and Greta Moll",
-      "lat": null,
-      "lng": null,
+      "lat": 51.1079,
+      "lng": 17.0385,
       "startDate": "1908",
       "endDate": "1927",
       "source": "AIC provenance"

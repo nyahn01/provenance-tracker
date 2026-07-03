@@ -80,6 +80,12 @@ export const CITIES: Record<string, GeoPoint> = {
   // US towns that appear in provenance records
   'lake forest': { lat: 42.2597, lng: -87.8398 },
   'naugatuck': { lat: 41.4854, lng: -73.0504 },
+  // Spanish towns that appear in provenance records
+  toledo: { lat: 39.8628, lng: -4.0273 },
+  'el pardo': { lat: 40.5273, lng: -3.7702 },
+  escorial: { lat: 40.5885, lng: -4.1379 },
+  // German/Polish town (historic German name as recorded in the source)
+  breslau: { lat: 51.1079, lng: 17.0385 },
 }
 
 /**
