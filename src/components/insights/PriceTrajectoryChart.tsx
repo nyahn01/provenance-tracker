@@ -29,6 +29,12 @@ export function PriceTrajectoryChart({
   const yMax = stats.length ? stats[stats.length - 1].year : 1970
   const span = Math.max(1, yMax - yMin)
   const maxMed = Math.max(1, ...stats.map(s => s.medianUsd))
+  const maxN = Math.max(1, ...stats.map(s => s.n))
+  // Sample size is encoded as dot radius (bigger = more sales behind the median),
+  // so a spike from a thin year is legible at a glance — the illegible per-year
+  // number strip it replaces was the #162 "x axis not legible" complaint. Exact n
+  // stays in each point's tooltip.
+  const rN = (n: number) => 2.2 + Math.sqrt(n / maxN) * 3.6
   const plotW = W - PAD_L - PAD_R
   const plotH = H - PAD_T - PAD_B
   const x = (yr: number) => PAD_L + ((yr - yMin) / span) * plotW
@@ -47,7 +53,7 @@ export function PriceTrajectoryChart({
       empty={empty}
       emptyNote="Fewer than two years clear the minimum sample size for an honest median."
       id="prices"
-      note="Median recorded US-dollar sale price per year, for years with at least five USD sales. As recorded in the stock books — no inflation adjustment and no currency conversion. Pounds and francs are charted nowhere on this axis."
+      note="Median recorded US-dollar sale price per year, for years with at least five USD sales. Dot size marks how many sales stand behind each year's median. As recorded in the stock books — no inflation adjustment and no currency conversion. Pounds and francs are charted nowhere on this axis."
     >
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img"
         aria-label={`Line chart of median Knoedler US-dollar sale price per year from ${yMin} to ${yMax}`}
@@ -63,18 +69,13 @@ export function PriceTrajectoryChart({
         })}
         <polyline points={line} fill="none" stroke={OBS.gold} strokeWidth={1.75} strokeLinejoin="round" />
         {stats.map(s => (
-          <circle key={s.year} cx={x(s.year)} cy={y(s.medianUsd)} r={2.5} fill={OBS.gold}>
-            <title>{`${s.year}: median ${usd(s.medianUsd)} (n=${s.n})`}</title>
+          <circle key={s.year} cx={x(s.year)} cy={y(s.medianUsd)} r={rN(s.n)} fill={OBS.gold} fillOpacity={0.9}>
+            <title>{`${s.year}: median ${usd(s.medianUsd)} (n=${s.n} sale${s.n === 1 ? '' : 's'})`}</title>
           </circle>
         ))}
-        {/* sample-size strip */}
-        {stats.map(s => (
-          <text key={`n-${s.year}`} x={x(s.year)} y={H - 16} textAnchor="middle" fontFamily="var(--font-ui)" fontSize={7} fill={C.textFaint}>{s.n}</text>
-        ))}
         {xTicks.map(t => (
-          <text key={t} x={x(t)} y={H - 4} textAnchor="middle" fontFamily="var(--font-ui)" fontSize={10} fill={C.textFaint}>{t}</text>
+          <text key={t} x={x(t)} y={H - 8} textAnchor="middle" fontFamily="var(--font-ui)" fontSize={10} fill={C.textFaint}>{t}</text>
         ))}
-        <text x={PAD_L} y={H - 16} textAnchor="end" fontFamily="var(--font-ui)" fontSize={7} fill={C.textFaint}>n =</text>
       </svg>
 
       {/* Arbitrage — paired ledger examples, currencies kept apart */}

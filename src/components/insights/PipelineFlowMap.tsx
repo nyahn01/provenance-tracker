@@ -51,6 +51,33 @@ export function PipelineFlowMap({ data }: { data: PipelineData }) {
     }
   }
 
+  // Greedy label placement (the #162 "labels overlap" fix). Hubs (highest count)
+  // claim their slot first; each later label takes the first candidate position
+  // — right, left, above, below its dot — that stays inside the frame and clears
+  // every already-placed label. Deterministic (data is committed), so the SSG
+  // HTML is stable and crawlable.
+  const cityR = (count: number) => 2.5 + (count / maxCity) * 6
+  const FS = 10, LH = 13, CH = 5.4
+  type Box = { x: number; y: number; w: number; h: number }
+  const hit = (a: Box, b: Box) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
+  const placed: Box[] = []
+  const labels = [...data.cities].sort((a, b) => b.count - a.count).map(c => {
+    const cx = projX(c.lng), cy = projY(c.lat), r = cityR(c.count)
+    const w = (c.name.length + String(c.count).length) * CH + 8
+    const gap = r + 4
+    const opts: { tx: number; ty: number; anchor: 'start' | 'end' | 'middle'; box: Box }[] = [
+      { tx: cx + gap, ty: cy + 3, anchor: 'start', box: { x: cx + gap, y: cy + 3 - FS, w, h: LH } },
+      { tx: cx - gap, ty: cy + 3, anchor: 'end', box: { x: cx - gap - w, y: cy + 3 - FS, w, h: LH } },
+      { tx: cx, ty: cy - r - 5, anchor: 'middle', box: { x: cx - w / 2, y: cy - r - 5 - FS, w, h: LH } },
+      { tx: cx, ty: cy + r + 11, anchor: 'middle', box: { x: cx - w / 2, y: cy + r + 11 - FS, w, h: LH } },
+    ]
+    const pick = opts.find(o =>
+      o.box.x >= 2 && o.box.x + o.box.w <= W - 2 && o.box.y >= 2 && o.box.y + o.box.h <= H - 2 &&
+      !placed.some(p => hit(o.box, p))) ?? opts[0]
+    placed.push(pick.box)
+    return { name: c.name, count: c.count, cx, cy, r, tx: pick.tx, ty: pick.ty, anchor: pick.anchor }
+  })
+
   return (
     <ChartFrame
       eyebrow="The collection as one journey"
@@ -64,9 +91,10 @@ export function PipelineFlowMap({ data }: { data: PipelineData }) {
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img"
         aria-label="Schematic flow map of the featured collection's custody transitions across the Atlantic, from European cities to Chicago"
         style={{ display: 'block', minWidth: 620, width: '100%', height: 'auto', background: OBS.bg, borderRadius: 10 }}>
-        {/* basemap */}
+        {/* basemap — deliberately coarse, kept very faint so it reads as a
+            backdrop and the flows stay the subject (was too heavy: #162). */}
         {polys.map((d, i) => (
-          <path key={i} d={d} fill={OBS.globeLand} fillOpacity={0.18} stroke={OBS.globeBorder} strokeOpacity={0.25} strokeWidth={0.5} />
+          <path key={i} d={d} fill={OBS.globeLand} fillOpacity={0.06} stroke={OBS.globeBorder} strokeOpacity={0.13} strokeWidth={0.5} />
         ))}
         {/* flow arcs (curved up) */}
         {data.flows.map((f, i) => {
@@ -80,19 +108,19 @@ export function PipelineFlowMap({ data }: { data: PipelineData }) {
             </path>
           )
         })}
-        {/* city dots + labels */}
-        {data.cities.map(c => {
-          const cx = projX(c.lng), cy = projY(c.lat)
-          const r = 2.5 + (c.count / maxCity) * 6
-          return (
-            <g key={c.name}>
-              <circle cx={cx} cy={cy} r={r} fill={OBS.clay} fillOpacity={0.9} />
-              <text x={cx + r + 3} y={cy + 3} fontFamily="var(--font-ui)" fontSize={10} fill={OBS.text}>
-                {c.name} <tspan fill={OBS.textFaint}>{c.count}</tspan>
-              </text>
-            </g>
-          )
-        })}
+        {/* city dots */}
+        {labels.map(l => (
+          <circle key={`d-${l.name}`} cx={l.cx} cy={l.cy} r={l.r} fill={OBS.clay} fillOpacity={0.9} />
+        ))}
+        {/* labels — placed to avoid overlaps, with a dark halo so they stay
+            legible over arcs, land, and each other. */}
+        {labels.map(l => (
+          <text key={`t-${l.name}`} x={l.tx} y={l.ty} textAnchor={l.anchor}
+            fontFamily="var(--font-ui)" fontSize={FS} fill={OBS.text}
+            stroke={OBS.bg} strokeWidth={3} paintOrder="stroke" strokeLinejoin="round">
+            {l.name} <tspan fill={OBS.textFaint}>{l.count}</tspan>
+          </text>
+        ))}
       </svg>
     </ChartFrame>
   )
