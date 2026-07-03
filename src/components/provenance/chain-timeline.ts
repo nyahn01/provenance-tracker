@@ -132,3 +132,79 @@ export function buildChainLayout(
 
   return { custody, loans, unmatchedSales, gaps: chainGaps }
 }
+
+// ─── To-scale time axis (docs/design/timeline-hero-spec.md §4.1/§4.3) ─────────
+// The spine is a real TIME axis, not just a sequence: the empty space after an
+// event is proportional to the years until the next one, and a documented gap is
+// drawn to its measured span — so a long undocumented silence physically dwarfs a
+// two-year hand-off (the honesty requirement: never compress a gap to a point).
+//
+// "To scale, softly bounded": a strictly linear axis lets a 250-year span shove
+// everything off-screen, so px = clamp(min, years × PX_PER_YEAR, max). The clamp
+// keeps the mapping MONOTONIC (a bigger interval is always ≥ a smaller one) and
+// museum-legible. This is a presentation choice, disclosed in ADR 0006 — it never
+// invents a date: an event or gap with no parseable year falls back to a fixed
+// dignified step, never a guessed interval.
+const PX_PER_YEAR = 2.4
+const MIN_STEP = 16      // px — empty space between two adjacent dated events (floor)
+const MAX_STEP = 200     // px — ceiling for a non-gap interval (soft bound)
+const GAP_MIN = 56       // px — a documented gap always reads as substantial
+const GAP_MAX = 320      // px — ceiling for a to-scale gap
+const GAP_UNKNOWN_PX = 72 // px — open-ended / undated gap: fixed, dignified, not guessed
+const TIGHT = 8          // px — spacer after an event that a gap already follows
+export const CAPTION_MIN_YEARS = 15 // only annotate the empty span at/above this
+
+/** A year usable for scaling — excludes the -1 / 9999 "unknown" sentinels. */
+function scaleYear(sortKey: number): number | null {
+  return sortKey > 0 && sortKey < 9000 ? sortKey : null
+}
+
+function clamp(lo: number, v: number, hi: number): number {
+  return Math.max(lo, Math.min(v, hi))
+}
+
+export interface ChainScale {
+  /** Empty px to leave after custody[i] (tight when a gap already follows it). */
+  spacerPx: number[]
+  /** Whole years from custody[i] to custody[i+1], or null when unknown / last. */
+  intervalYears: (number | null)[]
+  /** Measured px height for each gap band, keyed by the gap object. */
+  gapHeightPx: Map<ChainGap, number>
+}
+
+/** Measured height (px) for a single gap band, drawn to its span when known. */
+function gapHeight(g: ChainGap): number {
+  if (g.openStart || g.openEnd) return GAP_UNKNOWN_PX
+  const from = yearOf(g.from)
+  const to = yearOf(g.to)
+  if (from == null || to == null || to < from) return GAP_UNKNOWN_PX
+  return clamp(GAP_MIN, (to - from) * PX_PER_YEAR, GAP_MAX)
+}
+
+/**
+ * Compute the proportional vertical rhythm for a built {@link ChainLayout}. Pure
+ * and deterministic (same inputs → same px), so the SSG HTML matches hydration.
+ * Degenerate input (0–1 dated events) collapses to a uniform MIN_STEP rhythm —
+ * i.e. the pre-axis behavior — so a single-record work never breaks.
+ */
+export function buildChainScale(custody: ChainNode[], gaps: ChainGap[]): ChainScale {
+  const gapHeightPx = new Map<ChainGap, number>()
+  for (const g of gaps) gapHeightPx.set(g, gapHeight(g))
+
+  const spacerPx: number[] = []
+  const intervalYears: (number | null)[] = []
+  for (let i = 0; i < custody.length; i++) {
+    const followedByGap = gaps.some(g => g.afterIndex === i)
+    const yA = scaleYear(custody[i].sortKey)
+    const yB = i + 1 < custody.length ? scaleYear(custody[i + 1].sortKey) : null
+    const years = yA != null && yB != null && yB >= yA ? yB - yA : null
+    intervalYears.push(years)
+    // A gap already carries the space between i and i+1 — keep the node itself
+    // tight so the interval isn't counted twice.
+    if (followedByGap) spacerPx.push(TIGHT)
+    else if (i === custody.length - 1) spacerPx.push(0)
+    else spacerPx.push(years != null ? clamp(MIN_STEP, years * PX_PER_YEAR, MAX_STEP) : MIN_STEP)
+  }
+
+  return { spacerPx, intervalYears, gapHeightPx }
+}

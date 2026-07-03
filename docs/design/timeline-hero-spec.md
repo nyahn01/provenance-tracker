@@ -159,6 +159,9 @@ state: border → `OBS.clay`. Hover: 200ms lift + border warm, `motion.ease.stan
 
 ### 4.3 Gap state — first-class, the most beautiful state on the page
 
+> **Status:** "drawn to scale" **implemented** — the spine is a proportional time axis and
+> each gap band is sized to its measured span (`buildChainScale`, ADR 0006).
+
 Drives from `ProvenanceResponse.gaps` (`GapEntry[]`) and `hasGap`.
 
 - **Rendered as a labeled span**, sized to the real interval (`from`→`to`), using the new
