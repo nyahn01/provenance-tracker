@@ -224,6 +224,22 @@ export interface RestitutionCase {
   references: CaseSource[]
 }
 
+/**
+ * A translated-language overlay for one RestitutionCase — prose fields only.
+ * Facts (dates, holders, places, `kind`, citation labels/URLs in CaseSource)
+ * live ONLY in RestitutionCase and are never duplicated here: they are proper
+ * nouns/legal citations, not prose, and re-keying them per locale would risk
+ * drift between language versions of the same case.
+ */
+export interface RestitutionCaseTranslation {
+  summary: string
+  currentStatusAsOf: string
+  /** Indexed 1:1 with RestitutionCase.custody — same array length, same order. */
+  custodyDetail: string[]
+  exhibitionDetail: string[]
+  gapNote: string[]
+}
+
 // ─── Collection-level insights (Getty GPI + featured chains) ────────────────
 
 /**

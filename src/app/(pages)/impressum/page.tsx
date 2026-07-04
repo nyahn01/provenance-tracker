@@ -3,33 +3,26 @@
  * Static server component — no client JS. Shell (bg/font/nav/footer) comes
  * from the (pages) layout; column + typography from '@/components/ui'.
  *
- * ⚠ COMPLETE BEFORE RELYING ON THIS LEGALLY:
- *   Fill `OPERATOR.address` and `OPERATOR.email` below with real values. A German
- *   Impressum legally requires a reachable postal address + contact. We deliberately
- *   ship these EMPTY (never invent an address; never publish a private email without
- *   the operator's say-so). While empty, the page renders a visible draft notice.
+ * A real German-language version lives at /de/impressum (src/app/de/impressum/
+ * page.tsx) — the two pages cross-link and share OPERATOR from '@/lib/operator'
+ * so identity details are never entered twice.
  */
 
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { MARKETING as C } from '@/lib/design-tokens'
 import { PageShell, Eyebrow, CTALink } from '@/components/ui'
+import { OPERATOR, OPERATOR_INCOMPLETE as INCOMPLETE } from '@/lib/operator'
+import { SITE_URL } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Impressum / Legal notice — Provenance Tracker',
   description:
     'Legal notice for Provenance Tracker — a non-commercial, educational provenance-research project. Operator, contact, liability, and image credits.',
+  alternates: {
+    languages: { en: `${SITE_URL}/impressum`, de: `${SITE_URL}/de/impressum` },
+  },
 }
-
-// ── Operator details — EDIT THESE ────────────────────────────────────────────
-const OPERATOR = {
-  name: 'Nayoung Ahn',
-  // Postal address required for a German Impressum. Leave '' until you add a real one.
-  address: '',
-  // Contact email. Leave '' until you add one (a role/dedicated address is wise).
-  email: '',
-}
-const INCOMPLETE = !OPERATOR.address || !OPERATOR.email
 
 function Field({ label, value, placeholder }: { label: string; value: string; placeholder: string }) {
   return (
@@ -133,6 +126,7 @@ export default function ImpressumPage() {
       <div style={{ marginTop: 64, borderTop: `1px solid ${C.border}`, paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div style={{ fontSize: '0.72rem', color: C.textFaint }}>Provenance Tracker · non-commercial research project</div>
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+          <CTALink href="/de/impressum" size="0.72rem">Auf Deutsch →</CTALink>
           <CTALink href="/learn" size="0.72rem">Provenance glossary →</CTALink>
           <CTALink href="/feedback" size="0.72rem">Send feedback →</CTALink>
           <CTALink href="/" size="0.72rem">Explore journeys →</CTALink>

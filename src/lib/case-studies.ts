@@ -13,6 +13,7 @@
  */
 
 import type { RestitutionCase } from './types'
+import { CASE_STUDIES_DE } from './case-studies.de'
 
 // ── Reused primary sources (cited inline by short label) ─────────────────────
 const S = {
@@ -408,4 +409,31 @@ export function getCase(slug: string): RestitutionCase | undefined {
 
 export function allCaseSlugs(): string[] {
   return Object.keys(CASE_STUDIES)
+}
+
+/**
+ * A case study in the given locale. Facts (dates, holders, places, `kind`,
+ * citation labels/URLs) always come from the English CASE_STUDIES record —
+ * only prose fields (summary/currentStatusAsOf/detail/note) are overlaid from
+ * CASE_STUDIES_DE. A slug with no German translation yet falls back to the
+ * English case honestly rather than breaking the page.
+ */
+export function getCaseTranslated(slug: string, locale: 'en' | 'de'): RestitutionCase | undefined {
+  const base = getCase(slug)
+  if (!base || locale === 'en') return base
+  const de = CASE_STUDIES_DE[slug]
+  if (!de) return base
+  return {
+    ...base,
+    summary: de.summary,
+    currentStatusAsOf: de.currentStatusAsOf,
+    custody: base.custody.map((c, i) => ({ ...c, detail: de.custodyDetail[i] ?? c.detail })),
+    exhibitions: base.exhibitions.map((x, i) => ({ ...x, detail: de.exhibitionDetail[i] ?? x.detail })),
+    gaps: base.gaps.map((g, i) => ({ ...g, note: de.gapNote[i] ?? g.note })),
+  }
+}
+
+/** Slugs that currently have a German prose overlay available. */
+export function allTranslatedCaseSlugs(): string[] {
+  return Object.keys(CASE_STUDIES_DE)
 }

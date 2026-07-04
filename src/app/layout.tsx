@@ -18,6 +18,10 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     type: 'website',
     locale: 'en_US',
+    // A real German legal notice + one translated case study exist at /de —
+    // this signals German content is available site-wide without claiming a
+    // fully bilingual homepage (which has no German version).
+    alternateLocale: ['de_DE'],
     title: SITE_NAME,
     description: DESCRIPTION,
     // Default social image; per-work pages override with their own hero.
