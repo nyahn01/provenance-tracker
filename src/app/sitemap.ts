@@ -9,11 +9,12 @@
 
 import type { MetadataRoute } from 'next'
 import { SITE_URL } from '@/lib/site'
-import { allCaseSlugs } from '@/lib/case-studies'
+import { allCaseSlugs, allTranslatedCaseSlugs } from '@/lib/case-studies'
 import { allWorkSlugs } from '@/lib/featured'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPaths = ['', '/learn', '/method', '/insights', '/about', '/support', '/feedback', '/impressum', '/demo/source']
+  const translatedSlugs = allTranslatedCaseSlugs()
 
   return [
     ...staticPaths.map(p => ({
@@ -30,6 +31,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${SITE_URL}/case/${slug}`,
       changeFrequency: 'monthly' as const,
       priority: 0.8,
+      ...(translatedSlugs.includes(slug) && {
+        alternates: { languages: { de: `${SITE_URL}/de/case/${slug}` } },
+      }),
+    })),
+    // German pages — only the two the maintainer has actually translated
+    // (issue-scoped small pass; see docs/decisions/0007-german-localization.md).
+    {
+      url: `${SITE_URL}/de/impressum`,
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+      alternates: { languages: { en: `${SITE_URL}/impressum` } },
+    },
+    ...translatedSlugs.map(slug => ({
+      url: `${SITE_URL}/de/case/${slug}`,
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+      alternates: { languages: { en: `${SITE_URL}/case/${slug}` } },
     })),
   ]
 }

@@ -1,26 +1,25 @@
 /**
- * /case/[slug] — Restitution case-study deep-dive.
+ * /de/case/[slug] — German-language restitution case-study deep-dive.
  *
- * Renders ONE documented restitution chain end-to-end. Static server component
- * (no client JS). Every fact carries a visible source line; gaps are shown as
- * gaps; ownership (custody) is kept strictly separate from exhibition loans.
- *
- * Honesty rules live in src/lib/case-studies.ts and are enforced by the data
- * shape (CaseSource required on every entry). No live "on view" claims.
+ * Mirrors /case/[slug] (src/app/(pages)/case/[slug]/page.tsx) structurally.
+ * generateStaticParams is scoped to allTranslatedCaseSlugs() — only slugs
+ * with a German prose overlay in case-studies.de.ts get a /de page; facts
+ * (dates, holders, places, kind, citation labels/URLs) render exactly as in
+ * case-studies.ts, since they are proper nouns/legal citations, not prose.
  */
 
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { MARKETING as C } from '@/lib/design-tokens'
-import { getCase, allCaseSlugs, allTranslatedCaseSlugs, CASE_STUDIES } from '@/lib/case-studies'
+import { getCaseTranslated, allTranslatedCaseSlugs, CASE_STUDIES } from '@/lib/case-studies'
 import { JsonLd } from '@/components/JsonLd'
 import { PageShell } from '@/components/ui'
 import { SITE_URL } from '@/lib/site'
 import type { CaseSource, CaseCustodyEntry } from '@/lib/types'
 
 export function generateStaticParams() {
-  return allCaseSlugs().map((slug) => ({ slug }))
+  return allTranslatedCaseSlugs().map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({
@@ -29,17 +28,14 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const c = getCase(slug)
-  if (!c) return { title: 'Case study not found — Provenance Tracker' }
-  const hasGerman = allTranslatedCaseSlugs().includes(slug)
+  const c = getCaseTranslated(slug, 'de')
+  if (!c) return { title: 'Fallstudie nicht gefunden — Provenance Tracker' }
   return {
-    title: `${c.title} — Restitution case study — Provenance Tracker`,
+    title: `${c.title} — Restitutionsfall — Provenance Tracker`,
     description: c.summary.slice(0, 180),
-    ...(hasGerman && {
-      alternates: {
-        languages: { en: `${SITE_URL}/case/${slug}`, de: `${SITE_URL}/de/case/${slug}` },
-      },
-    }),
+    alternates: {
+      languages: { en: `${SITE_URL}/case/${slug}`, de: `${SITE_URL}/de/case/${slug}` },
+    },
   }
 }
 
@@ -48,16 +44,16 @@ const KIND_STYLE: Record<
   CaseCustodyEntry['kind'],
   { dot: string; label: string; tint: string }
 > = {
-  custody: { dot: C.gold, label: 'Custody', tint: 'rgba(212,168,83,0.10)' },
-  coerced: { dot: C.clay, label: 'Coerced transfer', tint: 'rgba(200,120,85,0.10)' },
-  gap: { dot: C.gap, label: 'Gap', tint: 'rgba(154,143,133,0.08)' },
+  custody: { dot: C.gold, label: 'Besitz', tint: 'rgba(212,168,83,0.10)' },
+  coerced: { dot: C.clay, label: 'Erzwungene Übertragung', tint: 'rgba(200,120,85,0.10)' },
+  gap: { dot: C.gap, label: 'Lücke', tint: 'rgba(154,143,133,0.08)' },
   restitution: { dot: C.sage, label: 'Restitution', tint: 'rgba(111,141,125,0.10)' },
 }
 
 function SourceLine({ sources }: { sources: CaseSource[] }) {
   return (
     <div className="src-line">
-      <span className="src-tag">Source</span>
+      <span className="src-tag">Quelle</span>
       {sources.map((s, i) => (
         <span key={i} className="src-item">
           {s.url ? (
@@ -74,16 +70,16 @@ function SourceLine({ sources }: { sources: CaseSource[] }) {
   )
 }
 
-export default async function CaseStudyPage({
+export default async function CaseStudyPageDe({
   params,
 }: {
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const c = getCase(slug)
+  const c = getCaseTranslated(slug, 'de')
   if (!c) notFound()
-  const otherCases = Object.values(CASE_STUDIES).filter(o => o.slug !== c.slug)
-  const hasGerman = allTranslatedCaseSlugs().includes(slug)
+  const translatedSlugs = allTranslatedCaseSlugs()
+  const otherCases = Object.values(CASE_STUDIES).filter(o => o.slug !== c.slug && translatedSlugs.includes(o.slug))
 
   return (
     <>
@@ -91,9 +87,10 @@ export default async function CaseStudyPage({
         data={{
           '@context': 'https://schema.org',
           '@type': 'Article',
-          headline: `${c.title} — a documented restitution`,
+          headline: `${c.title} — eine dokumentierte Restitution`,
           description: c.summary,
-          url: `${SITE_URL}/case/${c.slug}`,
+          url: `${SITE_URL}/de/case/${c.slug}`,
+          inLanguage: 'de',
           about: {
             '@type': 'VisualArtwork',
             name: c.title,
@@ -104,8 +101,6 @@ export default async function CaseStudyPage({
           citation: c.references.filter(r => r.url).map(r => r.url),
         }}
       />
-      {/* Page-specific source-line classes — the approved trimmed style block
-          (generic resets/nav/overflow now live in globals.css + the (pages) shell). */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -134,7 +129,7 @@ export default async function CaseStudyPage({
                 marginBottom: 16,
               }}
             >
-              Documented restitution · Nazi era (1933–1945)
+              Dokumentierte Restitution · NS-Zeit (1933–1945)
             </div>
             <h1
               style={{
@@ -169,7 +164,7 @@ export default async function CaseStudyPage({
               {c.summary}
             </p>
 
-            {/* Current standing — dated, never a live claim */}
+            {/* Aktueller Stand — datiert, keine Live-Behauptung */}
             <div
               style={{
                 marginTop: 28,
@@ -192,7 +187,7 @@ export default async function CaseStudyPage({
                   flexShrink: 0,
                 }}
               >
-                Standing
+                Stand
               </span>
               <span style={{ fontSize: '0.85rem', color: C.text, lineHeight: 1.5 }}>
                 {c.currentStatusAsOf}
@@ -200,7 +195,7 @@ export default async function CaseStudyPage({
             </div>
           </div>
 
-          {/* Legend */}
+          {/* Legende */}
           <div
             style={{
               display: 'flex',
@@ -233,7 +228,7 @@ export default async function CaseStudyPage({
             ))}
           </div>
 
-          {/* Custody chain */}
+          {/* Besitzkette */}
           <section style={{ marginBottom: 56 }}>
             <h2
               style={{
@@ -245,7 +240,7 @@ export default async function CaseStudyPage({
                 marginBottom: 6,
               }}
             >
-              Chain of custody (ownership)
+              Besitzkette (Eigentum)
             </h2>
             <p
               style={{
@@ -255,8 +250,8 @@ export default async function CaseStudyPage({
                 lineHeight: 1.6,
               }}
             >
-              Legal title over time. Exhibition loans are listed separately below — a
-              loan never appears in this chain.
+              Rechtmäßiges Eigentum im zeitlichen Verlauf. Ausstellungsleihgaben sind unten
+              gesondert aufgeführt — eine Leihgabe erscheint niemals in dieser Kette.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -340,7 +335,7 @@ export default async function CaseStudyPage({
                           fontStyle: 'italic',
                         }}
                       >
-                        Location not documented
+                        Ort nicht dokumentiert
                       </div>
                     )}
                     <p
@@ -359,7 +354,7 @@ export default async function CaseStudyPage({
             </div>
           </section>
 
-          {/* Gaps — shown honestly */}
+          {/* Lücken — ehrlich dargestellt */}
           {c.gaps.length > 0 && (
             <section style={{ marginBottom: 56 }}>
               <h2
@@ -372,7 +367,7 @@ export default async function CaseStudyPage({
                   marginBottom: 6,
                 }}
               >
-                Documented gaps
+                Dokumentierte Lücken
               </h2>
               <p
                 style={{
@@ -382,8 +377,8 @@ export default async function CaseStudyPage({
                   lineHeight: 1.6,
                 }}
               >
-                Periods where the legitimate record is missing or was knowingly
-                falsified. Shown as gaps, never papered over.
+                Zeiträume, in denen die rechtmäßige Aufzeichnung fehlt oder wissentlich
+                gefälscht wurde. Als Lücken dargestellt, niemals beschönigt.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {c.gaps.map((g, idx) => (
@@ -423,7 +418,7 @@ export default async function CaseStudyPage({
             </section>
           )}
 
-          {/* Exhibition loans — strictly separate from custody */}
+          {/* Ausstellungsleihgaben — strikt getrennt vom Besitz */}
           {c.exhibitions.length > 0 && (
             <section style={{ marginBottom: 56 }}>
               <h2
@@ -436,7 +431,7 @@ export default async function CaseStudyPage({
                   marginBottom: 6,
                 }}
               >
-                Exhibition loans (not custody changes)
+                Ausstellungsleihgaben (keine Besitzänderung)
               </h2>
               <p
                 style={{
@@ -446,8 +441,8 @@ export default async function CaseStudyPage({
                   lineHeight: 1.6,
                 }}
               >
-                The work was displayed here temporarily. A loan is not a transfer of
-                ownership and is never counted in the custody chain above.
+                Das Werk wurde hier vorübergehend gezeigt. Eine Leihgabe ist keine
+                Eigentumsübertragung und zählt niemals zur oben stehenden Besitzkette.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {c.exhibitions.map((x, idx) => (
@@ -499,7 +494,7 @@ export default async function CaseStudyPage({
             </section>
           )}
 
-          {/* References */}
+          {/* Quellen */}
           <section
             style={{
               padding: '24px 28px',
@@ -518,7 +513,7 @@ export default async function CaseStudyPage({
                 marginBottom: 16,
               }}
             >
-              Primary sources & further reading
+              Primärquellen &amp; weiterführende Literatur
             </div>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
               {c.references.map((r, i) => (
@@ -543,7 +538,7 @@ export default async function CaseStudyPage({
             </ul>
           </section>
 
-          {/* Other case studies — internal link graph */}
+          {/* Andere Fallstudien — internes Verweisnetz */}
           {otherCases.length > 0 && (
             <section style={{ marginTop: 40, marginBottom: 40 }}>
               <h2
@@ -556,13 +551,13 @@ export default async function CaseStudyPage({
                   marginBottom: 16,
                 }}
               >
-                Other documented restitutions
+                Weitere dokumentierte Restitutionen
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {otherCases.map(o => (
                   <Link
                     key={o.slug}
-                    href={`/case/${o.slug}`}
+                    href={`/de/case/${o.slug}`}
                     style={{
                       display: 'block',
                       padding: '14px 18px',
@@ -580,7 +575,7 @@ export default async function CaseStudyPage({
             </section>
           )}
 
-          {/* Footer nav */}
+          {/* Fußnavigation */}
           <div
             style={{
               marginTop: 56,
@@ -594,23 +589,10 @@ export default async function CaseStudyPage({
             }}
           >
             <div style={{ fontSize: '0.72rem', color: C.textFaint }}>
-              Restitution is the highest-stakes honesty surface. Every fact above is
-              sourced; gaps are shown as gaps.
+              Restitution ist die Oberfläche mit den höchsten Anforderungen an Genauigkeit.
+              Jede Tatsache oben ist belegt; Lücken werden als Lücken dargestellt.
             </div>
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-              {hasGerman && (
-                <Link
-                  href={`/de/case/${c.slug}`}
-                  style={{
-                    fontSize: '0.72rem',
-                    color: C.textMuted,
-                    borderBottom: `1px solid ${C.border}`,
-                    paddingBottom: 1,
-                  }}
-                >
-                  Auf Deutsch →
-                </Link>
-              )}
               <Link
                 href="/learn#provenance-gap"
                 style={{
@@ -620,7 +602,18 @@ export default async function CaseStudyPage({
                   paddingBottom: 1,
                 }}
               >
-                What is a provenance gap? →
+                Was ist eine Provenienzlücke? (auf Englisch) →
+              </Link>
+              <Link
+                href={`/case/${c.slug}`}
+                style={{
+                  fontSize: '0.72rem',
+                  color: C.textMuted,
+                  borderBottom: `1px solid ${C.border}`,
+                  paddingBottom: 1,
+                }}
+              >
+                In English →
               </Link>
             </div>
           </div>

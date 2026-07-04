@@ -28,6 +28,13 @@ const FORBIDDEN = [
   { pattern: /\bprobably (owned|held|acquired) by\b/i,    reason: 'Speculative ownership in data — mark as gap with a note instead' },
   { pattern: /\blikely (owned|held|passed through)\b/i,   reason: 'Speculative provenance — mark as gap instead' },
 
+  // German equivalents (issue: "the website in German" — same rules as above,
+  // just unenforced for German content until these patterns existed).
+  { pattern: /derzeit (ausgestellt|zu sehen)/i,             reason: 'Real-time display claim (DE) — use "Stand: [Jahr]" with a source instead' },
+  { pattern: /(befindet sich|steht) (derzeit|aktuell) (im Besitz|bei)/i, reason: 'Present-tense custody claim without a date (DE) — add a dated source' },
+  { pattern: /\bwahrscheinlich im Besitz von\b/i,           reason: 'Speculative ownership (DE) — mark as gap with a note instead' },
+  { pattern: /\bvermutlich (im Besitz|gehalten|erworben)\b/i, reason: 'Speculative provenance (DE) — mark as gap instead' },
+
   // Null-island coordinates in JSON data files
   { pattern: /"lat"\s*:\s*0[,\s}]/,                        reason: 'Null-island lat:0 in data — use null for unknown coordinates' },
   { pattern: /"lng"\s*:\s*0[,\s}]/,                        reason: 'Null-island lng:0 in data — use null for unknown coordinates' },
