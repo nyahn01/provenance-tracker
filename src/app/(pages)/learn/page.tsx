@@ -7,7 +7,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { MARKETING as C } from '@/lib/design-tokens'
-import { PageShell, Eyebrow, DisplayHeading, CTALink } from '@/components/ui'
+import { PageShell, Eyebrow, DisplayHeading, CTALink, Callout, FooterNav } from '@/components/ui'
 import { LearnAccordion, type AccordionSection } from './LearnAccordion'
 
 export const metadata: Metadata = {
@@ -279,13 +279,7 @@ export default function LearnPage() {
               <LearnAccordion sections={SECTIONS} />
 
               {/* Quick-reference legend */}
-              <div style={{
-                marginTop: 16,
-                padding: '24px 28px',
-                background: 'rgba(212,168,83,0.04)',
-                border: `1px solid rgba(212,168,83,0.18)`,
-                borderRadius: 12,
-              }}>
+              <Callout style={{ marginTop: 16 }}>
                 <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.gold, marginBottom: 16 }}>
                   Globe arc legend
                 </div>
@@ -303,28 +297,25 @@ export default function LearnPage() {
                     </div>
                   ))}
                 </div>
-              </div>
+              </Callout>
             </div>
           </div>
 
-          {/* Footer nav */}
-          <div style={{ marginTop: 64, borderTop: `1px solid ${C.border}`, paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-            <div style={{ fontSize: '0.72rem', color: C.textFaint }}>
-              Sources: Washington Principles 1998 · Getty Research Institute · Cultural Heritage Administration of Korea · BnF
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-              <CTALink tone="gold" href="/method">
-                Next: the method →
-              </CTALink>
-              <span style={{ width: 1, height: 14, background: C.border }} />
-              <CTALink tone="muted" href="/feedback" size="0.72rem">
-                Feedback
-              </CTALink>
-              <CTALink tone="muted" href="/impressum" size="0.72rem">
-                Legal notice
-              </CTALink>
-            </div>
-          </div>
+          <FooterNav
+            style={{ marginTop: 64 }}
+            note="Sources: Washington Principles 1998 · Getty Research Institute · Cultural Heritage Administration of Korea · BnF"
+          >
+            <CTALink tone="gold" href="/method">
+              Next: the method →
+            </CTALink>
+            <span style={{ width: 1, height: 14, background: C.border }} />
+            <CTALink tone="muted" href="/feedback" size="0.72rem">
+              Feedback
+            </CTALink>
+            <CTALink tone="muted" href="/impressum" size="0.72rem">
+              Legal notice
+            </CTALink>
+          </FooterNav>
 
       </PageShell>
     </>

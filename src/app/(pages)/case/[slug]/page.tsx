@@ -17,7 +17,7 @@ import { getCase, allCaseSlugs, allTranslatedCaseSlugs, CASE_STUDIES } from '@/l
 import { buildCaseChainLayout } from '@/components/provenance/chain-timeline'
 import { ChainOfCustodyTimeline } from '@/components/provenance/ChainOfCustodyTimeline'
 import { JsonLd } from '@/components/JsonLd'
-import { PageShell } from '@/components/ui'
+import { PageShell, FooterNav, CTALink } from '@/components/ui'
 import { SITE_URL } from '@/lib/site'
 
 export function generateStaticParams() {
@@ -249,50 +249,13 @@ export default async function CaseStudyPage({
             </section>
           )}
 
-          {/* Footer nav */}
-          <div
-            style={{
-              marginTop: 56,
-              borderTop: `1px solid ${C.border}`,
-              paddingTop: 24,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: 12,
-            }}
+          <FooterNav
+            style={{ marginTop: 56 }}
+            note="Restitution is the highest-stakes honesty surface. Every fact above is sourced; gaps are shown as gaps."
           >
-            <div style={{ fontSize: '0.72rem', color: C.textFaint }}>
-              Restitution is the highest-stakes honesty surface. Every fact above is
-              sourced; gaps are shown as gaps.
-            </div>
-            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-              {hasGerman && (
-                <Link
-                  href={`/de/case/${c.slug}`}
-                  style={{
-                    fontSize: '0.72rem',
-                    color: C.textMuted,
-                    borderBottom: `1px solid ${C.border}`,
-                    paddingBottom: 1,
-                  }}
-                >
-                  Auf Deutsch →
-                </Link>
-              )}
-              <Link
-                href="/learn#provenance-gap"
-                style={{
-                  fontSize: '0.72rem',
-                  color: C.textMuted,
-                  borderBottom: `1px solid ${C.border}`,
-                  paddingBottom: 1,
-                }}
-              >
-                What is a provenance gap? →
-              </Link>
-            </div>
-          </div>
+            {hasGerman && <CTALink href={`/de/case/${c.slug}`} size="0.72rem">Auf Deutsch →</CTALink>}
+            <CTALink href="/learn#provenance-gap" size="0.72rem">What is a provenance gap? →</CTALink>
+          </FooterNav>
         </PageShell>
       </div>
     </>

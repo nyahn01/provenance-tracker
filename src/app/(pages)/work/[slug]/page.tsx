@@ -24,7 +24,7 @@ import { ChainOfCustodyTimeline } from '@/components/provenance/ChainOfCustodyTi
 import { JsonLd } from '@/components/JsonLd'
 import { NewsletterSignup } from '@/components/NewsletterSignup'
 import { EmbedSnippet } from '@/components/EmbedSnippet'
-import { PageShell, DisplayHeading, Prose, Card, CTALink, Section } from '@/components/ui'
+import { PageShell, DisplayHeading, Prose, Card, CTALink, Section, FooterNav } from '@/components/ui'
 import { SITE_URL } from '@/lib/site'
 import type { GapEntry } from '@/lib/types'
 
@@ -202,27 +202,11 @@ export default async function WorkPage({
             <NewsletterSignup />
           </Section>
 
-          {/* Footer nav */}
-          <div
-            style={{
-              borderTop: `1px solid ${C.border}`,
-              paddingTop: 24,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: 12,
-            }}
-          >
-            <div style={{ fontSize: '0.72rem', color: C.textFaint }}>
-              Every fact above carries a source; gaps are shown as gaps.
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-              <CTALink href="/case/adele-bloch-bauer-i" size="0.72rem">A full restitution chain →</CTALink>
-              <CTALink href="/method" size="0.72rem">How this is sourced →</CTALink>
-              <CTALink href="/learn" size="0.72rem">Provenance glossary →</CTALink>
-            </div>
-          </div>
+          <FooterNav note="Every fact above carries a source; gaps are shown as gaps.">
+            <CTALink href="/case/adele-bloch-bauer-i" size="0.72rem">A full restitution chain →</CTALink>
+            <CTALink href="/method" size="0.72rem">How this is sourced →</CTALink>
+            <CTALink href="/learn" size="0.72rem">Provenance glossary →</CTALink>
+          </FooterNav>
       </PageShell>
     </>
   )

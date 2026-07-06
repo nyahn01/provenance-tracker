@@ -11,7 +11,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { MARKETING as C } from '@/lib/design-tokens'
-import { PageShell, Eyebrow, CTALink } from '@/components/ui'
+import { PageShell, Eyebrow, CTALink, FooterNav } from '@/components/ui'
 import { OPERATOR, OPERATOR_INCOMPLETE as INCOMPLETE } from '@/lib/operator'
 import { SITE_URL } from '@/lib/site'
 
@@ -122,16 +122,12 @@ export default function ImpressumPage() {
         LICENSE. Third-party data and images remain under the rights of their respective institutions.
       </Section>
 
-      {/* Footer nav */}
-      <div style={{ marginTop: 64, borderTop: `1px solid ${C.border}`, paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ fontSize: '0.72rem', color: C.textFaint }}>Provenance Tracker · non-commercial research project</div>
-        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-          <CTALink href="/de/impressum" size="0.72rem">Auf Deutsch →</CTALink>
-          <CTALink href="/learn" size="0.72rem">Provenance glossary →</CTALink>
-          <CTALink href="/feedback" size="0.72rem">Send feedback →</CTALink>
-          <CTALink href="/" size="0.72rem">Explore journeys →</CTALink>
-        </div>
-      </div>
+      <FooterNav style={{ marginTop: 64 }} note="Provenance Tracker · non-commercial research project">
+        <CTALink href="/de/impressum" size="0.72rem">Auf Deutsch →</CTALink>
+        <CTALink href="/learn" size="0.72rem">Provenance glossary →</CTALink>
+        <CTALink href="/feedback" size="0.72rem">Send feedback →</CTALink>
+        <CTALink href="/" size="0.72rem">Explore journeys →</CTALink>
+      </FooterNav>
 
     </PageShell>
   )

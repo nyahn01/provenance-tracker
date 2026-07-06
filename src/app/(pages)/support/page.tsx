@@ -16,7 +16,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { MARKETING as C } from '@/lib/design-tokens'
 import { NewsletterSignup } from '@/components/NewsletterSignup'
-import { PageShell, Eyebrow, DisplayHeading, Prose, Card, CTALink } from '@/components/ui'
+import { PageShell, Eyebrow, DisplayHeading, Prose, Card, CTALink, Callout, FooterNav } from '@/components/ui'
 
 export const metadata: Metadata = {
   title: 'Support — Provenance Tracker',
@@ -40,13 +40,7 @@ export default function SupportPage() {
       </div>
 
       {/* Support the work — gold-tinted panel, intentionally not the standard Card surface */}
-      <section style={{
-        background: 'rgba(212,168,83,0.04)',
-        border: '1px solid rgba(212,168,83,0.18)',
-        borderRadius: 10,
-        padding: '28px 28px',
-        marginBottom: 24,
-      }}>
+      <Callout padding="28px 28px" style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 12 }}>
           Keep it going
         </h2>
@@ -83,7 +77,7 @@ export default function SupportPage() {
             ✉ Leave feedback
           </Link>
         </div>
-      </section>
+      </Callout>
 
       {/* Newsletter */}
       <Card padding="28px 28px" style={{ marginBottom: 24 }}>
@@ -107,15 +101,12 @@ export default function SupportPage() {
         </Prose>
       </Card>
 
-      {/* Footer nav */}
-      <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 24, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-          <CTALink href="/" tone="gold">Next: explore journeys →</CTALink>
-          <span style={{ width: 1, height: 14, background: C.border }} />
-          <CTALink href="/feedback" size="0.72rem">Feedback</CTALink>
-          <CTALink href="/impressum" size="0.72rem">Legal notice</CTALink>
-        </div>
-      </div>
+      <FooterNav note="" style={{ justifyContent: 'flex-end' }}>
+        <CTALink href="/" tone="gold">Next: explore journeys →</CTALink>
+        <span style={{ width: 1, height: 14, background: C.border }} />
+        <CTALink href="/feedback" size="0.72rem">Feedback</CTALink>
+        <CTALink href="/impressum" size="0.72rem">Legal notice</CTALink>
+      </FooterNav>
 
     </PageShell>
   )
