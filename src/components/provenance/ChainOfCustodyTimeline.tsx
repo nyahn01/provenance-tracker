@@ -20,7 +20,7 @@ import type { LocationEntry, ExhibitionLoan, GapEntry, GettyRecord, ArtworkMeta 
 import { GAL, accent, motion } from '@/lib/design-tokens'
 import { buildChainLayout, buildChainScale, CAPTION_MIN_YEARS, type ChainLayout, type ChainNode, type ChainGap, type SaleAnnotation } from './chain-timeline'
 import { sourceRecordUrl } from './timeline'
-import { SourceBadge } from './SourceBadge'
+import { SourceCard } from './SourceCard'
 import { SourceLine } from './SourceLine'
 import { ConfidenceDot } from './ConfidenceDot'
 
@@ -111,15 +111,12 @@ function EventBody({ node, tag, tagColor, artwork }: {
       {node.caseSources ? (
         <SourceLine sources={node.caseSources} />
       ) : (
+        // SourceCard folds the badge + record link into one hover/focus-
+        // disclosed control (ADR 0006 follow-up #2) — calm at rest, full
+        // attribution on inspection, instead of an always-visible "record ↗".
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 8 }}>
-          <SourceBadge source={node.source} />
+          <SourceCard source={node.source} recordUrl={recordUrl} />
           <span title={CONFIDENCE_LABEL[node.confidence]}><ConfidenceDot confidence={node.confidence} /></span>
-          {recordUrl && (
-            <a href={recordUrl} target="_blank" rel="noopener noreferrer"
-              style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textFaint, textDecoration: 'none', borderBottom: `1px solid ${GAL.border}` }}>
-              record ↗
-            </a>
-          )}
         </div>
       )}
     </>
