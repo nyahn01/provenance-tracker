@@ -9,7 +9,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { MARKETING } from '@/lib/design-tokens'
-import { PageShell, Eyebrow, DisplayHeading, Prose, Card, CTALink } from '@/components/ui'
+import { PageShell, Eyebrow, DisplayHeading, Prose, Card, CTALink, Callout, FooterNav } from '@/components/ui'
 
 export const metadata: Metadata = {
   title: 'About — Provenance Tracker',
@@ -64,11 +64,6 @@ export default function AboutPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes pulse-gate {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,83,0); }
-          50%       { box-shadow: 0 0 12px 3px rgba(212,168,83,0.18); }
-        }
-        .gate-pulse { animation: pulse-gate 3s ease-in-out infinite; }
         .agent-card:hover { border-color: ${C.borderMid} !important; background: ${C.surface2} !important; }
       ` }} />
 
@@ -187,7 +182,7 @@ export default function AboutPage() {
             </div>
 
             {/* Ship gate */}
-            <div className="gate-pulse" style={{ background: 'rgba(212,168,83,0.04)', border: '1px solid rgba(212,168,83,0.20)', borderRadius: 12, padding: '24px 28px' }}>
+            <Callout pulse padding="24px 28px">
               <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.gold, marginBottom: 12 }}>
                 The ship gate
               </div>
@@ -203,7 +198,7 @@ export default function AboutPage() {
                 Agents cannot commit directly. Every change passes an automated build, a server
                 health check, and a grep-based honesty audit. The gate commits — not the agent.
               </p>
-            </div>
+            </Callout>
           </div>
 
           {/* ── §03 The autonomy model ───────────────────────────────────── */}
@@ -312,7 +307,7 @@ export default function AboutPage() {
             </div>
 
             {/* Safe-state invariant */}
-            <div className="gate-pulse" style={{ background: 'rgba(212,168,83,0.04)', border: '1px solid rgba(212,168,83,0.20)', borderRadius: 12, padding: '22px 26px' }}>
+            <Callout pulse padding="22px 26px">
               <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.gold, marginBottom: 12 }}>
                 The invariant — even at maximum autonomy
               </div>
@@ -323,30 +318,24 @@ export default function AboutPage() {
                 <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.82em', color: C.clay }}>paused: true</code> in the orchestration config, or add the{' '}
                 <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.82em', color: C.clay }}>paused</code> label to one issue.
               </p>
-            </div>
+            </Callout>
           </div>
 
-          {/* Footer */}
-          <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-            <div style={{ fontSize: '0.72rem', color: C.textFaint }}>
-              Built with Claude Sonnet &amp; Opus · Anthropic · 2026
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-              <CTALink href="/" tone="gold">
-                Next: explore journeys &rarr;
-              </CTALink>
-              <span style={{ width: 1, height: 14, background: C.border }} />
-              <CTALink href="/demo/source" size="0.72rem">
-                Full source doc
-              </CTALink>
-              <CTALink href="/feedback" size="0.72rem">
-                Feedback
-              </CTALink>
-              <CTALink href="/impressum" size="0.72rem">
-                Legal notice
-              </CTALink>
-            </div>
-          </div>
+          <FooterNav note="Built with Claude Sonnet & Opus · Anthropic · 2026">
+            <CTALink href="/" tone="gold">
+              Next: explore journeys &rarr;
+            </CTALink>
+            <span style={{ width: 1, height: 14, background: C.border }} />
+            <CTALink href="/demo/source" size="0.72rem">
+              Full source doc
+            </CTALink>
+            <CTALink href="/feedback" size="0.72rem">
+              Feedback
+            </CTALink>
+            <CTALink href="/impressum" size="0.72rem">
+              Legal notice
+            </CTALink>
+          </FooterNav>
 
       </PageShell>
     </>

@@ -11,7 +11,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { MARKETING } from '@/lib/design-tokens'
-import { PageShell, Eyebrow, DisplayHeading, CTALink } from '@/components/ui'
+import { PageShell, Eyebrow, DisplayHeading, CTALink, Callout, FooterNav } from '@/components/ui'
 
 export const metadata: Metadata = {
   title: 'How the data is prepared — Provenance Tracker',
@@ -78,14 +78,9 @@ export default function MethodPage() {
           85%  { opacity: 1; }
           100% { opacity: 0; }
         }
-        @keyframes pulse-key {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,83,0); }
-          50%       { box-shadow: 0 0 12px 3px rgba(212,168,83,0.18); }
-        }
-        .key-pulse { animation: pulse-key 3s ease-in-out infinite; }
         .src-card:hover { border-color: ${C.borderMid} !important; background: ${C.surface2} !important; }
         @media (prefers-reduced-motion: reduce) {
-          .flow-dot, .key-pulse { animation: none !important; }
+          .flow-dot { animation: none !important; }
           * { transition-duration: 0.01ms !important; }
         }
       ` }} />
@@ -247,7 +242,7 @@ export default function MethodPage() {
           </div>
 
           {/* Honesty callout */}
-          <div className="key-pulse" style={{ background: 'rgba(212,168,83,0.04)', border: `1px solid rgba(212,168,83,0.20)`, borderRadius: 12, padding: '28px 32px', marginBottom: 72 }}>
+          <Callout pulse padding="28px 32px" style={{ marginBottom: 72 }}>
             <div style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.gold, marginBottom: 16 }}>
               The honesty contract
             </div>
@@ -270,26 +265,20 @@ export default function MethodPage() {
               These rules aren’t a promise — they’re enforced mechanically. An automated honesty
               gate runs on every change and blocks anything that overclaims, fakes data, or drops a source.
             </p>
-          </div>
+          </Callout>
 
-          {/* Footer */}
-          <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-            <div style={{ fontSize: '0.72rem', color: C.textFaint }}>
-              Sources: Met · AIC · Rijksmuseum · Cleveland · Getty GPI · RKD · Wikidata · Europeana
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-              <CTALink tone="gold" href="/insights">
-                Next: explore the aggregate ledger →
-              </CTALink>
-              <span style={{ width: 1, height: 14, background: C.border }} />
-              <CTALink tone="muted" href="/feedback" size="0.72rem">
-                Feedback
-              </CTALink>
-              <CTALink tone="muted" href="/impressum" size="0.72rem">
-                Legal notice
-              </CTALink>
-            </div>
-          </div>
+          <FooterNav note="Sources: Met · AIC · Rijksmuseum · Cleveland · Getty GPI · RKD · Wikidata · Europeana">
+            <CTALink tone="gold" href="/insights">
+              Next: explore the aggregate ledger →
+            </CTALink>
+            <span style={{ width: 1, height: 14, background: C.border }} />
+            <CTALink tone="muted" href="/feedback" size="0.72rem">
+              Feedback
+            </CTALink>
+            <CTALink tone="muted" href="/impressum" size="0.72rem">
+              Legal notice
+            </CTALink>
+          </FooterNav>
 
       </PageShell>
     </>
