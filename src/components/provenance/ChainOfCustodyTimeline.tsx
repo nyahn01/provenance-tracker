@@ -18,23 +18,44 @@
 import type { CSSProperties } from 'react'
 import type { LocationEntry, ExhibitionLoan, GapEntry, GettyRecord, ArtworkMeta } from '@/lib/types'
 import { GAL, accent, motion } from '@/lib/design-tokens'
-import { buildChainLayout, buildChainScale, CAPTION_MIN_YEARS, type ChainNode, type ChainGap, type SaleAnnotation } from './chain-timeline'
+import { buildChainLayout, buildChainScale, CAPTION_MIN_YEARS, type ChainLayout, type ChainNode, type ChainGap, type SaleAnnotation } from './chain-timeline'
 import { sourceRecordUrl } from './timeline'
 import { SourceBadge } from './SourceBadge'
+import { SourceLine } from './SourceLine'
 import { ConfidenceDot } from './ConfidenceDot'
 
 interface ChainOfCustodyTimelineProps {
-  locations: LocationEntry[]
-  exhibitions: ExhibitionLoan[]
-  gettyRecords: GettyRecord[]
-  gaps: GapEntry[]
+  /**
+   * A pre-built layout (case-study pages: `buildCaseChainLayout(case)`) bypasses
+   * `locations`/`exhibitions`/`gettyRecords`/`gaps`/`artist`/`creationYear`
+   * entirely — pass either `layout` OR the museum-data props, never both.
+   */
+  layout?: ChainLayout
+  locations?: LocationEntry[]
+  exhibitions?: ExhibitionLoan[]
+  gettyRecords?: GettyRecord[]
+  gaps?: GapEntry[]
   artist?: string | null
   creationYear?: number | null
-  artwork: Pick<ArtworkMeta, 'id' | 'source'>
+  /** Unused in case-study mode (case sources carry their own direct links). */
+  artwork?: Pick<ArtworkMeta, 'id' | 'source'>
 }
 
 const CONFIDENCE_LABEL: Record<ChainNode['confidence'], string> = {
   high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence',
+}
+
+/**
+ * Case-study kind → dot/tag color. `coerced`→clay and `gap`→gap-neutral are an
+ * already-shipping exception to "clay is interaction-only" for this one honesty-
+ * critical content type (case-studies.ts's own KIND_STYLE, unchanged by this
+ * reuse) — not a new deviation introduced here.
+ */
+const CASE_KIND_STYLE: Record<NonNullable<ChainNode['caseKind']>, { color: string; label: string }> = {
+  custody: { color: GAL.gold, label: 'Custody' },
+  coerced: { color: GAL.clay, label: 'Coerced transfer' },
+  gap: { color: GAL.gapWeave, label: 'Gap in legitimate title' },
+  restitution: { color: GAL.sage, label: 'Restitution' },
 }
 
 const eyebrow = {
@@ -64,9 +85,11 @@ function SaleTag({ sale }: { sale: SaleAnnotation }) {
 }
 
 function EventBody({ node, tag, tagColor, artwork }: {
-  node: ChainNode; tag: string; tagColor: string; artwork: Pick<ArtworkMeta, 'id' | 'source'>
+  node: ChainNode; tag: string; tagColor: string; artwork?: Pick<ArtworkMeta, 'id' | 'source'>
 }) {
-  const recordUrl = sourceRecordUrl(node.sourceUrl, node.source, artwork)
+  // Case-study nodes carry full citations (caseSources) and never a museum
+  // record URL — artwork is never passed for them, so skip this lookup.
+  const recordUrl = node.caseSources || !artwork ? null : sourceRecordUrl(node.sourceUrl, node.source, artwork)
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
@@ -74,23 +97,31 @@ function EventBody({ node, tag, tagColor, artwork }: {
         <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.13em', textTransform: 'uppercase', color: tagColor }}>{tag}</span>
       </div>
       <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.95rem', fontWeight: 500, color: GAL.text, marginTop: 4, lineHeight: 1.35 }}>{node.who}</div>
-      {node.where && (
+      {node.where ? (
         <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.8rem', color: GAL.textMuted, marginTop: 1 }}>
           {node.where}{node.unmapped && <span style={{ color: GAL.textFaint, fontStyle: 'italic' }}> — no coordinates in source</span>}
+        </div>
+      ) : node.caseSources && (
+        <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.8rem', color: GAL.textFaint, marginTop: 1, fontStyle: 'italic' }}>
+          Location not documented
         </div>
       )}
       {node.detail && <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.78rem', color: GAL.textMuted, marginTop: 3, lineHeight: 1.4 }}>{node.detail}</div>}
       {node.sales?.map((s, i) => <div key={i}><SaleTag sale={s} /></div>)}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 8 }}>
-        <SourceBadge source={node.source} />
-        <span title={CONFIDENCE_LABEL[node.confidence]}><ConfidenceDot confidence={node.confidence} /></span>
-        {recordUrl && (
-          <a href={recordUrl} target="_blank" rel="noopener noreferrer"
-            style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textFaint, textDecoration: 'none', borderBottom: `1px solid ${GAL.border}` }}>
-            record ↗
-          </a>
-        )}
-      </div>
+      {node.caseSources ? (
+        <SourceLine sources={node.caseSources} />
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 8 }}>
+          <SourceBadge source={node.source} />
+          <span title={CONFIDENCE_LABEL[node.confidence]}><ConfidenceDot confidence={node.confidence} /></span>
+          {recordUrl && (
+            <a href={recordUrl} target="_blank" rel="noopener noreferrer"
+              style={{ fontFamily: 'var(--font-ui)', fontSize: '0.68rem', color: GAL.textFaint, textDecoration: 'none', borderBottom: `1px solid ${GAL.border}` }}>
+              record ↗
+            </a>
+          )}
+        </div>
+      )}
     </>
   )
 }
@@ -116,17 +147,27 @@ function GapBand({ gap, heightPx }: { gap: ChainGap; heightPx?: number }) {
         <span style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: '1.05rem', color: GAL.text }}>{years}</span>
       </div>
       <p style={{ fontSize: '0.8rem', fontStyle: 'italic', color: GAL.textMuted, lineHeight: 1.5, margin: '5px 0 0' }}>
-        {gap.note}{' '}
-        <a href="/feedback" style={{ color: GAL.clay, textDecoration: 'none', borderBottom: `1px solid ${GAL.border}`, fontStyle: 'normal' }}>Help complete the record →</a>
+        {gap.note}
+        {!gap.caseSources && (
+          <>{' '}<a href="/feedback" style={{ color: GAL.clay, textDecoration: 'none', borderBottom: `1px solid ${GAL.border}`, fontStyle: 'normal' }}>Help complete the record →</a></>
+        )}
       </p>
+      {/* Case-study gaps cite their sources instead of inviting a crowd-sourced
+          fix — a documented historical gap isn't something a visitor "completes." */}
+      {gap.caseSources && <SourceLine sources={gap.caseSources} />}
     </div>
   )
 }
 
 export function ChainOfCustodyTimeline({
-  locations, exhibitions, gettyRecords, gaps, artist, creationYear, artwork,
+  layout, locations, exhibitions, gettyRecords, gaps, artist, creationYear, artwork,
 }: ChainOfCustodyTimelineProps) {
-  const { custody, loans, unmatchedSales, gaps: chainGaps } = buildChainLayout(locations, exhibitions, gettyRecords, gaps, artist, creationYear)
+  const { custody, loans, unmatchedSales, gaps: chainGaps } = layout
+    ?? buildChainLayout(locations ?? [], exhibitions ?? [], gettyRecords ?? [], gaps ?? [], artist, creationYear)
+  // Case mode (layout passed directly) uses its own kind-driven legend (custody/
+  // coerced/gap/restitution) instead of the museum-explorer legend (custody/loan/
+  // sale/gap) — the two content types have different honesty categories to show.
+  const isCaseMode = layout != null
   // To-scale time axis (spec §4.1/§4.3): proportional spacing + gaps drawn to span.
   const { spacerPx, intervalYears, gapHeightPx } = buildChainScale(custody, chainGaps)
   const isEmpty = custody.length === 0 && loans.length === 0 && unmatchedSales.length === 0 && chainGaps.length === 0
@@ -196,10 +237,22 @@ export function ChainOfCustodyTimeline({
 
       {/* Legend — identity is never colour-alone (each item is labelled). */}
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', margin: '0 0 22px', fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><i style={{ width: 11, height: 11, borderRadius: '50%', border: `2px solid ${GAL.gold}`, background: GAL.bg }} /> Custody</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><i style={{ width: 11, height: 11, borderRadius: '50%', background: GAL.sage }} /> Loan (not a move)</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><span style={{ color: accent.dealer }}>◆</span> Sale — how custody changed</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><i style={{ width: 13, height: 11, borderRadius: 2, border: `1px dashed ${GAL.borderMid}`, background: `repeating-linear-gradient(135deg, ${GAL.surface2} 0 3px, transparent 3px 6px)` }} /> Gap</span>
+        {isCaseMode ? (
+          <>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><i style={{ width: 11, height: 11, borderRadius: '50%', border: `2px solid ${CASE_KIND_STYLE.custody.color}`, background: GAL.bg }} /> {CASE_KIND_STYLE.custody.label}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><i style={{ width: 11, height: 11, borderRadius: '50%', border: `2px solid ${CASE_KIND_STYLE.coerced.color}`, background: GAL.bg }} /> {CASE_KIND_STYLE.coerced.label}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><i style={{ width: 11, height: 11, borderRadius: '50%', border: `2px solid ${CASE_KIND_STYLE.gap.color}`, background: GAL.bg }} /> {CASE_KIND_STYLE.gap.label}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><i style={{ width: 11, height: 11, borderRadius: '50%', border: `2px solid ${CASE_KIND_STYLE.restitution.color}`, background: GAL.bg }} /> {CASE_KIND_STYLE.restitution.label}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><i style={{ width: 11, height: 11, borderRadius: '50%', background: GAL.sage }} /> Loan (not a move)</span>
+          </>
+        ) : (
+          <>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><i style={{ width: 11, height: 11, borderRadius: '50%', border: `2px solid ${GAL.gold}`, background: GAL.bg }} /> Custody</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><i style={{ width: 11, height: 11, borderRadius: '50%', background: GAL.sage }} /> Loan (not a move)</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><span style={{ color: accent.dealer }}>◆</span> Sale — how custody changed</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><i style={{ width: 13, height: 11, borderRadius: 2, border: `1px dashed ${GAL.borderMid}`, background: `repeating-linear-gradient(135deg, ${GAL.surface2} 0 3px, transparent 3px 6px)` }} /> Gap</span>
+          </>
+        )}
       </div>
 
       {/* The spine + ordered events. The dots/spine live in the left gutter; each
@@ -221,12 +274,15 @@ export function ChainOfCustodyTimeline({
           const gapFollows = following.length > 0
           const years = intervalYears[i]
           const showCaption = !gapFollows && years != null && years >= CAPTION_MIN_YEARS
+          const kindStyle = node.caseKind ? CASE_KIND_STYLE[node.caseKind] : null
+          const dotColor = kindStyle?.color ?? GAL.gold
+          const tag = kindStyle?.label ?? custodyTag(node)
           return (
             <li key={`c-${i}`} style={{ position: 'relative', paddingLeft: SPINE_LEFT + 22 }}>
               {/* Gutter dot anchors to the <li> (non-transformed), never inside the animated div. */}
-              <span aria-hidden style={dotStyle(GAL.bg, GAL.gold)} />
+              <span aria-hidden style={dotStyle(GAL.bg, dotColor)} />
               <div style={assemble()}>
-                <EventBody node={node} tag={custodyTag(node)} tagColor={GAL.gold} artwork={artwork} />
+                <EventBody node={node} tag={tag} tagColor={dotColor} artwork={artwork} />
               </div>
 
               {attachedSales.map((s, si) => (

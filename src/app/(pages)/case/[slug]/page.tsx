@@ -12,12 +12,13 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { MARKETING as C } from '@/lib/design-tokens'
+import { MARKETING as C, GAL } from '@/lib/design-tokens'
 import { getCase, allCaseSlugs, allTranslatedCaseSlugs, CASE_STUDIES } from '@/lib/case-studies'
+import { buildCaseChainLayout } from '@/components/provenance/chain-timeline'
+import { ChainOfCustodyTimeline } from '@/components/provenance/ChainOfCustodyTimeline'
 import { JsonLd } from '@/components/JsonLd'
 import { PageShell } from '@/components/ui'
 import { SITE_URL } from '@/lib/site'
-import type { CaseSource, CaseCustodyEntry } from '@/lib/types'
 
 export function generateStaticParams() {
   return allCaseSlugs().map((slug) => ({ slug }))
@@ -41,37 +42,6 @@ export async function generateMetadata({
       },
     }),
   }
-}
-
-// Visual treatment per custody-entry kind. Colors come ONLY from design tokens.
-const KIND_STYLE: Record<
-  CaseCustodyEntry['kind'],
-  { dot: string; label: string; tint: string }
-> = {
-  custody: { dot: C.gold, label: 'Custody', tint: 'rgba(212,168,83,0.10)' },
-  coerced: { dot: C.clay, label: 'Coerced transfer', tint: 'rgba(200,120,85,0.10)' },
-  gap: { dot: C.gap, label: 'Gap', tint: 'rgba(154,143,133,0.08)' },
-  restitution: { dot: C.sage, label: 'Restitution', tint: 'rgba(111,141,125,0.10)' },
-}
-
-function SourceLine({ sources }: { sources: CaseSource[] }) {
-  return (
-    <div className="src-line">
-      <span className="src-tag">Source</span>
-      {sources.map((s, i) => (
-        <span key={i} className="src-item">
-          {s.url ? (
-            <a href={s.url} target="_blank" rel="noopener noreferrer">
-              {s.label}
-            </a>
-          ) : (
-            <span>{s.label}</span>
-          )}
-          {i < sources.length - 1 ? <span className="src-sep"> · </span> : null}
-        </span>
-      ))}
-    </div>
-  )
 }
 
 export default async function CaseStudyPage({
@@ -104,21 +74,9 @@ export default async function CaseStudyPage({
           citation: c.references.filter(r => r.url).map(r => r.url),
         }}
       />
-      {/* Page-specific source-line classes — the approved trimmed style block
-          (generic resets/nav/overflow now live in globals.css + the (pages) shell). */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        .case-page a { text-decoration: none; }
-        .src-line { margin-top: 12px; font-size: 0.72rem; color: ${C.textFaint}; line-height: 1.5; }
-        .src-tag { display: inline-block; font-size: 0.58rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: ${C.textFaint}; border: 1px solid ${C.border}; border-radius: 3px; padding: 1px 5px; margin-right: 8px; vertical-align: middle; }
-        .src-item a { color: ${C.textMuted}; border-bottom: 1px solid ${C.border}; }
-        .src-item a:hover { color: ${C.text}; border-bottom-color: ${C.borderMid}; }
-        .src-sep { color: ${C.textFaint}; }
-        .entry-card:hover { border-color: ${C.borderMid} !important; }
-      `,
-        }}
-      />
+      {/* One remaining page-specific rule — the reference-list/other-cases links
+          below rely on this reset (ChainOfCustodyTimeline styles its own links inline). */}
+      <style dangerouslySetInnerHTML={{ __html: `.case-page a { text-decoration: none; }` }} />
 
       <div className="case-page">
         <PageShell>
@@ -200,304 +158,15 @@ export default async function CaseStudyPage({
             </div>
           </div>
 
-          {/* Legend */}
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 16,
-              marginBottom: 32,
-              padding: '14px 18px',
-              background: C.surface2,
-              border: `1px solid ${C.border}`,
-              borderRadius: 10,
-            }}
-          >
-            {(
-              ['custody', 'coerced', 'gap', 'restitution'] as CaseCustodyEntry['kind'][]
-            ).map((k) => (
-              <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span
-                  style={{
-                    width: 9,
-                    height: 9,
-                    borderRadius: '50%',
-                    background: KIND_STYLE[k].dot,
-                    display: 'inline-block',
-                  }}
-                />
-                <span style={{ fontSize: '0.76rem', color: C.textMuted }}>
-                  {KIND_STYLE[k].label}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Custody chain */}
-          <section style={{ marginBottom: 56 }}>
-            <h2
-              style={{
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                color: C.textFaint,
-                marginBottom: 6,
-              }}
-            >
-              Chain of custody (ownership)
-            </h2>
-            <p
-              style={{
-                fontSize: '0.8rem',
-                color: C.textMuted,
-                marginBottom: 24,
-                lineHeight: 1.6,
-              }}
-            >
-              Legal title over time. Exhibition loans are listed separately below — a
-              loan never appears in this chain.
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {c.custody.map((e, idx) => {
-                const st = KIND_STYLE[e.kind]
-                return (
-                  <div
-                    key={idx}
-                    className="entry-card"
-                    style={{
-                      padding: '20px 24px',
-                      background: st.tint,
-                      border: `1px solid ${C.border}`,
-                      borderLeft: `3px solid ${st.dot}`,
-                      borderRadius: 10,
-                      transition: 'border-color 0.2s',
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'baseline',
-                        gap: 14,
-                        flexWrap: 'wrap',
-                        marginBottom: 8,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: "'Courier New', monospace",
-                          fontSize: '0.85rem',
-                          color: C.text,
-                          fontWeight: 600,
-                          letterSpacing: '0.02em',
-                          flexShrink: 0,
-                        }}
-                      >
-                        {e.date}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '0.58rem',
-                          fontWeight: 600,
-                          letterSpacing: '0.1em',
-                          textTransform: 'uppercase',
-                          color: st.dot,
-                          border: `1px solid ${st.dot}`,
-                          borderRadius: 3,
-                          padding: '1px 6px',
-                        }}
-                      >
-                        {st.label}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '0.98rem',
-                        color: C.text,
-                        fontWeight: 500,
-                        marginBottom: 4,
-                      }}
-                    >
-                      {e.holder}
-                    </div>
-                    {e.place ? (
-                      <div
-                        style={{
-                          fontSize: '0.78rem',
-                          color: C.textFaint,
-                          marginBottom: 8,
-                        }}
-                      >
-                        {e.place}
-                      </div>
-                    ) : (
-                      <div
-                        style={{
-                          fontSize: '0.78rem',
-                          color: C.textFaint,
-                          marginBottom: 8,
-                          fontStyle: 'italic',
-                        }}
-                      >
-                        Location not documented
-                      </div>
-                    )}
-                    <p
-                      style={{
-                        fontSize: '0.88rem',
-                        color: C.textMuted,
-                        lineHeight: 1.65,
-                      }}
-                    >
-                      {e.detail}
-                    </p>
-                    <SourceLine sources={e.sources} />
-                  </div>
-                )
-              })}
-            </div>
+          {/* Chain of custody — reuses the same mature timeline the interactive
+              explorer and /work/[slug] use (spine, to-scale axis, gap bands,
+              loan branches), via a pre-built layout instead of live museum data.
+              This surface used to hand-roll its own flat card stack; the
+              restitution cases are this project's highest-stakes honesty
+              content and deserve the same timeline quality, not a weaker one. */}
+          <section style={{ marginBottom: 56, background: GAL.bg, border: `1px solid ${C.border}`, borderRadius: 12, padding: 'clamp(20px, 4vw, 36px)' }}>
+            <ChainOfCustodyTimeline layout={buildCaseChainLayout(c)} />
           </section>
-
-          {/* Gaps — shown honestly */}
-          {c.gaps.length > 0 && (
-            <section style={{ marginBottom: 56 }}>
-              <h2
-                style={{
-                  fontSize: '0.7rem',
-                  fontWeight: 600,
-                  letterSpacing: '0.14em',
-                  textTransform: 'uppercase',
-                  color: C.textFaint,
-                  marginBottom: 6,
-                }}
-              >
-                Documented gaps
-              </h2>
-              <p
-                style={{
-                  fontSize: '0.8rem',
-                  color: C.textMuted,
-                  marginBottom: 24,
-                  lineHeight: 1.6,
-                }}
-              >
-                Periods where the legitimate record is missing or was knowingly
-                falsified. Shown as gaps, never papered over.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {c.gaps.map((g, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      padding: '20px 24px',
-                      background: 'rgba(154,143,133,0.06)',
-                      border: `1px dashed ${C.borderMid}`,
-                      borderRadius: 10,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontFamily: "'Courier New', monospace",
-                        fontSize: '0.85rem',
-                        color: C.gap,
-                        fontWeight: 600,
-                        marginBottom: 8,
-                      }}
-                    >
-                      ░ {g.span}
-                    </div>
-                    <p
-                      style={{
-                        fontSize: '0.88rem',
-                        color: C.textMuted,
-                        lineHeight: 1.65,
-                      }}
-                    >
-                      {g.note}
-                    </p>
-                    <SourceLine sources={g.sources} />
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Exhibition loans — strictly separate from custody */}
-          {c.exhibitions.length > 0 && (
-            <section style={{ marginBottom: 56 }}>
-              <h2
-                style={{
-                  fontSize: '0.7rem',
-                  fontWeight: 600,
-                  letterSpacing: '0.14em',
-                  textTransform: 'uppercase',
-                  color: C.textFaint,
-                  marginBottom: 6,
-                }}
-              >
-                Exhibition loans (not custody changes)
-              </h2>
-              <p
-                style={{
-                  fontSize: '0.8rem',
-                  color: C.textMuted,
-                  marginBottom: 24,
-                  lineHeight: 1.6,
-                }}
-              >
-                The work was displayed here temporarily. A loan is not a transfer of
-                ownership and is never counted in the custody chain above.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {c.exhibitions.map((x, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      padding: '20px 24px',
-                      background: C.surface,
-                      border: `1px solid ${C.border}`,
-                      borderLeft: `3px solid ${C.sage}`,
-                      borderRadius: 10,
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'baseline',
-                        gap: 14,
-                        marginBottom: 6,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: "'Courier New', monospace",
-                          fontSize: '0.85rem',
-                          color: C.text,
-                          fontWeight: 600,
-                        }}
-                      >
-                        {x.date}
-                      </span>
-                      <span style={{ fontSize: '0.95rem', color: C.text, fontWeight: 500 }}>
-                        {x.venue}
-                      </span>
-                    </div>
-                    <p
-                      style={{
-                        fontSize: '0.88rem',
-                        color: C.textMuted,
-                        lineHeight: 1.65,
-                      }}
-                    >
-                      {x.detail}
-                    </p>
-                    <SourceLine sources={x.sources} />
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
 
           {/* References */}
           <section
