@@ -16,6 +16,15 @@ import type { ProvenanceResponse } from '@/lib/types'
 import { OBS, state } from '@/lib/design-tokens'
 import { buildArcs, buildDealerArcs, buildGapArcs, buildLabels, cityCoords, AMBER_DOT } from './globe-data'
 
+// Read fresh at each write site rather than once at module load — cheap, and
+// avoids needing a change listener for a setting that's effectively fixed for
+// the lifetime of a page view. Auto-rotate is the only continuous motion this
+// component drives; it's outside the GLOBE CONTRACT's locked init block (that
+// block governs which Globe.gl/Three.js APIs are called at all, not whether an
+// already-mutable control property like autoRotate gets set to true or false).
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
 interface GlobeContainerProps {
   prov: ProvenanceResponse | null
   /** Responsive height of the globe area (e.g. '50%' | '75%' | '100%'). */
@@ -77,7 +86,7 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
         .labelAltitude(0.012)
         .labelIncludeDot(false)
         .labelsTransitionDuration(600)
-      setTimeout(() => { const c = globe.controls?.(); if (c) { c.autoRotate = true; c.autoRotateSpeed = 0.25; c.enableZoom = true; c.zoomSpeed = 1.2 } }, 100)
+      setTimeout(() => { const c = globe.controls?.(); if (c) { c.autoRotate = !prefersReducedMotion(); c.autoRotateSpeed = 0.25; c.enableZoom = true; c.zoomSpeed = 1.2 } }, 100)
       const fit = () => { const el = containerRef.current; if (el) globe.width(el.clientWidth).height(el.clientHeight) }
       fit(); onResize = fit; window.addEventListener('resize', fit)
       globeRef.current = globe
@@ -92,7 +101,7 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
     if (!g) return
     if (!prov) {
       g.arcsData([]).pointsData([]).labelsData([])
-      const c = g.controls?.(); if (c) c.autoRotate = true
+      const c = g.controls?.(); if (c) c.autoRotate = !prefersReducedMotion()
       return
     }
     // Four arc tiers — custody (gold, 0.18), exhibition loans (sage, 0.30), dealer
@@ -136,7 +145,7 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
     const dealerPts = [...seenDots].map(k => { const [lat, lng] = k.split(',').map(Number); return { lat, lng } })
     const allPts = [...custodyPts, ...prov.exhibitions.filter(l => l.lat != null && l.lng != null)]
     const framePts = custodyPts.length >= 2 ? custodyPts : allPts.length >= 2 ? allPts : [...custodyPts, ...dealerPts]
-    const c = g.controls?.(); if (c) c.autoRotate = framePts.length < 2
+    const c = g.controls?.(); if (c) c.autoRotate = framePts.length < 2 && !prefersReducedMotion()
     if (framePts.length && typeof g.pointOfView === 'function') {
       const lats = framePts.map(p => p.lat as number), lngs = framePts.map(p => p.lng as number)
       const lat = (Math.min(...lats) + Math.max(...lats)) / 2
