@@ -12,7 +12,7 @@
  * derived only from dates already present on custody events. A sale is folded
  * into a custody owner ONLY on a real name match — never fabricated.
  */
-import type { LocationEntry, ExhibitionLoan, GettyRecord, GapEntry } from '@/lib/types'
+import type { LocationEntry, ExhibitionLoan, GettyRecord, GapEntry, RestitutionCase, CaseSource, CaseCustodyEntry } from '@/lib/types'
 import { buildUnifiedTimeline, sameName, type ProvenanceEvent } from './timeline'
 
 export type ChainLane = 'custody' | 'loan'
@@ -38,6 +38,20 @@ export interface ChainNode extends ProvenanceEvent {
   anchorIndex: number
   /** Documented sales folded into this custody owner (dedup — see buildChainLayout). */
   sales?: SaleAnnotation[]
+  /**
+   * Case-study-only: full legal/archival citations (a restitution case's
+   * CaseSource[]), never set for real museum-sourced nodes. When present,
+   * ChainOfCustodyTimeline renders the multi-citation SourceLine list instead
+   * of the single-tier SourceBadge — a case's sources are court rulings and
+   * museum object pages, not one museum-API tier.
+   */
+  caseSources?: CaseSource[]
+  /**
+   * Case-study-only: the entry's honesty classification (custody/coerced/gap/
+   * restitution) — drives the spine dot and tag color instead of the generic
+   * custodyTag() used for museum LocationEntry data. Never set otherwise.
+   */
+  caseKind?: CaseCustodyEntry['kind']
 }
 
 /** A documented gap (`GapEntry`) placed in the custody sequence. */
@@ -46,6 +60,13 @@ export interface ChainGap extends GapEntry {
   afterIndex: number
   openStart: boolean
   openEnd: boolean
+  /**
+   * Case-study-only: citations for this gap. When present, ChainOfCustodyTimeline
+   * renders them instead of the "Help complete the record" feedback CTA, which
+   * is meant for the live interactive explorer's crowd-sourcing flow, not a
+   * documented historical case's gap.
+   */
+  caseSources?: CaseSource[]
 }
 
 export interface ChainLayout {
@@ -207,4 +228,76 @@ export function buildChainScale(custody: ChainNode[], gaps: ChainGap[]): ChainSc
   }
 
   return { spacerPx, intervalYears, gapHeightPx }
+}
+
+// ─── Case-study adapter ────────────────────────────────────────────────────────
+// Reshapes a RestitutionCase (case-studies.ts) into the same ChainLayout shape
+// the interactive explorer uses, so /case/[slug] can reuse ChainOfCustodyTimeline's
+// mature spine/scale/motion/keyboard shell instead of a bespoke card stack — the
+// project's own "highest-stakes honesty surface" deserves its best timeline, not
+// a separate, weaker one. This is a SEPARATE path from buildChainLayout (which
+// merges live museum Location/Exhibition/Getty records): case data is already
+// structured and needs no merging, only reshaping.
+//
+// Honesty: dates are never invented. yearOf() extracts a leading year from the
+// case's own (often deliberately imprecise) date/span strings exactly as the
+// museum path does — an entry with no parseable year falls back to the existing
+// "unknown" sentinel (-1 leading / 9999 trailing) rather than a guess.
+
+/** Extract up to two 4-digit years from a span string like "1939–1945" or "1912–1925 (…)". */
+function yearsInSpan(span: string): [string | null, string | null] {
+  const years = span.match(/\d{4}/g)
+  return [years?.[0] ?? null, years?.[1] ?? null]
+}
+
+export function buildCaseChainLayout(c: RestitutionCase): ChainLayout {
+  const custody: ChainNode[] = c.custody.map((e, i): ChainNode => {
+    const y = yearOf(e.date)
+    return {
+      year: e.date,
+      sortKey: y ?? (i === 0 ? -1 : 9999),
+      type: 'custody',
+      who: e.holder,
+      where: e.place ?? undefined,
+      detail: e.detail,
+      source: e.sources[0]?.label ?? '',
+      sourceUrl: e.sources[0]?.url ?? undefined,
+      confidence: 'high',
+      lane: 'custody',
+      anchorIndex: -1,
+      caseSources: e.sources,
+      caseKind: e.kind,
+    }
+  })
+
+  const loans: ChainNode[] = c.exhibitions.map((x): ChainNode => {
+    const y = yearOf(x.date) ?? 9999
+    return {
+      year: x.date,
+      sortKey: y,
+      type: 'exhibition',
+      who: x.venue,
+      detail: x.detail,
+      source: x.sources[0]?.label ?? '',
+      sourceUrl: x.sources[0]?.url ?? undefined,
+      confidence: 'high',
+      lane: 'loan',
+      anchorIndex: anchorTo(custody, y),
+      caseSources: x.sources,
+    }
+  })
+
+  const gaps: ChainGap[] = c.gaps.map((g): ChainGap => {
+    const [from, to] = yearsInSpan(g.span)
+    const fromYear = yearOf(from)
+    return {
+      from, to, note: g.note,
+      afterIndex: fromYear != null ? anchorTo(custody, fromYear) : -1,
+      openStart: from == null,
+      openEnd: to == null,
+      caseSources: g.sources,
+    }
+  })
+
+  return { custody, loans, unmatchedSales: [], gaps }
 }
