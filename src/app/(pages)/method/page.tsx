@@ -11,7 +11,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { MARKETING } from '@/lib/design-tokens'
-import { PageShell, Eyebrow, DisplayHeading, CTALink, Callout, FooterNav } from '@/components/ui'
+import { PageShell, Eyebrow, DisplayHeading, CTALink, Callout, Card, FooterNav } from '@/components/ui'
 
 export const metadata: Metadata = {
   title: 'How the data is prepared — Provenance Tracker',
@@ -224,11 +224,11 @@ export default function MethodPage() {
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
               {EXTRACTION.map(e => (
-                <div key={e.tag} style={{ background: C.surface, border: `1px solid ${C.border}`, borderTop: `2px solid ${e.accent}`, borderRadius: 10, padding: '20px 22px' }}>
+                <Card key={e.tag} padding="20px 22px" accentColor={e.accent} accentSide="top">
                   <div style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: e.accent, marginBottom: 6 }}>{e.tag}</div>
                   <div style={{ fontSize: '1rem', fontWeight: 500, color: C.text, marginBottom: 10 }}>{e.title}</div>
                   <div style={{ fontSize: '0.8rem', color: C.textMuted, lineHeight: 1.6 }}>{e.body}</div>
-                </div>
+                </Card>
               ))}
             </div>
             <div style={{ marginTop: 18, padding: '14px 20px', background: 'rgba(212,168,83,0.04)', border: `1px solid ${C.border}`, borderRadius: 8, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>

@@ -126,7 +126,7 @@ export default function AboutPage() {
 
             {/* Two intake lanes */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 28 }}>
-              <Card padding="18px 20px" style={{ borderTop: `2px solid ${C.sage}` }}>
+              <Card padding="18px 20px" accentColor={C.sage} accentSide="top">
                 <div style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.sage, marginBottom: 6 }}>Lane A · feedback</div>
                 <div style={{ fontSize: '0.85rem', color: C.textMuted, lineHeight: 1.6 }}>
                   You send the in-app <Link href="/feedback" style={{ color: C.sage, borderBottom: `1px solid ${C.border}`, textDecoration: 'none' }}>feedback form</Link>. It opens a GitHub issue tagged{' '}
@@ -134,7 +134,7 @@ export default function AboutPage() {
                   <code style={{ fontFamily: "'Courier New', monospace", fontSize: '0.85em', color: C.textMuted }}>feedback-triage</code> agent reviews and documents it — reads only, never edits the product, never closes your issue. A human decides what gets promoted.
                 </div>
               </Card>
-              <Card padding="18px 20px" style={{ borderTop: `2px solid ${C.gold}` }}>
+              <Card padding="18px 20px" accentColor={C.gold} accentSide="top">
                 <div style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.gold, marginBottom: 6 }}>Lane B · build queue</div>
                 <div style={{ fontSize: '0.85rem', color: C.textMuted, lineHeight: 1.6 }}>
                   A maintainer — or a Claude Code planning session — writes an issue tagged{' '}
@@ -227,7 +227,7 @@ export default function AboutPage() {
             {/* Stage cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 44 }}>
               {STAGES.map(s => (
-                <Card key={s.tag} padding="18px 20px" style={{ borderTop: `2px solid ${s.accent}` }}>
+                <Card key={s.tag} padding="18px 20px" accentColor={s.accent} accentSide="top">
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
                     <span style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: s.accent }}>{s.tag}</span>
                     <span style={{ fontSize: '0.54rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '2px 7px', borderRadius: 4, background: `${s.accent}1a`, border: `1px solid ${s.accent}40`, color: s.accent }}>{s.status}</span>

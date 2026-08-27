@@ -17,7 +17,7 @@ import { getCase, allCaseSlugs, allTranslatedCaseSlugs, CASE_STUDIES } from '@/l
 import { buildCaseChainLayout } from '@/components/provenance/chain-timeline'
 import { ChainOfCustodyTimeline } from '@/components/provenance/ChainOfCustodyTimeline'
 import { JsonLd } from '@/components/JsonLd'
-import { PageShell, FooterNav, CTALink } from '@/components/ui'
+import { PageShell, FooterNav, CTALink, Card, Callout } from '@/components/ui'
 import { SITE_URL } from '@/lib/site'
 
 export function generateStaticParams() {
@@ -128,17 +128,9 @@ export default async function CaseStudyPage({
             </p>
 
             {/* Current standing — dated, never a live claim */}
-            <div
-              style={{
-                marginTop: 28,
-                padding: '14px 18px',
-                background: C.surface,
-                border: `1px solid ${C.border}`,
-                borderRadius: 10,
-                display: 'flex',
-                gap: 12,
-                alignItems: 'baseline',
-              }}
+            <Card
+              padding="14px 18px"
+              style={{ marginTop: 28, display: 'flex', gap: 12, alignItems: 'baseline' }}
             >
               <span
                 style={{
@@ -155,7 +147,7 @@ export default async function CaseStudyPage({
               <span style={{ fontSize: '0.85rem', color: C.text, lineHeight: 1.5 }}>
                 {c.currentStatusAsOf}
               </span>
-            </div>
+            </Card>
           </div>
 
           {/* Chain of custody — reuses the same mature timeline the interactive
@@ -169,14 +161,7 @@ export default async function CaseStudyPage({
           </section>
 
           {/* References */}
-          <section
-            style={{
-              padding: '24px 28px',
-              background: 'rgba(212,168,83,0.04)',
-              border: `1px solid rgba(212,168,83,0.18)`,
-              borderRadius: 12,
-            }}
-          >
+          <Callout padding="24px 28px">
             <div
               style={{
                 fontSize: '0.65rem',
@@ -210,7 +195,7 @@ export default async function CaseStudyPage({
                 </li>
               ))}
             </ul>
-          </section>
+          </Callout>
 
           {/* Other case studies — internal link graph */}
           {otherCases.length > 0 && (
@@ -229,20 +214,11 @@ export default async function CaseStudyPage({
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {otherCases.map(o => (
-                  <Link
-                    key={o.slug}
-                    href={`/case/${o.slug}`}
-                    style={{
-                      display: 'block',
-                      padding: '14px 18px',
-                      background: C.surface,
-                      border: `1px solid ${C.border}`,
-                      borderRadius: 10,
-                      color: C.text,
-                    }}
-                  >
-                    <div style={{ fontSize: '0.9rem', fontWeight: 500, marginBottom: 3 }}>{o.title} →</div>
-                    <div style={{ fontSize: '0.75rem', color: C.textFaint }}>{o.artist} · {o.created}</div>
+                  <Link key={o.slug} href={`/case/${o.slug}`} style={{ color: C.text }}>
+                    <Card hover padding="14px 18px">
+                      <div style={{ fontSize: '0.9rem', fontWeight: 500, marginBottom: 3 }}>{o.title} →</div>
+                      <div style={{ fontSize: '0.75rem', color: C.textFaint }}>{o.artist} · {o.created}</div>
+                    </Card>
                   </Link>
                 ))}
               </div>
