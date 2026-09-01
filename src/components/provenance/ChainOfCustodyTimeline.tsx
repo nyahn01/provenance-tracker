@@ -15,7 +15,7 @@
  * custody thread; every node carries a source badge; a sale folds into custody
  * only on a real name match, never a fabricated one.
  */
-import type { CSSProperties } from 'react'
+import { useRef, useState, type CSSProperties, type FocusEvent, type KeyboardEvent } from 'react'
 import type { LocationEntry, ExhibitionLoan, GapEntry, GettyRecord, ArtworkMeta } from '@/lib/types'
 import { GAL, accent, motion } from '@/lib/design-tokens'
 import { buildChainLayout, buildChainScale, CAPTION_MIN_YEARS, type ChainLayout, type ChainNode, type ChainGap, type SaleAnnotation } from './chain-timeline'
@@ -186,6 +186,44 @@ export function ChainOfCustodyTimeline({
   const leadingGaps = chainGaps.filter(g => g.afterIndex === -1)
   const branchGap = { marginLeft: 22, borderLeft: `2px dashed ${GAL.sage}`, paddingLeft: 12 }
 
+  // Keyboard step-through: a roving tabIndex over every event in visual order
+  // (leading gaps → each custody node → its sales/loans/gaps → the next node).
+  // Only the active step sits in the natural Tab order; Left/Up and Right/Down
+  // move between steps; Enter/Space hands focus to the step's first link or
+  // button (the source citation), so a keyboard user reaches the same
+  // attribution a mouse user gets by hovering. The visible ring is the
+  // sitewide `:focus-visible` rule (globals.css) — no new CSS.
+  const [activeStep, setActiveStep] = useState(0)
+  const stepRefs = useRef<(HTMLElement | null)[]>([])
+  let stepIndex = 0
+
+  function focusStep(i: number) {
+    const clamped = Math.max(0, Math.min(i, stepRefs.current.length - 1))
+    stepRefs.current[clamped]?.focus()
+    setActiveStep(clamped)
+  }
+
+  function stepProps(ariaLabel?: string) {
+    const idx = stepIndex++
+    return {
+      ref: (el: HTMLElement | null) => { stepRefs.current[idx] = el },
+      tabIndex: idx === activeStep ? 0 : -1,
+      ...(ariaLabel ? { role: 'group' as const, 'aria-label': ariaLabel } : {}),
+      onFocus: (e: FocusEvent) => { e.stopPropagation(); setActiveStep(idx) },
+      // A sale/loan/gap step is nested inside its custody <li>, which is itself a
+      // step — stop propagation so the keydown doesn't also fire the ancestor's
+      // handler (which would immediately undo the just-made move).
+      onKeyDown: (e: KeyboardEvent) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); focusStep(idx + 1) }
+        else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); focusStep(idx - 1) }
+        else if (e.key === 'Enter' || e.key === ' ') {
+          const target = stepRefs.current[idx]?.querySelector<HTMLElement>('a[href], button')
+          if (target) { e.preventDefault(); e.stopPropagation(); target.focus() }
+        }
+      },
+    }
+  }
+
   // A faint interval measure centered in the proportional empty span — the light
   // reference that makes the to-scale spacing legible AS an axis (a Tufte
   // micro-annotation), shown only for spans worth calling out (spec §4.1).
@@ -259,7 +297,7 @@ export function ChainOfCustodyTimeline({
         <span aria-hidden style={{ position: 'absolute', left: SPINE_LEFT - 1, top: 6, bottom: 10, width: 2, background: GAL.borderMid }} />
 
         {leadingGaps.map((g, i) => (
-          <li key={`lead-${i}`} style={{ position: 'relative', paddingLeft: SPINE_LEFT + 22, paddingBottom: 22, ...assemble(true) }}><GapBand gap={g} heightPx={gapHeightPx.get(g)} /></li>
+          <li key={`lead-${i}`} style={{ position: 'relative', paddingLeft: SPINE_LEFT + 22, paddingBottom: 22, ...assemble(true) }} {...stepProps()}><GapBand gap={g} heightPx={gapHeightPx.get(g)} /></li>
         ))}
 
         {custody.map((node, i) => {
@@ -275,7 +313,7 @@ export function ChainOfCustodyTimeline({
           const dotColor = kindStyle?.color ?? GAL.gold
           const tag = kindStyle?.label ?? custodyTag(node)
           return (
-            <li key={`c-${i}`} style={{ position: 'relative', paddingLeft: SPINE_LEFT + 22 }}>
+            <li key={`c-${i}`} style={{ position: 'relative', paddingLeft: SPINE_LEFT + 22 }} {...stepProps(`${node.year}, ${tag}. ${node.who}${node.where ? `, ${node.where}` : ''}.`)}>
               {/* Gutter dot anchors to the <li> (non-transformed), never inside the animated div. */}
               <span aria-hidden style={dotStyle(GAL.bg, dotColor)} />
               <div style={assemble()}>
@@ -283,7 +321,7 @@ export function ChainOfCustodyTimeline({
               </div>
 
               {attachedSales.map((s, si) => (
-                <div key={`s-${si}`} style={{ position: 'relative', marginTop: 14, ...assemble() }}>
+                <div key={`s-${si}`} style={{ position: 'relative', marginTop: 14, ...assemble() }} {...stepProps(`${s.year}, sale. ${s.who}.`)}>
                   <span aria-hidden style={saleMarkStyle} />
                   <EventBody node={s} tag="Sale" tagColor={accent.dealer} artwork={artwork} />
                 </div>
@@ -296,7 +334,7 @@ export function ChainOfCustodyTimeline({
                 // it its own containing block and throws off an absolutely-positioned
                 // child's `left`. The dot sits on the branch's own dashed line (not the
                 // main spine) — the loan track visibly branches off custody (spec §4.2).
-                <div key={`l-${li}`} style={{ position: 'relative', marginTop: 14 }}>
+                <div key={`l-${li}`} style={{ position: 'relative', marginTop: 14 }} {...stepProps(`${l.year}, loan, not a change of ownership. ${l.who}${l.where ? `, ${l.where}` : ''}.`)}>
                   <span aria-hidden style={{ position: 'absolute', left: 17, top: 6, width: 12, height: 12, borderRadius: '50%', background: GAL.sage }} />
                   <div style={{ ...branchGap, ...assemble() }}>
                     <EventBody node={l} tag="Loan · not a move" tagColor={GAL.sage} artwork={artwork} />
@@ -305,7 +343,7 @@ export function ChainOfCustodyTimeline({
               ))}
 
               {following.map((g, gi) => (
-                <div key={`g-${gi}`} style={{ marginTop: 14, ...assemble(true) }}><GapBand gap={g} heightPx={gapHeightPx.get(g)} /></div>
+                <div key={`g-${gi}`} style={{ marginTop: 14, ...assemble(true) }} {...stepProps()}><GapBand gap={g} heightPx={gapHeightPx.get(g)} /></div>
               ))}
 
               {/* Proportional spacer — the empty span IS the elapsed time (spec §4.1). */}
