@@ -38,6 +38,35 @@ interface ProvenanceDetailProps {
   setDrawerOpen: Dispatch<SetStateAction<boolean>>
 }
 
+// A shimmering placeholder shaped like the chain-of-custody spine it precedes
+// (three dot+label rows on a vertical line) — replaces a plain "Tracing
+// provenance…" text line so the loading state previews the shape of what's
+// coming, not just says something is happening. `.shimmer-light` is the
+// already-built, unused-until-now gallery-palette shimmer in globals.css;
+// its animation is killed by the sitewide reduced-motion rule like any other.
+function TimelineSkeleton() {
+  return (
+    <div style={{ padding: '18px 24px 0' }}>
+      <span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }} role="status">
+        Loading the provenance chain…
+      </span>
+      <div aria-hidden="true">
+        <div className="shimmer-light" style={{ width: 140, height: 11, borderRadius: 3, marginBottom: 22 }} />
+        <div style={{ position: 'relative' }}>
+          <span style={{ position: 'absolute', left: 7, top: 6, bottom: 10, width: 2, background: GAL.borderMid }} />
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{ position: 'relative', paddingLeft: 30, marginBottom: 34 }}>
+              <span className="shimmer-light" style={{ position: 'absolute', left: 1, top: 4, width: 13, height: 13, borderRadius: '50%' }} />
+              <div className="shimmer-light" style={{ width: 70, height: 16, borderRadius: 3, marginBottom: 8 }} />
+              <div className="shimmer-light" style={{ width: '60%', maxWidth: 260, height: 13, borderRadius: 3 }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function ProvenanceDetail({
   selected, hero, credit, prov, loading, showInsight, setShowInsight,
   onClose, isMobile, drawerOpen, setDrawerOpen,
@@ -166,9 +195,7 @@ export function ProvenanceDetail({
           </div>
         </div>
 
-        {loading && (
-          <div style={{ padding: 24, color: GAL.textMuted, fontFamily: 'var(--font-ui)', fontSize: '0.85rem' }}>Tracing provenance…</div>
-        )}
+        {loading && <TimelineSkeleton />}
 
         {prov && !loading && (
           <>
