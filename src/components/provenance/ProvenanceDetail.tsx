@@ -326,6 +326,18 @@ export function ProvenanceDetail({
                       <span style={{ fontSize: '0.9rem', color: GAL.gold }}>✦</span>
                       <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: GAL.gold }}>Provenance Intelligence</div>
                     </div>
+                    {/* Epistemic caveat — reads BEFORE the tier pill below, not after all the
+                        supporting detail, so the pill is never read as a stronger claim than
+                        this heuristic actually supports. Deliberately neutral (textMuted/
+                        borderMid), not one of the FLAG/REVIEW/CLEAR tier colors, so it never
+                        reads as belonging to a tier itself. */}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 12, padding: '8px 12px', background: GAL.surface2, border: `1px solid ${GAL.borderMid}`, borderRadius: 5 }}>
+                      <span aria-hidden style={{ fontSize: '0.8rem', color: GAL.textMuted, flexShrink: 0, lineHeight: 1.4 }}>ⓘ</span>
+                      <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.72rem', color: GAL.textMuted, lineHeight: 1.5 }}>
+                        Derived from institutional records only. Full AI analysis available with Claude API.
+                        Not legal advice. Verify with primary sources before professional use.
+                      </span>
+                    </div>
                     {/* Risk tier pill — headline signal before detail */}
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: rs.bg, border: `1px solid ${rs.border}`, borderRadius: 5, padding: '4px 10px', marginBottom: 14 }}>
                       <span style={{ fontSize: '0.75rem', color: rs.color }}>{rs.icon}</span>
@@ -392,10 +404,6 @@ export function ProvenanceDetail({
                             : '✓ No 1933–1945 custody gap detected. Clean chain in available records.'}
                         </p>
                       )}
-                    </div>
-                    <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid rgba(212,168,83,0.12)`, fontFamily: 'var(--font-ui)', fontSize: '0.62rem', color: GAL.textFaint }}>
-                      Derived from institutional records only. Full AI analysis available with Claude API.
-                      Not legal advice. Verify with primary sources before professional use.
                     </div>
                   </div>
                 )
