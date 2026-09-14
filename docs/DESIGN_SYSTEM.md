@@ -78,10 +78,10 @@ The transition between modes is a key moment: ~400 ms ease-out into the warm gal
 
 ### 2a. Faces
 
-| Role       | Family                | Weight(s)  | CDN |
+| Role       | Family                | Weight(s)  | Loaded via |
 |------------|-----------------------|------------|-----|
-| **Display / Serif** | Cormorant Garamond | 400, 500, 600, 700 | Google Fonts |
-| **UI / Grotesque**  | Pretendard          | 300, 400, 500, 600 | cdn.jsdelivr.net |
+| **Display / Serif** | Cormorant Garamond | 400, 500, 600, 700 | `next/font/google` — self-hosted at build, no runtime Google Fonts request |
+| **UI / Grotesque**  | Pretendard          | 300, 400, 500, 600 | `<link>` to cdn.jsdelivr.net (self-hosting via `next/font/local` is a separate, larger item) |
 
 CSS family declarations:
 ```css

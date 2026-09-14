@@ -36,8 +36,10 @@
   --gal-gold:         #a07830;
 
   /* Typography */
-  --font-display: 'Cormorant Garamond', 'Georgia', serif;
-  --font-ui:      'Pretendard', 'system-ui', sans-serif;
+  /* --font-display is defined by next/font (src/app/layout.tsx, applied via
+     className on <html>) — self-hosted at build, no runtime Google Fonts
+     request. Not redeclared here to avoid a second source of truth. */
+  --font-ui: 'Pretendard', 'system-ui', sans-serif;
 
   /* Motion */
   --ease-gentle:    cubic-bezier(0.4,0,0.2,1);
