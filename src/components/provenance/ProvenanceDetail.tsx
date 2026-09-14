@@ -7,7 +7,10 @@
  * §4.1/§5) — the artwork is the object-hero above a centered ~1100px column, and the
  * ChainOfCustodyTimeline gets the room to render its horizontal hero layout instead of
  * being squeezed into a drawer. Always visible (non-modal) while a work is open; no
- * hamburger/backdrop — the panel IS the view.
+ * hamburger/backdrop — the panel IS the view. Padding/image-height/title-size within
+ * this shared branch read the --pt-detail-* CSS custom properties (globals.css), which
+ * are themselves media-query-driven — so tablet (768-1023px) gets real, distinct
+ * tuning rather than desktop's numbers reused verbatim.
  *
  * Mobile (`isMobile`): unchanged narrow slide-in drawer (hamburger + backdrop) so the
  * ChainOfCustodyTimeline keeps its vertical mobile fallback (spec §4.1 mobile).
@@ -171,8 +174,12 @@ export function ProvenanceDetail({
         {hero && (
           // The object is the hero: presented large and uncropped, centered with room
           // to breathe and a soft shadow to lift it like a framed work (spec §5).
+          // Non-mobile padding/height read --pt-detail-* (globals.css, media-query-
+          // driven) so tablet (768-1023px) gets its own tuning instead of silently
+          // reusing desktop's numbers — mobile keeps its structurally different
+          // cover-image treatment via the isMobile JS branch, unchanged.
           <div style={{
-            padding: isMobile ? 0 : '32px 24px 8px',
+            padding: isMobile ? 0 : 'var(--pt-detail-pad-top) var(--pt-detail-pad-x) 8px',
             display: 'flex', justifyContent: 'center', background: GAL.bg,
           }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -180,7 +187,7 @@ export function ProvenanceDetail({
               onError={e => { e.currentTarget.style.display = 'none' }}
               style={{
                 width: isMobile ? '100%' : 'auto', maxWidth: '100%',
-                height: isMobile ? 280 : 'min(56vh, 560px)',
+                height: isMobile ? 280 : 'var(--pt-detail-img-h)',
                 objectFit: isMobile ? 'cover' : 'contain', display: 'block',
                 background: isMobile ? GAL.surface2 : 'transparent',
                 boxShadow: isMobile ? 'none' : '0 16px 44px rgba(26,23,20,0.22)',
@@ -189,7 +196,7 @@ export function ProvenanceDetail({
         )}
 
         <div style={{ padding: '22px 24px 8px' }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: isMobile ? '1.7rem' : 'clamp(2.2rem, 4vw, 3.4rem)', fontWeight: 400, color: GAL.text, lineHeight: 1.1, margin: 0 }}>{selected.title}</h2>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: isMobile ? '1.7rem' : 'var(--pt-detail-title)', fontWeight: 400, color: GAL.text, lineHeight: 1.1, margin: 0 }}>{selected.title}</h2>
           <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.85rem', color: GAL.textMuted, marginTop: 6 }}>
             {selected.artist}{selected.date ? ` · ${selected.date}` : ''}
           </div>

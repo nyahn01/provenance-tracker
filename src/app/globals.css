@@ -51,6 +51,52 @@
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
+
+  /* Responsive tokens — landing hero/globe proportions and the provenance
+     panel's desktop/tablet-shared sizing. CSS media queries (not JS width
+     state) so the correct value is already painted on the FIRST server-
+     rendered frame — no post-hydration snap. Breakpoints are 768px/1024px
+     (matching StoriesApp.tsx's BP_MOBILE/BP_TABLET), not the plan's nominal
+     "700px": a narrower cut would put 700-767px in a split state (CSS
+     tablet layout here, but still the JS mobile drawer in ProvenanceDetail,
+     which genuinely needs isMobile as behavioral state — focus trap, modal
+     role, slide transform — not just sizing). Do not reintroduce JS-branched
+     sizing for anything these tokens already cover — see DESIGN_SYSTEM.md §11.
+     Desktop (>1023px) defaults below; overridden at each narrower breakpoint. */
+  --pt-globe-h: 100%;
+  --pt-hero-min: 92vh;
+  --pt-hero-stop-a: 38%;
+  --pt-hero-stop-b: 82%;
+  --pt-detail-pad-x: 24px;
+  --pt-detail-pad-top: 32px;
+  --pt-detail-img-h: min(56vh, 560px);
+  --pt-detail-title: clamp(2.2rem, 4vw, 3.4rem);
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --pt-globe-h: 80%;
+    --pt-hero-min: 76vh;
+    --pt-hero-stop-a: 28%;
+    --pt-hero-stop-b: 72%;
+    --pt-detail-pad-x: 48px;
+    --pt-detail-pad-top: 28px;
+    --pt-detail-img-h: min(44vh, 460px);
+    --pt-detail-title: clamp(1.9rem, 3.4vw, 2.6rem);
+  }
+}
+
+/* Phone: preserves the exact values LandingEditorial/StoriesApp already
+   shipped for mobile (isMobile's own JS branch still owns ProvenanceDetail's
+   structurally-different phone layout — full-bleed cover image, drawer — so
+   only the landing-side tokens are redeclared here). */
+@media (max-width: 767px) {
+  :root {
+    --pt-globe-h: 50%;
+    --pt-hero-min: 72vh;
+    --pt-hero-stop-a: 20%;
+    --pt-hero-stop-b: 62%;
+  }
 }
 
 /* ─── Reset ──────────────────────────────────────────────────────────────────── */
@@ -173,6 +219,34 @@ html, body {
 @media (min-width: 720px) {
   .landing-lead {
     grid-column: span 2;
+  }
+}
+/* Collection grid — a CSS class (not an inline style) specifically so the
+   tablet override below can actually win: an inline style always beats an
+   external rule for the same property regardless of media query, same
+   reasoning as the :focus-visible/outline note elsewhere in this file. */
+.landing-collection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* minmax(280px,1fr) alone yields three pinched ~290px columns around
+     900-1000px width; force a cleaner 2-up tablet grid. Scoped to the
+     tablet range only (not max-width alone) — auto-fill's own single-column
+     collapse below ~600px is the right behavior for phones and must not be
+     overridden into two ~165px-wide cramped columns. */
+  .landing-collection-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+/* Search result rows: full institution name (sourceInstitution()) is the
+   tablet+/desktop disambiguator; hidden below 1024px so phones keep just the
+   compact source badge — CSS-driven (not JS isTablet) per the responsive-
+   tokens note above `:root`, so it's correct on the very first paint. */
+@media (max-width: 1023px) {
+  .landing-result-institution {
+    display: none;
   }
 }
 

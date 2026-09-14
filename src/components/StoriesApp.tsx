@@ -9,13 +9,25 @@ import { ProvenanceDetail } from './provenance/ProvenanceDetail'
 import { LandingEditorial } from './landing/LandingEditorial'
 
 // ─── Responsive breakpoints ───────────────────────────────────────────────────
-const BP_TABLET = 1024  // px — sidebar collapses to drawer below this
-const BP_MOBILE = 768   // px — globe height reduced below this
+// Sizing/proportions (globe height, hero, ProvenanceDetail padding) live as CSS
+// custom properties (globals.css, media-query-driven — see the "Responsive
+// tokens" block) so they're correct on the first painted frame, not just after
+// this hook resolves post-hydration. BP_MOBILE is the one width-dependent value
+// that's genuinely JS/behavioral state (the drawer's focus trap, modal role,
+// slide transform), not just sizing — it has to stay here.
+const BP_MOBILE = 768   // px — mobile drawer pattern below this
 
 function useViewport() {
   // Start from the SSR default (1280) on both server and first client render so
   // markup matches during hydration, then snap to the real width after mount.
-  // This avoids the height-prop hydration mismatch the globe container used to throw.
+  // This avoids a hydration mismatch on `width` itself. It no longer causes a
+  // visible layout jump the way it used to: the values that render on the very
+  // first frame (globe height, hero sizing, ProvenanceDetail's non-mobile
+  // padding/image/title) are CSS custom properties resolved by the browser at
+  // paint time, not JS computed from this state. Only `isMobile`'s drawer
+  // behavior (focus trap, modal role, slide transform — ProvenanceDetail only
+  // ever mounts after a user interaction, well after this resolves) still
+  // depends on the real value from this hook.
   const [width, setWidth] = useState<number>(1280)
   useEffect(() => {
     const handler = () => setWidth(window.innerWidth)
@@ -44,7 +56,6 @@ export default function StoriesApp() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const viewportWidth = useViewport()
   const isMobile = viewportWidth < BP_MOBILE
-  const isTablet = viewportWidth < BP_TABLET
 
   const inStory = !!selected
 
@@ -103,9 +114,6 @@ export default function StoriesApp() {
     } catch { setResults([]) } finally { setSearching(false) }
   }, [])
 
-  // ── Globe height: 50% on mobile, 75% on tablet, 100% on desktop ──────────
-  const globeHeightPct = isMobile ? '50%' : isTablet ? '75%' : '100%'
-
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: OBS.bg }}>
       {/* Globe — the quiet landing backdrop (ADR 0004: no longer the hero). It
@@ -116,14 +124,13 @@ export default function StoriesApp() {
           for the "see this journey on a map" reveal (ProvenanceDetail, Stage 2b). */}
       {!inStory && (
         <div aria-hidden style={{ position: 'absolute', inset: 0, opacity: 0.65 }}>
-          <GlobeContainer prov={prov} globeHeightPct={globeHeightPct} />
+          <GlobeContainer prov={prov} globeHeightPct="var(--pt-globe-h)" />
         </div>
       )}
 
       {/* ── LANDING: the editorial column (LandingEditorial owns the layout) ── */}
       {!inStory && (
         <LandingEditorial
-          isTablet={isTablet}
           query={query}
           setQuery={setQuery}
           searchBy={searchBy}

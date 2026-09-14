@@ -406,6 +406,38 @@ is unchanged, with the globe at reduced height behind the hero.
 }
 ```
 
+### 10a. Responsive tokens (`--pt-*`)
+
+Width-dependent **sizing** (landing globe height/hero proportions, `ProvenanceDetail`'s
+non-mobile padding/image-height/title-size) is CSS custom properties in `globals.css`,
+overridden by two `@media (max-width: …)` blocks (1023px tablet, 767px phone) — not JS
+`window.innerWidth` state. This is deliberate: a value read from JS state can only apply
+after mount, so the first server-rendered frame briefly shows the desktop value before
+snapping to the real one. A CSS media query resolves at paint time, so the first frame is
+already correct.
+
+| Token | Desktop (>1023px) | Tablet (768–1023px) | Phone (<768px) |
+|---|---|---|---|
+| `--pt-globe-h` | 100% | 80% | 50% |
+| `--pt-hero-min` | 92vh | 76vh | 72vh |
+| `--pt-hero-stop-a` / `-b` (gradient) | 38% / 82% | 28% / 72% | 20% / 62% |
+| `--pt-detail-pad-x` | 24px | 48px | — (mobile has its own structural layout) |
+| `--pt-detail-pad-top` | 32px | 28px | — |
+| `--pt-detail-img-h` | min(56vh,560px) | min(44vh,460px) | — (fixed 280px, `object-fit:cover`) |
+| `--pt-detail-title` | clamp(2.2rem,4vw,3.4rem) | clamp(1.9rem,3.4vw,2.6rem) | 1.7rem |
+
+Breakpoints are 768px/1024px, matching `StoriesApp.tsx`'s `BP_MOBILE`/former `BP_TABLET` —
+**not** a nominal 700px: a narrower tablet cut would put 700–767px in a split state (CSS
+tablet sizing here, but still the JS mobile drawer for `ProvenanceDetail`'s behavior —
+focus trap, modal role, slide transform — which genuinely needs `isMobile` as JS state,
+not just sizing, and stays keyed to 768px).
+
+**Do not reintroduce JS-branched sizing for anything this table already covers.** `isMobile`
+(`StoriesApp.tsx`) still exists and is still the right tool for genuine *behavioral* branches
+(the drawer's focus trap/modal role/slide-in, `--site-nav-display`) — those only ever run
+post-interaction (`ProvenanceDetail` doesn't mount until a work is opened), so they were
+never subject to the first-frame mismatch these tokens fix.
+
 ---
 
 ## 11. Shared primitives (`src/components/ui/`) — the styling rule
