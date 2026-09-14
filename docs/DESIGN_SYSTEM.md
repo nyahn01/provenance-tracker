@@ -78,15 +78,16 @@ The transition between modes is a key moment: ~400 ms ease-out into the warm gal
 
 ### 2a. Faces
 
-| Role       | Family                | Weight(s)  | CDN |
+| Role       | Family                | Weight(s)  | Loaded via |
 |------------|-----------------------|------------|-----|
-| **Display / Serif** | Cormorant Garamond | 400, 500, 600, 700 | Google Fonts |
-| **UI / Grotesque**  | Pretendard          | 300, 400, 500, 600 | cdn.jsdelivr.net |
+| **Display / Serif** | Cormorant Garamond | 400, 500, 600, 700 | `next/font/google` — self-hosted at build, no runtime Google Fonts request |
+| **UI / Grotesque**  | Pretendard          | 400, 500, 600, 700 | `next/font/local` — self-hosted at build from vendored woff2s (`src/app/fonts/pretendard/`, OFL-1.1), no runtime CDN request |
 
-CSS family declarations:
+Both `--font-display` and `--font-ui` are defined by `next/font` in `src/app/layout.tsx`
+(applied via `className` on `<html>`), not as CSS literals — see `globals.css`'s
+`:root` comment. Every component still reads them the same way:
 ```css
---font-display: 'Cormorant Garamond', 'Georgia', serif;
---font-ui:      'Pretendard', 'system-ui', sans-serif;
+font-family: var(--font-display); /* or */ var(--font-ui);
 ```
 
 Cormorant Garamond is used for:
@@ -371,8 +372,8 @@ is unchanged, with the globe at reduced height behind the hero.
   --gal-gold:         #a07830;
 
   /* Typography */
-  --font-display: 'Cormorant Garamond', 'Georgia', serif;
-  --font-ui:      'Pretendard', 'system-ui', sans-serif;
+  /* --font-display and --font-ui are defined by next/font (layout.tsx), not
+     as literals here — see §2a. */
 
   /* Motion */
   --ease-gentle:    cubic-bezier(0.4,0,0.2,1);
