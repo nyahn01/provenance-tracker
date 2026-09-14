@@ -31,15 +31,16 @@ function useShowLandingGlobe() {
   const [show, setShow] = useState(false)
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const w = window as Window & {
-      requestIdleCallback?: (cb: () => void) => number
-      cancelIdleCallback?: (id: number) => void
-    }
-    const id = w.requestIdleCallback
-      ? w.requestIdleCallback(() => setShow(true))
+    // `typeof`, not a truthiness check: the DOM lib types requestIdleCallback as
+    // always present, so `if (window.requestIdleCallback)` is flagged as dead
+    // code — but Safari genuinely doesn't implement it at runtime, so the guard
+    // has to stay. The static type is simply more optimistic than reality here.
+    const hasIdle = typeof window.requestIdleCallback === 'function'
+    const id = hasIdle
+      ? window.requestIdleCallback(() => setShow(true))
       : window.setTimeout(() => setShow(true), 200)
     return () => {
-      if (w.requestIdleCallback && w.cancelIdleCallback) w.cancelIdleCallback(id)
+      if (hasIdle) window.cancelIdleCallback(id)
       else window.clearTimeout(id)
     }
   }, [])
