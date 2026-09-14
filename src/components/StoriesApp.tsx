@@ -17,6 +17,35 @@ import { LandingEditorial } from './landing/LandingEditorial'
 // slide transform), not just sizing — it has to stay here.
 const BP_MOBILE = 768   // px — mobile drawer pattern below this
 
+// The landing globe (below) is pure decoration — its wrapper div is
+// aria-hidden, so screen-reader users get nothing from it either way, unlike
+// the on-demand "see this journey on a map" reveal (ProvenanceDetail.tsx),
+// which is a real feature a user explicitly asked for and must still mount
+// under reduced motion (just without auto-rotate, which GlobeContainer
+// already handles). Best-practice deferral therefore only applies here, to
+// the passive landing mount: skip it entirely under prefers-reduced-motion
+// (no WebGL/Three.js init, no GeoJSON fetch — not just a stopped animation),
+// and for everyone else, defer the mount to an idle moment rather than
+// contending with critical initial interactivity.
+function useShowLandingGlobe() {
+  const [show, setShow] = useState(false)
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void) => number
+      cancelIdleCallback?: (id: number) => void
+    }
+    const id = w.requestIdleCallback
+      ? w.requestIdleCallback(() => setShow(true))
+      : window.setTimeout(() => setShow(true), 200)
+    return () => {
+      if (w.requestIdleCallback && w.cancelIdleCallback) w.cancelIdleCallback(id)
+      else window.clearTimeout(id)
+    }
+  }, [])
+  return show
+}
+
 function useViewport() {
   // Start from the SSR default (1280) on both server and first client render so
   // markup matches during hydration, then snap to the real width after mount.
@@ -56,6 +85,7 @@ export default function StoriesApp() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const viewportWidth = useViewport()
   const isMobile = viewportWidth < BP_MOBILE
+  const showLandingGlobe = useShowLandingGlobe()
 
   const inStory = !!selected
 
@@ -121,8 +151,11 @@ export default function StoriesApp() {
           ground via LandingEditorial's gradient — no scrim. Quieted with a CSS
           wrapper only; the locked GLOBE CONTRACT init inside GlobeContainer is
           never touched. When a work opens it unmounts, freeing the WebGL context
-          for the "see this journey on a map" reveal (ProvenanceDetail, Stage 2b). */}
-      {!inStory && (
+          for the "see this journey on a map" reveal (ProvenanceDetail, Stage 2b).
+          Mount itself is deferred (useShowLandingGlobe above) — skipped entirely
+          under reduced motion (this backdrop is aria-hidden either way, so screen
+          readers lose nothing), deferred to an idle moment for everyone else. */}
+      {!inStory && showLandingGlobe && (
         <div aria-hidden style={{ position: 'absolute', inset: 0, opacity: 0.65 }}>
           <GlobeContainer prov={prov} globeHeightPct="var(--pt-globe-h)" />
         </div>

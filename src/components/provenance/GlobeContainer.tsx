@@ -92,7 +92,21 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
       globeRef.current = globe
       if (mounted) setReady(true)
     })()
-    return () => { mounted = false; if (onResize) window.removeEventListener('resize', onResize) }
+    // Explicit WebGL/Three.js teardown on unmount — this component genuinely
+    // unmounts and remounts fresh across the app (landing backdrop <-> the
+    // on-demand map reveal never coexist; StoriesApp's comment above calls
+    // this out as "freeing the WebGL context" for the other usage). Globe.gl
+    // exposes _destructor() for exactly this (disposes the renderer, stops
+    // its render loop, removes its canvas) — best practice for a component
+    // that mounts/unmounts repeatedly, not just a one-time page load; without
+    // it, disposal depended on GC eventually reclaiming the WebGL context,
+    // and browsers cap how many can be live at once.
+    return () => {
+      mounted = false
+      if (onResize) window.removeEventListener('resize', onResize)
+      globeRef.current?._destructor?.()
+      globeRef.current = null
+    }
   }, [])
 
   // ── Arcs + dots + auto-frame on provenance ────────────────────────────────
