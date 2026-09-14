@@ -62,7 +62,7 @@ export function NewsletterSignup({ palette = 'marketing' }: { palette?: 'obs' | 
 
   if (status.kind === 'success') {
     return (
-      <div style={{ fontFamily: 'var(--font-ui)', fontSize: '0.8rem', color: C.textMuted, lineHeight: 1.6 }}>
+      <div className="float-in" style={{ fontFamily: 'var(--font-ui)', fontSize: '0.8rem', color: C.textMuted, lineHeight: 1.6 }}>
         Thank you — check your inbox to confirm the subscription.
       </div>
     )
@@ -102,7 +102,6 @@ export function NewsletterSignup({ palette = 'marketing' }: { palette?: 'obs' | 
             color: C.text,
             fontSize: '0.85rem',
             fontFamily: 'inherit',
-            outline: 'none',
           }}
         />
         <button
@@ -126,7 +125,7 @@ export function NewsletterSignup({ palette = 'marketing' }: { palette?: 'obs' | 
         </button>
       </div>
       {status.kind === 'error' && (
-        <div style={{ marginTop: 10, fontSize: '0.78rem', color: C.textMuted, lineHeight: 1.55 }}>
+        <div className="float-in" style={{ marginTop: 10, fontSize: '0.78rem', color: C.textMuted, lineHeight: 1.55 }}>
           {status.emailFallback ? (
             <>
               Signup isn&apos;t available right now — email{' '}
