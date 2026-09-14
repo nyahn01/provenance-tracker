@@ -20,12 +20,10 @@ import { WorkCard } from './WorkCard'
 const COLUMN: React.CSSProperties = { maxWidth: 1100, margin: '0 auto', padding: '0 clamp(20px, 3vw, 28px)' }
 
 export function LandingEditorial({
-  isTablet,
   query, setQuery, searchBy, setSearchBy,
   results, searching, searched,
   runSearch, onSelectFeatured, onSelectResult,
 }: {
-  isTablet: boolean
   query: string
   setQuery: (q: string) => void
   searchBy: SearchByMode
@@ -42,14 +40,18 @@ export function LandingEditorial({
   return (
     <div className="obs-scroll" style={{ position: 'absolute', inset: 0, overflowY: 'auto', fontFamily: 'var(--font-ui)' }}>
 
-      {/* ── HERO — first viewport: the globe dissolves into the page ground ── */}
+      {/* ── HERO — first viewport: the globe dissolves into the page ground.
+          minHeight/gradient stops read the --pt-hero-* custom properties
+          (globals.css, media-query-driven) rather than JS width state, so the
+          server-rendered first frame already has the right value for the
+          visitor's actual viewport — no post-hydration snap. ── */}
       <div
         style={{
-          minHeight: isTablet ? '72vh' : '92vh',
+          minHeight: 'var(--pt-hero-min)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-end',
-          background: `linear-gradient(180deg, transparent 0%, transparent ${isTablet ? '20%' : '38%'}, ${OBS.bg} ${isTablet ? '62%' : '82%'})`,
+          background: `linear-gradient(180deg, transparent 0%, transparent var(--pt-hero-stop-a), ${OBS.bg} var(--pt-hero-stop-b))`,
           paddingBottom: 48,
         }}
       >
@@ -203,11 +205,11 @@ export function LandingEditorial({
                     </span>
                     <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0 }}>
                       <SourceBadge source={r.source} />
-                      {!isTablet && (
-                        <span style={{ fontSize: '0.6875rem', color: OBS.textFaint, whiteSpace: 'nowrap' }}>
-                          {sourceInstitution(r.source)}
-                        </span>
-                      )}
+                      {/* CSS-hidden (not JS isTablet) below 1024px, same reasoning as the
+                          hero tokens above — correct on first paint, no width-state lag. */}
+                      <span className="landing-result-institution" style={{ fontSize: '0.6875rem', color: OBS.textFaint, whiteSpace: 'nowrap' }}>
+                        {sourceInstitution(r.source)}
+                      </span>
                     </span>
                   </button>
                 ))}
@@ -220,7 +222,7 @@ export function LandingEditorial({
             <h2 style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: OBS.textFaint, marginBottom: 18 }}>
               The collection — eight documented journeys
             </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+            <div className="landing-collection-grid">
               <WorkCard work={lead} lead onSelect={onSelectFeatured} />
               {rest.map(f => (
                 <WorkCard key={f.id} work={f} onSelect={onSelectFeatured} />
