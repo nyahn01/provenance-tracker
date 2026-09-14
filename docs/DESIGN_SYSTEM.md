@@ -185,23 +185,41 @@ Reduced motion: all transforms and transitions collapse to `0ms`. Globe still ro
 
 ## 6. Component specifications
 
-### 6a. Search bar
-- Position: bottom-center of the globe view, centered between the sidebars
-- Width: 480px on desktop, full-width minus 32px on mobile
-- Background: `--obs-surface` with 1px `--obs-border` border, `--radius-md`
-- Focus ring: `2px solid --obs-clay` (meets WCAG AA, no box-shadow tricks)
-- Placeholder text: `--obs-text-faint`; font-ui, 0.875rem
-- Submit arrow: clay `→`, no background, 200ms hover opacity 0.6
-- Label above: `SEARCH ANY PAINTING` in small-caps style (type-label)
+### 6a. Search bar (landing IA — `LandingEditorial.tsx`, `#search`)
+Superseded the earlier bottom-center-of-globe placement described in prior versions of
+this doc when the timeline-led hero landed (ADR 0004) — the globe is no longer the hero,
+so a globe-anchored search bar no longer applies. Current layout, top to bottom:
+- Section sits directly under the hero (`id="search"`), above `#collection` — the only
+  way to reach anything beyond the 8 featured works, promoted rather than buried below
+  the collection grid and insights cross-link.
+- Label: `SEARCH THE WORLD'S MUSEUMS — SIX COLLECTIONS`, small-caps, `type-label`
+- Search-by toggle (All / Artist / Title) above the field — active state `--obs-clay` fill
+- Field: inline (not a floating bar), max-width 520px, `--obs-surface` bg, 1px `--obs-border`,
+  `--radius-md`, `type-body` (0.875rem)
+- Focus ring: sitewide `:focus-visible` (`2px solid --obs-clay`, `globals.css`) — never an
+  inline `outline: none` override (see FeedbackForm/NewsletterSignup honesty note)
+- Submit: clay filled button, not an inline arrow
 
-### 6b. Search results dropdown
-- Anchors directly above the search bar, same width
-- Background: `--obs-dropdown`; border: `1px solid --obs-border-mid`; shadow: elevation 3
-- Each row: 64px tall, thumbnail 40×40 (rounded-sm) left, title + artist right
-- Hover state: `--obs-clay-dim` background fill, 200ms
-- Source badge: top-right corner of each row; see badge spec below
-- Max 5 results shown; overflow is hidden (not scrollable — short list is the UX)
-- Empty / no-results: renders the "Provenance gap" discovery state (see 6e)
+### 6b. Search results (inline list, not a dropdown)
+Results render inline below the field, pushing the page down — not an overlay/dropdown.
+- Row: ~72px, two-line title/meta stack (not single-line) for disambiguation — two works
+  sharing a title/artist across museums must read as distinct entries
+  - Thumbnail 48×48 (rounded-sm), left
+  - Line 1: title, `type-body` (0.875rem), weight 500, `--obs-text`
+  - Line 2: `{artist} · {date}`, `type-body-sm` (0.8125rem), `--obs-text-muted`; a missing
+    date renders literally as "Date not recorded" in `--obs-text-faint` — a gap shown, never
+    a dropped field (honesty rule: sparse data is a gap, never faked)
+  - Right rail: `SourceBadge` (see 6f) stacked above the full institution name
+    (`sourceInstitution()`, `type-caption` 0.6875rem, `--obs-text-faint`); institution name
+    hidden below the tablet breakpoint, badge alone on phone
+- Hover/focus state: `--obs-clay-dim` background fill via `.landing-result-row` (CSS class,
+  never JS style mutation)
+- All results render (no arbitrary cap) — the search spans full museum catalogues, not a
+  curated shortlist, so truncating silently would hide real results
+- Empty / no-results: plain copy naming which of the six collections were searched, plus
+  an honest framing note that the 8 featured works are documented in depth while general
+  search reaches sparser catalogue data — not the "Provenance gap" state (6e), which is
+  for an opened work with no chain of custody, not a search with no matches
 
 ### 6c. Museum list (left sidebar — observatory mode)
 - Width: 280px, translucent `--obs-panel`, backdrop-blur 16px

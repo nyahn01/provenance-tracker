@@ -13,6 +13,7 @@ import type { SearchResult, SearchByMode } from '@/lib/types'
 import { FEATURED_WORKS, type FeaturedWork } from '@/lib/featured'
 import { OBS } from '@/lib/design-tokens'
 import { SourceBadge } from '../provenance/SourceBadge'
+import { sourceInstitution } from '../provenance/timeline'
 import { NewsletterSignup } from '../NewsletterSignup'
 import { WorkCard } from './WorkCard'
 
@@ -81,34 +82,14 @@ export function LandingEditorial({
       <div style={{ background: OBS.bg, paddingBottom: 80 }}>
         <div style={COLUMN}>
 
-          {/* ── THE COLLECTION ── */}
-          <section id="collection" style={{ paddingTop: 40 }}>
-            <h2 style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: OBS.textFaint, marginBottom: 18 }}>
-              The collection — eight documented journeys
-            </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
-              <WorkCard work={lead} lead onSelect={onSelectFeatured} />
-              {rest.map(f => (
-                <WorkCard key={f.id} work={f} onSelect={onSelectFeatured} />
-              ))}
-            </div>
-          </section>
-
-          {/* ── INSIGHTS cross-link ── */}
-          <a href="/insights" className="landing-work-card" style={{ display: 'block', marginTop: 28, padding: '18px 22px', background: OBS.surface, border: `1px solid ${OBS.border}`, borderRadius: 10, textDecoration: 'none' }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', color: OBS.text, lineHeight: 1.2 }}>
-              The market, in aggregate
-            </div>
-            <div style={{ fontSize: '0.82rem', color: OBS.textMuted, marginTop: 4, lineHeight: 1.5 }}>
-              4,388 dated dealer records, 1859&ndash;1971 — transactions, prices, the dealer network, and the Paris&ndash;Chicago pipeline.{' '}
-              <span style={{ color: OBS.gold }}>See the insights &rarr;</span>
-            </div>
-          </a>
-
-          {/* ── SEARCH ── */}
-          <section style={{ marginTop: 64, borderTop: `1px solid ${OBS.border}`, paddingTop: 28 }}>
+          {/* ── SEARCH — the entry point to everything beyond the 8 featured
+              works, promoted directly under the hero rather than buried below
+              the collection grid and insights cross-link. Quiet by design (no
+              borderTop of its own) so the collection grid below stays the
+              visual hero; #collection carries the section divider instead. ── */}
+          <section id="search" style={{ paddingTop: 32 }}>
             <h2 style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: OBS.textFaint, marginBottom: 12 }}>
-              Search the world&apos;s museums
+              Search the world&apos;s museums — six collections
             </h2>
 
             {/* Search-by mode toggle */}
@@ -175,18 +156,21 @@ export function LandingEditorial({
               <div style={{ color: OBS.textMuted, fontSize: '0.85rem', marginTop: 16, lineHeight: 1.5, maxWidth: 520 }}>
                 Nothing found for &quot;{query}&quot;
                 {searchBy !== 'all' && <> ({searchBy === 'artist' ? 'artist' : 'title'} search)</>}.{' '}
-                Search spans the Met, Art Institute of Chicago, Rijksmuseum, Europeana, and Wikidata
+                Search spans the Met, Art Institute of Chicago, Rijksmuseum, Cleveland Museum of Art,
+                Europeana, and Wikidata
                 {searchBy !== 'all' && <> — try switching to <strong>All</strong> or check spelling</>}.
+                {' '}The eight featured works are documented in depth; search reaches full museum
+                catalogues, where provenance is often sparse.
               </div>
             )}
             {results.length > 0 && (
-              <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 6, maxWidth: 640 }}>
+              <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 6, maxWidth: 720 }}>
                 {results.map(r => (
                   <button
                     key={r.id}
                     onClick={() => onSelectResult(r)}
                     className="landing-result-row"
-                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, textAlign: 'left', background: 'transparent', border: `1px solid ${OBS.border}`, borderRadius: 8, padding: '8px 12px', cursor: 'pointer', color: OBS.text }}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, textAlign: 'left', background: 'transparent', border: `1px solid ${OBS.border}`, borderRadius: 8, padding: '10px 12px', cursor: 'pointer', color: OBS.text }}
                   >
                     <span style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
                       {r.thumbnail ? (
@@ -196,27 +180,64 @@ export function LandingEditorial({
                           alt=""
                           loading="lazy"
                           onError={e => { e.currentTarget.style.visibility = 'hidden' }}
-                          style={{ width: 44, height: 44, flexShrink: 0, objectFit: 'cover', borderRadius: 5, background: OBS.globeLand, display: 'block' }}
+                          style={{ width: 48, height: 48, flexShrink: 0, objectFit: 'cover', borderRadius: 5, background: OBS.globeLand, display: 'block' }}
                         />
                       ) : (
                         <span
                           title={r.source === 'aic' ? 'Image unavailable — AIC IIIF restriction' : undefined}
                           aria-label={r.source === 'aic' ? 'Image unavailable' : 'No image'}
-                          style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 5, background: OBS.surface, border: `1px solid ${OBS.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: OBS.textFaint, fontSize: r.source === 'aic' ? '0.55rem' : '1rem', gap: 1, letterSpacing: '0.03em' }}
+                          style={{ width: 48, height: 48, flexShrink: 0, borderRadius: 5, background: OBS.surface, border: `1px solid ${OBS.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: OBS.textFaint, fontSize: r.source === 'aic' ? '0.55rem' : '1rem', gap: 1, letterSpacing: '0.03em' }}
                         >
                           {r.source === 'aic' ? <><span style={{ fontSize: '0.7rem' }}>◇</span><span>AIC</span></> : '◇'}
                         </span>
                       )}
-                      <span style={{ fontSize: '0.85rem', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {r.title} <span style={{ color: OBS.textMuted }}>· {r.artist}</span>
+                      <span style={{ minWidth: 0 }}>
+                        <span style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: OBS.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {r.title}
+                        </span>
+                        <span style={{ display: 'block', fontSize: '0.8125rem', color: OBS.textMuted, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {r.artist} <span style={{ color: OBS.textFaint }}>·</span>{' '}
+                          {r.date ? r.date : <span style={{ color: OBS.textFaint }}>Date not recorded</span>}
+                        </span>
                       </span>
                     </span>
-                    <SourceBadge source={r.source} />
+                    <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0 }}>
+                      <SourceBadge source={r.source} />
+                      {!isTablet && (
+                        <span style={{ fontSize: '0.6875rem', color: OBS.textFaint, whiteSpace: 'nowrap' }}>
+                          {sourceInstitution(r.source)}
+                        </span>
+                      )}
+                    </span>
                   </button>
                 ))}
               </div>
             )}
           </section>
+
+          {/* ── THE COLLECTION ── */}
+          <section id="collection" style={{ marginTop: 56, borderTop: `1px solid ${OBS.border}`, paddingTop: 32 }}>
+            <h2 style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: OBS.textFaint, marginBottom: 18 }}>
+              The collection — eight documented journeys
+            </h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+              <WorkCard work={lead} lead onSelect={onSelectFeatured} />
+              {rest.map(f => (
+                <WorkCard key={f.id} work={f} onSelect={onSelectFeatured} />
+              ))}
+            </div>
+          </section>
+
+          {/* ── INSIGHTS cross-link ── */}
+          <a href="/insights" className="landing-work-card" style={{ display: 'block', marginTop: 28, padding: '18px 22px', background: OBS.surface, border: `1px solid ${OBS.border}`, borderRadius: 10, textDecoration: 'none' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', color: OBS.text, lineHeight: 1.2 }}>
+              The market, in aggregate
+            </div>
+            <div style={{ fontSize: '0.82rem', color: OBS.textMuted, marginTop: 4, lineHeight: 1.5 }}>
+              4,388 dated dealer records, 1859&ndash;1971 — transactions, prices, the dealer network, and the Paris&ndash;Chicago pipeline.{' '}
+              <span style={{ color: OBS.gold }}>See the insights &rarr;</span>
+            </div>
+          </a>
 
           {/* ── DATA & RIGHTS + NEWSLETTER ── */}
           <div style={{ marginTop: 64, borderTop: `1px solid ${OBS.border}`, paddingTop: 20, fontSize: '0.72rem', color: OBS.textFaint, lineHeight: 1.6, maxWidth: 720 }}>
