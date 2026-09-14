@@ -28,6 +28,10 @@ type Status =
   | { kind: 'success'; issue?: number }
   | { kind: 'error'; message: string; emailFallback: boolean }
 
+// No `outline: 'none'` here — the sitewide `:focus-visible` clay ring
+// (globals.css) is what gives these fields a focus state at all; an inline
+// outline override would win over that external rule regardless of its
+// specificity and silently remove it.
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '10px 12px',
@@ -37,7 +41,6 @@ const inputStyle: React.CSSProperties = {
   color: C.text,
   fontSize: '0.88rem',
   fontFamily: 'inherit',
-  outline: 'none',
 }
 
 const labelStyle: React.CSSProperties = {
@@ -103,6 +106,7 @@ export default function FeedbackForm() {
   if (status.kind === 'success') {
     return (
       <div
+        className="float-in"
         style={{
           padding: '28px',
           background: 'rgba(111,141,125,0.06)',
@@ -207,6 +211,7 @@ export default function FeedbackForm() {
 
       {status.kind === 'error' && (
         <div
+          className="float-in"
           style={{
             padding: '14px 16px',
             // Email-fallback is graceful degradation, not a hard error — style it calmly.
