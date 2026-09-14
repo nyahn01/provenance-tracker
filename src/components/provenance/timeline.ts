@@ -31,6 +31,7 @@ export function sourceInstitution(source: string): string {
     case 'RKD':      return 'RKD — Netherlands Institute for Art History'
     case 'GPI':      return 'Getty Provenance Index'
     case 'EUR':      return 'Europeana'
+    case 'CLEVELAND': return 'Cleveland Museum of Art'
     default:         return source
   }
 }
