@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Cormorant_Garamond } from 'next/font/google'
+import localFont from 'next/font/local'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
@@ -21,6 +22,27 @@ const cormorantGaramond = Cormorant_Garamond({
   style: ['normal', 'italic'],
   display: 'swap',
   variable: '--font-display',
+})
+
+// UI grotesque, self-hosted at build time — same zero-ripple approach as the
+// display serif above: `variable` targets the pre-existing --font-ui custom
+// property every component already reads via var(--font-ui). Weight list is
+// exactly the four weights used anywhere in src/ (grep for `fontWeight:`),
+// no italic (Pretendard ships no italic face; components that set
+// fontStyle: 'italic' on --font-ui already got the browser's synthetic
+// oblique under the old CDN link, since that link didn't declare one
+// either — same fallback behavior, not a regression). Files are the same
+// woff2s vendored for the pitch deck (presentation/vendor/pretendard),
+// OFL-1.1 — see ./fonts/pretendard/LICENSE.txt.
+const pretendard = localFont({
+  src: [
+    { path: './fonts/pretendard/Pretendard-Regular.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/pretendard/Pretendard-Medium.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/pretendard/Pretendard-SemiBold.woff2', weight: '600', style: 'normal' },
+    { path: './fonts/pretendard/Pretendard-Bold.woff2', weight: '700', style: 'normal' },
+  ],
+  display: 'swap',
+  variable: '--font-ui',
 })
 
 const DESCRIPTION =
@@ -58,17 +80,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={cormorantGaramond.variable}>
-      <head>
-        {/* UI grotesque — Pretendard stays CDN-loaded for now. Self-hosting it via
-            next/font/local is a separate, larger follow-up (needs sourcing the
-            actual woff2 files and confirming the OFL license terms). */}
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-        <link
-          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={`${cormorantGaramond.variable} ${pretendard.variable}`}>
       <body
         className="antialiased"
         style={{
