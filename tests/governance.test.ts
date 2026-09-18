@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest'
-// @ts-expect-error — plain JS module, no types
 import { autoPromoteTarget } from '../scripts/decision/promote.mjs'
-// @ts-expect-error
 import { findDatedPlans } from '../scripts/sentinels/stale-plans.mjs'
 
 describe('auto-promotion policy — autoPromoteTarget', () => {

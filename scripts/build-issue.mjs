@@ -8,8 +8,10 @@
  * Claude Code / Agent SDK invocation). We do not bundle or fake that agent, and it
  * is not exercised in CI here.
  *
- * Guardrails (ADR 0002): OFF by default (`decision.auto_build.enabled`); bounded by
- * max_prs_per_run; skips `paused` issues; the agent opens a DRAFT PR that `Closes #N`
+ * Guardrails (ADR 0002): OFF (`decision.auto_build.enabled`); bounded by
+ * max_prs_per_run; skips `paused` AND already-dispatched (`ready-to-build`) issues so the
+ * cap advances instead of re-serving the head of the queue; the brief is posted ONCE
+ * (marker-guarded, like the sentinel path); the agent opens a DRAFT PR that `Closes #N`
  * and **a human always merges**. When no agent command is configured, this posts the
  * brief onto the issue and labels it `ready-to-build`. In Stage 3 (mode=event-driven)
  * that label triggers .github/workflows/build-agent.yml (Claude Code opens the draft
@@ -37,7 +39,13 @@ const agentOf = (labels = []) =>
  */
 export function selectBuildable(issues, cap = 3) {
   return issues
-    .filter(it => !(it.labels || []).map(l => (typeof l === 'string' ? l : l.name)).includes('paused'))
+    .filter(it => {
+      const names = (it.labels || []).map(l => (typeof l === 'string' ? l : l.name))
+      // `paused` is the per-item kill-switch. `ready-to-build` means this issue was
+      // already dispatched: re-serving it starves the rest of the queue forever
+      // (issues #112/#115/#189 held all three slots for 77 daily runs).
+      return !names.includes('paused') && !names.includes('ready-to-build')
+    })
     .sort((a, b) => a.number - b.number)
     .slice(0, cap)
     .map(it => ({ number: it.number, title: it.title, agent: agentOf(it.labels) }))
@@ -62,6 +70,24 @@ export function buildBrief(issue) {
     `- Open a **draft** PR that \`Closes #${issue.number}\`. Do NOT merge — a human merges.`,
     `- Conventional commit; one PR per issue.`,
   ].join('\n')
+}
+
+/** Marker stamped on a posted build brief so a re-run recognises its own work. */
+export const briefMarker = (n) => `<!-- build-brief:${n} -->`
+
+/**
+ * True when issue `n` has no build brief yet. Mirrors the sentinel path's marker
+ * check: without it `dispatch` posts one comment per run, forever. The legacy
+ * prefix is honoured so already-spammed issues get no further comments.
+ * @param {number} n
+ * @param {Array<{body?:string}>} comments
+ */
+export function needsBrief(n, comments = []) {
+  const m = briefMarker(n)
+  return !comments.some(c => {
+    const b = c?.body || ''
+    return b.includes(m) || b.startsWith('**Ready to build.**')
+  })
 }
 
 async function gh(path, init) {
@@ -90,8 +116,14 @@ export async function dispatch(issue) {
     return
   }
   if (DRY) { console.log(`[build-issue] #${issue.number} [dry-run] brief:\n${brief}\n`); return }
+  // Idempotency: post the brief ONCE. A re-run finds its own marker and stays silent.
+  const posted = await gh(`/repos/${REPO}/issues/${issue.number}/comments?per_page=100`)
+  if (!needsBrief(issue.number, posted)) {
+    console.log(`[build-issue] #${issue.number}: brief already posted (idempotent: not duplicated)`)
+    return
+  }
   // No agent configured → hand the brief to a human/session via the issue.
-  await gh(`/repos/${REPO}/issues/${issue.number}/comments`, { method: 'POST', body: JSON.stringify({ body: `**Ready to build.** No \`BUILD_AGENT_CMD\` configured, so here is the build brief for a human or a Claude Code session:\n\n${brief}` }) })
+  await gh(`/repos/${REPO}/issues/${issue.number}/comments`, { method: 'POST', body: JSON.stringify({ body: `**Ready to build.** No \`BUILD_AGENT_CMD\` configured, so here is the build brief for a human or a Claude Code session:\n\n${brief}\n\n${briefMarker(issue.number)}` }) })
   await gh(`/repos/${REPO}/issues/${issue.number}/labels`, { method: 'POST', body: JSON.stringify({ labels: ['ready-to-build'] }) })
   console.log(`[build-issue] #${issue.number}: posted brief + labeled ready-to-build`)
 }

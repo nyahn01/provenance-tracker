@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest'
-// @ts-expect-error — plain JS sentinel module, no types
 import { scanDataQuality } from '../scripts/sentinels/data-quality.mjs'
-// @ts-expect-error — plain JS sentinel module, no types
 import { findOverclaims } from '../scripts/sentinels/honesty-regression.mjs'
 
 describe('data-quality sentinel', () => {
@@ -16,10 +14,10 @@ describe('data-quality sentinel', () => {
     const f = scanDataQuality(prov)
     const nc = f.find((x: any) => x.id === 'data-quality-null-coordinates')
     expect(nc).toBeTruthy()
-    expect(nc.label).toBe('proposal')
-    expect(nc.body).toContain('Galerie X')
+    expect(nc!.label).toBe('proposal')
+    expect(nc!.body).toContain('Galerie X')
     // The idempotency marker is added by the runner, not baked into the finding.
-    expect(nc.body).not.toContain('<!-- sentinel:')
+    expect(nc!.body).not.toContain('<!-- sentinel:')
   })
 
   it('flags a trailing dateless custody entry', () => {
@@ -32,7 +30,7 @@ describe('data-quality sentinel', () => {
     const f = scanDataQuality(prov)
     const t = f.find((x: any) => x.id === 'data-quality-trailing-dateless-custody')
     expect(t).toBeTruthy()
-    expect(t.body).toContain('Unknown buyer')
+    expect(t!.body).toContain('Unknown buyer')
   })
 
   it('does NOT flag a start-less entry that has an endDate (it is placeable, #103)', () => {

@@ -15,8 +15,9 @@ on:
         description: "Why this manual run"
         required: false
   schedule:
-    # Daily, off-peak. Inert while mode=manual (the guard exits early).
-    - cron: "17 6 * * *"
+    # Weekly, off-peak. Daily was pure noise: the sentinels are idempotent and found
+    # nothing new on 80+ consecutive runs. Inert while mode=manual (the guard exits early).
+    - cron: "17 6 * * 1"
   # Event-driven (Stage 3): uncomment to fan out on new/labeled issues.
   # issues:
   #   types: [opened, labeled]

@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest'
-// @ts-expect-error — plain JS module, no types
 import { classifyDomain, categoryOf, planFeedbackRouting } from '../scripts/feedback/route.mjs'
 
 describe('feedback router — classifyDomain', () => {

@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest'
-// @ts-expect-error — plain JS module, no types
 import { scoreProposal, rankProposals, renderDigest } from '../scripts/decision/rank.mjs'
-// @ts-expect-error
 import { parsePlan } from '../scripts/plan-to-issue.mjs'
 
 describe('decision head — scoreProposal', () => {
