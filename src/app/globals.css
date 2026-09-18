@@ -311,3 +311,51 @@ html, body {
   background: var(--gal-border-mid);
   border-radius: 2px;
 }
+
+/* ── Globe hover tooltips (issue #237) ──────────────────────────────────────
+   globe.gl renders whatever an *Label accessor returns into .scene-tooltip.
+   Styled here rather than inline because hover/focus presentation belongs in
+   CSS, never in JS style mutation (DESIGN_SYSTEM.md §11). Observatory palette:
+   this layer only ever sits over the dark globe. */
+.scene-tooltip {
+  background: var(--obs-surface);
+  border: 1px solid var(--obs-border-mid);
+  border-radius: 3px;
+  padding: 8px 11px;
+  max-width: 260px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--obs-text);
+}
+
+.globe-tip .gt-who {
+  color: var(--obs-text);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.globe-tip .gt-where {
+  color: var(--obs-text-muted);
+  margin-top: 1px;
+}
+
+/* The tier line. It carries the custody-vs-loan distinction the honesty
+   contract turns on, so it stays legible rather than decorative. */
+.globe-tip .gt-kind {
+  color: var(--obs-text-muted);
+  margin-top: 5px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+/* Source attribution — every on-screen fact carries one, tooltips included. */
+.globe-tip .gt-src {
+  color: var(--obs-text-faint);
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--obs-border);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+}
