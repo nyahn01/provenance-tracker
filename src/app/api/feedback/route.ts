@@ -13,6 +13,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { checkRateLimit } from '@/lib/cache'
+import { feedbackLabels } from '@/lib/feedback-routing'
 
 const REPO = 'nyahn01/provenance-tracker'
 const VALID_CATEGORIES = ['bug', 'data-correction', 'feature', 'ux', 'general'] as const
@@ -109,12 +110,15 @@ export async function POST(request: NextRequest) {
     'X-GitHub-Api-Version': '2022-11-28',
     'Content-Type': 'application/json',
   }
+  // Route at intake: the issue arrives already owned by a domain, with no wait
+  // on a scheduled job and nothing for a human to label by hand.
+  const labels = feedbackLabels(category, title, message)
   const postIssue = (withLabels: boolean) =>
     fetch(`https://api.github.com/repos/${REPO}/issues`, {
       method: 'POST',
       headers: ghHeaders,
       body: JSON.stringify(
-        withLabels ? { title, body: issueBody, labels: ['feedback'] } : { title, body: issueBody },
+        withLabels ? { title, body: issueBody, labels } : { title, body: issueBody },
       ),
     })
 
