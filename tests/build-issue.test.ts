@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest'
-// @ts-expect-error — plain JS module, no types
 import { selectBuildable, buildBrief, needsBrief, briefMarker } from '../scripts/build-issue.mjs'
 
 describe('build loop — selectBuildable', () => {

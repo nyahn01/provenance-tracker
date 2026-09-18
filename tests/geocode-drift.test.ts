@@ -21,7 +21,7 @@ describe('gazetteer drift (scripts/lib/cities.mjs vs src/lib/geocode.ts)', () =>
 
   it('every runtime city exists in the scripts table (full parity, both directions)', () => {
     for (const key of Object.keys(runtimeCities)) {
-      expect(scriptCities[key], `"${key}" missing from scripts/lib/cities.mjs`).toBeDefined()
+      expect((scriptCities as Record<string, unknown>)[key], `"${key}" missing from scripts/lib/cities.mjs`).toBeDefined()
     }
   })
 

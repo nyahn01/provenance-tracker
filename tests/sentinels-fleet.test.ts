@@ -1,9 +1,6 @@
 import { describe, it, expect } from 'vitest'
-// @ts-expect-error — plain JS sentinel modules, no types
 import { extractRepoPaths, scanDocsDrift } from '../scripts/sentinels/docs-drift.mjs'
-// @ts-expect-error
 import { summarizeAudit } from '../scripts/sentinels/security.mjs'
-// @ts-expect-error
 import { findMarkers } from '../scripts/sentinels/repo-hygiene.mjs'
 
 describe('docs-drift sentinel', () => {
@@ -38,14 +35,14 @@ describe('security sentinel — summarizeAudit', () => {
       metadata: { vulnerabilities: { moderate: 1, high: 0, critical: 0 } },
       vulnerabilities: { postcss: { name: 'postcss', severity: 'moderate', via: [{ title: 'ReDoS' }] } },
     })
-    expect(f.label).toBe('proposal')
-    expect(f.title).toMatch(/1 moderate/)
-    expect(f.body).toContain('postcss')
+    expect(f!.label).toBe('proposal')
+    expect(f!.title).toMatch(/1 moderate/)
+    expect(f!.body).toContain('postcss')
   })
 
   it('escalates to priority when high/critical present', () => {
     const f = summarizeAudit({ metadata: { vulnerabilities: { high: 2 } }, vulnerabilities: {} })
-    expect(f.label).toBe('priority')
+    expect(f!.label).toBe('priority')
   })
 })
 
