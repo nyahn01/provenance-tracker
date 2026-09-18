@@ -42,15 +42,15 @@ const AGENTS: Agent[] = [
 
 const STAGES = [
   { tag: 'Stage 1', title: 'Manual · per session', status: 'Active today', accent: C.sage, body: 'A human opens a Claude Code session. Agents are invoked in-session against whatever that session is about. A human merges every PR.' },
-  { tag: 'Stage 2', title: 'Scheduled · batch', status: 'Wired · inert', accent: C.gold, body: 'A cron schedule reads GitHub Issues labeled priority + agent:<domain> and routes each to the batch squad — one agent per domain. A human still merges every PR.' },
-  { tag: 'Stage 3', title: 'Event-driven · self-improving', status: 'Vision', accent: C.purple, body: 'An event, or a scheduled self-audit sentinel, files the issue itself; the squad plus sentinels build. A human still merges — any auto-merge would stay reserved for the lowest-risk tiers only.' },
+  { tag: 'Stage 2', title: 'Scheduled · sense only', status: 'Active · weekly', accent: C.gold, body: 'A weekly cron runs six read-only sentinels over main. They file issues and rank proposals; they never write code. Building is still a human-opened session, and a human still merges every PR.' },
+  { tag: 'Stage 3', title: 'Event-driven · autonomous build', status: 'Not wired', accent: C.purple, body: 'An event or a sentinel files the issue and an agent builds it unprompted. The workflow exists and stays switched off: a first review found the queue held no issue a coding agent could finish in one PR. A human would still merge.' },
 ]
 
 const LOOPS = [
   { n: '01', name: 'Sense', accent: C.sage, body: 'Work originates without a human typing it — feedback auto-triage + scheduled self-audit sentinels file issues. Read-only: they route problems, never fix them.' },
   { n: '02', name: 'Decide', accent: C.gold, body: 'A human promotes a proposal issue to priority + agent:<domain>. Ideation stays separate from execution.' },
-  { n: '03', name: 'Act', accent: C.purple, body: 'An agent builds and ships through the gate, opening a PR that says Closes #N. The queue self-cleans on merge.' },
-  { n: '04', name: 'Outcome', accent: C.clay, body: 'npm run metrics writes an offline health snapshot; the retro agent turns merges + that snapshot into durable lessons in INSIGHTS.md.' },
+  { n: '03', name: 'Act', accent: C.purple, body: 'An agent builds and ships through the gate, opening a PR that says Closes #N. The queue self-cleans on merge. Every build so far was started by a human opening a session.' },
+  { n: '04', name: 'Outcome', accent: C.clay, body: 'npm run metrics writes an offline health snapshot of the custody chains and flags regressions in CI. Feeding that snapshot back into durable lessons is still done by hand: the retro agent is written but not scheduled.' },
 ]
 
 const LABELS = [

@@ -20,6 +20,35 @@ written to a file, it's lost when the context window rolls. This file is the saf
 
 <!-- append insights below, newest first -->
 
+- `#process` LOOP REVIEW (2026-09-18) — the self-improving loop ran green 86 times and produced
+  **zero PRs** and ~228 duplicate comments (#112: 77, #115: 76, #149: 75). Four defects, one
+  lesson each. (1) `dispatch()` posted its brief with no marker guard while the Sense path had
+  one, so it re-posted every run — *the same idempotency rule has to apply to every write, not
+  just the one you thought about.* (2) The Decision digest (#112) got a `priority` label, so the
+  loop dispatched its own generated output back to itself as a feature request — *anything a loop
+  emits into its own input space needs a label it can never hold.* (3) `selectBuildable` sorted
+  ascending and took 3; three never-closing issues held all three slots for 77 runs, so #202
+  (security) and #228 (real user report) were never once reached — *a FIFO queue with no
+  completion signal is not a queue, it is a stuck pointer.* (4) `autonomy.*`, `retro_enabled`,
+  `metrics_cron` and `max_token_budget_per_run` were read by no code — *config describing
+  unbuilt behaviour reads as a working system to everyone, including the next agent.*
+  Root cause under all four: **Act was wired last and stubbed**, so its only possible output was
+  a comment, and nothing closed what it commented on. Under *that*: the queue held no issue a
+  coding agent could finish ("the globe design need improvement. From scratch." is a direction,
+  not a task). **An autonomy loop is capped by the quality of its queue, not the capability of
+  its builder.** Fix: `auto_build` off, cron weekly, loop is Sense+Decide only. Every merged PR
+  in this repo came from a human-opened session, and that stays the Act path.
+  See [[0002-stage3-autonomy-model]].
+
+- `#risk #process` STALE-FINDING TRAP — issue #202 said "2 high dependency vulnerabilities" on
+  2026-07-21 and still said that on 2026-09-18, when the real count was **1 critical + 6 high +
+  3 moderate**, including unauthenticated RCE in the Next.js Image Optimization API. The security
+  sentinel is idempotent by marker, so it correctly refused to file a duplicate — and therefore
+  never told anyone the finding had got worse. *Idempotency without refresh turns a monitor into
+  a tombstone.* An open sentinel issue should have its body updated when the underlying finding
+  changes, not merely be suppressed. Filed as a follow-up.
+
+
 - `#data` DATA QUALITY PASS (#55) — fixed two root-cause defects in the featured custody chains. Artist-origin entries (e.g. "Vincent van Gogh", "Claude Monet") with `startDate: null` now receive the artwork's creation year (honest — they held it from when it was made; creation year sourced from `meta.date`); `sameName()` from [[timeline.ts]] reused for the artist-match. "Provins" and "Lake Forest" added to [[geocode.ts]] with real city-level coordinates. Metrics before → after: `worksWithTrailingDatelessCustody` 5/6 → 1/6, `nullCoordinateEntries` 3 → 1, `datedStartCoveragePct` 84.2% → 97.4%. The 1 remaining dateless entry (Wood family acquisition of Stacks of Wheat) is genuinely undocumented — left as null per honesty contract. The 1 remaining null-coord entry is Johanna van Gogh-Bonger / "the Netherlands" (1891–1901) — a country-level owner we deliberately keep in the timeline rather than fake a city on the map. Fix applied to both the committed `featured-provenance.json` and the runtime route (`applyArtistOriginFix`) and `preparse-provenance.mjs` so future re-parses produce the same quality.
 
 - `#process #data` OUTCOME LOOP wired ([[0002-stage3-autonomy-model]]) — `npm run metrics`
