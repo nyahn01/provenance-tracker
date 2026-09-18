@@ -14,7 +14,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ProvenanceResponse } from '@/lib/types'
 import { OBS, state } from '@/lib/design-tokens'
-import { buildArcs, buildDealerArcs, buildGapArcs, buildLabels, cityCoords, AMBER_DOT } from './globe-data'
+import { buildArcs, buildDealerArcs, buildGapArcs, buildLabels, buildPoints, arcTooltip, landmassTooltip } from './globe-data'
 
 // Read fresh at each write site rather than once at module load — cheap, and
 // avoids needing a change listener for a setting that's effectively fixed for
@@ -62,6 +62,9 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
       if (geo.features.length) {
         globe.polygonsData(geo.features).polygonCapColor(() => OBS.globeLand)
           .polygonSideColor(() => 'rgba(0,0,0,0)').polygonStrokeColor(() => OBS.globeBorder).polygonAltitude(0.005)
+          // The features carry their own name ("Europe", "British Isles"). Naming them
+          // on hover is the continent cue issue #237 asks for, from data already here.
+          .polygonLabel((d: any) => landmassTooltip(d?.properties?.name))
       }
       // Stroke/dash/opacity read per-datum off each arc object (built in globe-data.ts's
       // buildArcs/buildGapArcs) — confidence-honest arcs + the gap tier (issue #124)
@@ -73,9 +76,13 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
         .arcDashLength((d: any) => d.dashLength ?? (d.altitude <= 0.12 ? 0.02 : 0.015))
         .arcDashGap((d: any) => d.dashGap ?? (d.altitude <= 0.12 ? 0.025 : 0.015))
         .arcDashAnimateTime((d: any) => d.dashAnimateTime ?? 10000)
+        // buildArcs/buildDealerArcs have always set `label`; no accessor ever read it,
+        // so hovering an arc showed nothing (issue #237).
+        .arcLabel((d: any) => arcTooltip(d.label ?? '', d.kind ?? 'custody'))
       globe.pointsData([]).pointLat((d: any) => d.lat).pointLng((d: any) => d.lng)
         .pointAltitude(0.006).pointRadius((d: any) => d.r ?? 0.28)
         .pointColor((d: any) => d.color ?? 'rgba(212,168,83,0.8)')
+        .pointLabel((d: any) => d.tip ?? '')
       // Labels layer (issue #52) — additive data layer, no init settings changed
       globe.labelsData([])
         .labelLat((d: any) => d.lat)
@@ -86,6 +93,7 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
         .labelAltitude(0.012)
         .labelIncludeDot(false)
         .labelsTransitionDuration(600)
+        .labelLabel((d: any) => d.tip ?? '')
       setTimeout(() => { const c = globe.controls?.(); if (c) { c.autoRotate = !prefersReducedMotion(); c.autoRotateSpeed = 0.25; c.enableZoom = true; c.zoomSpeed = 1.2 } }, 100)
       const fit = () => { const el = containerRef.current; if (el) globe.width(el.clientWidth).height(el.clientHeight) }
       fit(); onResize = fit; window.addEventListener('resize', fit)
@@ -122,41 +130,37 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
     // trails (amber, 0.12), and resolvable gaps (state.gap, 0.24 — broken/un-animated,
     // issue #124). Gaps with no coordinates are never drawn here (see GlobeGapBadge).
     const custodyArcs = buildArcs(prov.locations, OBS.gold, 0.18)
-    const exhibitionArcs = buildArcs(prov.exhibitions, OBS.sage, 0.30)
+    const exhibitionArcs = buildArcs(prov.exhibitions, OBS.sage, 0.30, 'loan')
     const dealerArcs = buildDealerArcs(prov.gettyRecords ?? [])
     const gapArcs = buildGapArcs(prov.locations, prov.gaps, state.gap)
     g.arcsData([...custodyArcs, ...exhibitionArcs, ...dealerArcs, ...gapArcs])
 
-    // City dots — custody (large gold), exhibition (medium sage), GPI endpoints (small amber)
-    const custodyDots = prov.locations
-      .filter(l => l.lat != null && l.lng != null)
-      .map(l => ({ lat: l.lat as number, lng: l.lng as number, r: 0.32, color: 'rgba(212,168,83,0.85)' }))
-    const exhibDots = prov.exhibitions
-      .filter(l => l.lat != null && l.lng != null)
-      .map(l => ({ lat: l.lat as number, lng: l.lng as number, r: 0.22, color: 'rgba(111,141,125,0.75)' }))
-    const seenDots = new Set<string>()
-    const dealerDots = (prov.gettyRecords ?? []).flatMap(r => {
-      const dots: { lat: number; lng: number; r: number; color: string }[] = []
-      for (const loc of [r.sellerLocation, r.buyerLocation]) {
-        const coords = cityCoords(loc)
-        if (!coords) continue
-        const key = `${coords.lat},${coords.lng}`
-        if (seenDots.has(key)) continue
-        seenDots.add(key)
-        dots.push({ ...coords, r: 0.20, color: AMBER_DOT })
-      }
-      return dots
-    })
-    g.pointsData([...custodyDots, ...exhibDots, ...dealerDots])
+    // City dots — custody (large gold), exhibition (medium sage), GPI endpoints (small
+    // amber). Each dot carries the tooltip it shows on hover (issue #237); the tier
+    // split and the dealer-city dedup are unchanged, just moved into globe-data.ts
+    // so the tooltip text is a pure function that can be tested.
+    const points = buildPoints(prov.locations, prov.exhibitions, prov.gettyRecords ?? [])
+    g.pointsData(points)
 
     // City labels (issue #52) — deduplicated across all three tiers; null-coord nodes excluded
     // Label color uses OBS.text at reduced opacity so it reads against the dark globe surface
-    // without competing with the arc/dot colors.
+    // without competing with the arc/dot colors. Hovering a label shows the same card as
+    // hovering its dot, matched by coordinate.
+    // First-seen wins, matching buildLabels' own custody > loan > dealer priority: the
+    // label shows the first holder at that coordinate, so its tooltip must be that same
+    // holder. A plain `new Map(...)` would let the LAST duplicate win and pair a city's
+    // label with a different owner's card.
+    const tipAt = new Map<string, string>()
+    for (const pt of points) {
+      const key = `${pt.lat.toFixed(4)},${pt.lng.toFixed(4)}`
+      if (!tipAt.has(key)) tipAt.set(key, pt.tip)
+    }
     const labels = buildLabels(prov.locations, prov.exhibitions, prov.gettyRecords ?? [], 'rgba(246,241,232,0.80)')
+      .map(l => ({ ...l, tip: tipAt.get(`${l.lat.toFixed(4)},${l.lng.toFixed(4)}`) ?? '' }))
     g.labelsData(labels)
 
     const custodyPts = prov.locations.filter(l => l.lat != null && l.lng != null)
-    const dealerPts = [...seenDots].map(k => { const [lat, lng] = k.split(',').map(Number); return { lat, lng } })
+    const dealerPts = points.filter(pt => pt.tier === 'dealer').map(pt => ({ lat: pt.lat, lng: pt.lng }))
     const allPts = [...custodyPts, ...prov.exhibitions.filter(l => l.lat != null && l.lng != null)]
     const framePts = custodyPts.length >= 2 ? custodyPts : allPts.length >= 2 ? allPts : [...custodyPts, ...dealerPts]
     const c = g.controls?.(); if (c) c.autoRotate = framePts.length < 2 && !prefersReducedMotion()

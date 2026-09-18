@@ -16,6 +16,7 @@
  * corner-badge concern, never a synthetic endpoint.
  */
 import type { LocationEntry, ExhibitionLoan, GettyRecord, GapEntry } from '@/lib/types'
+import { fmtYear, sourceInstitution } from './timeline'
 
 // ─── City coordinate lookup (for Getty dealer city dots) ─────────────────────
 // Intentionally a smaller, dealer-dot-specific set — NOT the full gazetteer
@@ -54,6 +55,8 @@ export interface GlobeArc {
   dashGap: number
   /** 0 renders a static, un-animated dash pattern (used by the gap tier only). */
   dashAnimateTime: number
+  /** Which tier this arc belongs to — read by the hover tooltip, never by init. */
+  kind: 'custody' | 'loan' | 'dealer' | 'gap'
 }
 
 type ArcConfidence = LocationEntry['confidence']
@@ -93,7 +96,12 @@ function withAlpha(hex: string, opacity: number): string {
   return `rgba(${r},${g},${b},${opacity})`
 }
 
-export function buildArcs(locations: LocationEntry[], color: string, altitude: number): GlobeArc[] {
+export function buildArcs(
+  locations: LocationEntry[],
+  color: string,
+  altitude: number,
+  kind: 'custody' | 'loan' = 'custody',
+): GlobeArc[] {
   const arcs: GlobeArc[] = []
   const dashLength = arcDashLengthForAltitude(altitude)
   for (let i = 0; i < locations.length - 1; i++) {
@@ -104,7 +112,7 @@ export function buildArcs(locations: LocationEntry[], color: string, altitude: n
     arcs.push({
       startLat: a.lat, startLng: a.lng, endLat: b.lat, endLng: b.lng,
       color: withAlpha(color, style.opacity), altitude, label: `${a.name} → ${b.name}`,
-      stroke: style.stroke, dashLength, dashGap: style.dashGap, dashAnimateTime: 10000,
+      stroke: style.stroke, dashLength, dashGap: style.dashGap, dashAnimateTime: 10000, kind,
     })
   }
   return arcs
@@ -129,7 +137,7 @@ export function buildGapArcs(locations: LocationEntry[], gaps: GapEntry[], color
       startLat: from.lat as number, startLng: from.lng as number,
       endLat: to.lat as number, endLng: to.lng as number,
       color, altitude: 0.24, label: `Undocumented gap: ${gap.from} → ${gap.to}`,
-      stroke: 0.4, dashLength: 0.01, dashGap: 0.05, dashAnimateTime: 0,
+      stroke: 0.4, dashLength: 0.01, dashGap: 0.05, dashAnimateTime: 0, kind: 'gap',
     })
   }
   return arcs
@@ -205,6 +213,138 @@ export function buildLabels(
   return labels
 }
 
+// ─── Tooltips (issue #237) ───────────────────────────────────────────────────
+
+/**
+ * Escape text taken from museum prose before it goes into a tooltip's HTML.
+ * Holder names come from third-party records; they are data, never markup.
+ */
+export function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string))
+}
+
+/** The dated span a tooltip shows, or null when the source gives no year. */
+function spanText(startDate: string | null | undefined, endDate: string | null | undefined): string | null {
+  if (!startDate && !endDate) return null
+  if (startDate && endDate) return `${fmtYear(startDate)}–${fmtYear(endDate)}`
+  if (startDate) return `from ${fmtYear(startDate)}`
+  return `until ${fmtYear(endDate ?? undefined)}`
+}
+
+/**
+ * Tooltip markup for one globe node.
+ *
+ * Honesty, because a tooltip is on-screen copy like any other:
+ *  - it names the institution that documents the fact, never an unsourced claim;
+ *  - a loan is labelled a loan, so hovering can never read it as a change of owner;
+ *  - an undated holder shows no span rather than a guessed one.
+ */
+export function nodeTooltip(opts: {
+  who: string
+  place: string
+  kind: 'custody' | 'loan' | 'dealer'
+  startDate?: string | null
+  endDate?: string | null
+  source: string
+}): string {
+  const span = spanText(opts.startDate, opts.endDate)
+  const kindLine =
+    opts.kind === 'loan' ? 'Exhibition loan — not a change of owner'
+    : opts.kind === 'dealer' ? 'Dealer record'
+    : 'Ownership'
+  const rows = [
+    `<div class="gt-who">${escapeHtml(opts.who)}</div>`,
+    `<div class="gt-where">${escapeHtml(opts.place)}${span ? ` · ${escapeHtml(span)}` : ''}</div>`,
+    `<div class="gt-kind">${kindLine}</div>`,
+    `<div class="gt-src">${escapeHtml(sourceInstitution(opts.source))}</div>`,
+  ]
+  return `<div class="globe-tip">${rows.join('')}</div>`
+}
+
+/** Tooltip markup for an arc, whose `label` already reads "A → B". */
+export function arcTooltip(label: string, kind: 'custody' | 'loan' | 'dealer' | 'gap'): string {
+  const kindLine =
+    kind === 'loan' ? 'Exhibition loan — not a change of owner'
+    : kind === 'dealer' ? 'Dealer record — Getty Provenance Index'
+    : kind === 'gap' ? 'Undocumented gap — no record of this leg'
+    : 'Change of owner'
+  return `<div class="globe-tip"><div class="gt-who">${escapeHtml(label)}</div>` +
+    `<div class="gt-kind">${kindLine}</div></div>`
+}
+
+/** Tooltip markup for a landmass, named by the geo feature itself. */
+export function landmassTooltip(name: unknown): string {
+  if (typeof name !== 'string' || !name.trim()) return ''
+  return `<div class="globe-tip"><div class="gt-where">${escapeHtml(name)}</div></div>`
+}
+
+/** A dot on the globe, carrying the tooltip it shows on hover. */
+export interface GlobePoint {
+  lat: number
+  lng: number
+  r: number
+  color: string
+  tier: 'custody' | 'loan' | 'dealer'
+  tip: string
+}
+
+/**
+ * Every dot across the three tiers, each with its tooltip. Dealer cities are
+ * deduplicated by coordinate, as they were when this lived inline in
+ * GlobeContainer; custody and loan dots are not, because two owners in the same
+ * city are two facts and both belong on the timeline behind the globe.
+ */
+export function buildPoints(
+  locations: LocationEntry[],
+  exhibitions: ExhibitionLoan[],
+  gettyRecords: GettyRecord[],
+): GlobePoint[] {
+  const points: GlobePoint[] = []
+
+  for (const l of locations) {
+    if (l.lat == null || l.lng == null) continue
+    points.push({
+      lat: l.lat, lng: l.lng, r: 0.32, color: 'rgba(212,168,83,0.85)', tier: 'custody',
+      tip: nodeTooltip({
+        who: l.institution && l.institution !== l.name ? l.institution : l.name,
+        place: l.name, kind: 'custody',
+        startDate: l.startDate, endDate: l.endDate, source: l.source,
+      }),
+    })
+  }
+
+  for (const ex of exhibitions) {
+    if (ex.lat == null || ex.lng == null) continue
+    points.push({
+      lat: ex.lat, lng: ex.lng, r: 0.22, color: 'rgba(111,141,125,0.75)', tier: 'loan',
+      tip: nodeTooltip({
+        who: ex.institution && ex.institution !== ex.name ? ex.institution : ex.name,
+        place: ex.name, kind: 'loan',
+        startDate: ex.startDate, endDate: ex.endDate, source: ex.source,
+      }),
+    })
+  }
+
+  const seen = new Set<string>()
+  for (const r of gettyRecords) {
+    for (const locStr of [r.sellerLocation, r.buyerLocation]) {
+      const coords = cityCoords(locStr)
+      if (!coords) continue
+      const key = `${coords.lat},${coords.lng}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      const city = (locStr ?? '').split(',')[0].trim()
+      points.push({
+        ...coords, r: 0.20, color: AMBER_DOT, tier: 'dealer',
+        tip: nodeTooltip({ who: city, place: city, kind: 'dealer', source: 'GPI' }),
+      })
+    }
+  }
+
+  return points
+}
+
 // Dealer arcs: seller → buyer within each GPI record (lower altitude, dimmer, smaller stroke)
 export const AMBER_ARC = 'rgba(180,130,60,0.55)'
 export const AMBER_DOT = 'rgba(180,130,60,0.70)'
@@ -232,7 +372,7 @@ export function buildDealerArcs(records: GettyRecord[]): GlobeArc[] {
       endLat: buyer.lat, endLng: buyer.lng,
       color: AMBER_ARC, altitude,
       label: `Dealer: ${sellerCity} → ${buyerCity}${r.saleDate ? ` (${r.saleDate.slice(0, 4)})` : ''}`,
-      stroke: style.stroke, dashLength, dashGap: style.dashGap, dashAnimateTime: 10000,
+      stroke: style.stroke, dashLength, dashGap: style.dashGap, dashAnimateTime: 10000, kind: 'dealer',
     })
   }
   return arcs
