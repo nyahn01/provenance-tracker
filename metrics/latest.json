@@ -4,87 +4,88 @@
   "custodyEntries": 103,
   "datedStartCoveragePct": 89.3,
   "aTierEntries": 103,
-  "nullCoordinateEntries": 2,
-  "worksWithTrailingDatelessCustody": 1,
+  "ungeocodedEntries": 0,
+  "countryLevelEntries": 1,
+  "worksWithNoDatedEntry": 0,
   "worksWithDeepChain": 13,
   "perWork": [
     {
       "work": "aic:16568",
       "entries": 5,
       "datedStart": 5,
-      "trailingDatelessCustody": false
+      "noDatedEntry": false
     },
     {
       "work": "aic:27992",
       "entries": 5,
       "datedStart": 5,
-      "trailingDatelessCustody": false
+      "noDatedEntry": false
     },
     {
       "work": "aic:18951",
       "entries": 6,
       "datedStart": 6,
-      "trailingDatelessCustody": false
+      "noDatedEntry": false
     },
     {
       "work": "aic:20684",
       "entries": 6,
       "datedStart": 6,
-      "trailingDatelessCustody": false
+      "noDatedEntry": false
     },
     {
       "work": "aic:28560",
       "entries": 8,
       "datedStart": 8,
-      "trailingDatelessCustody": false
+      "noDatedEntry": false
     },
     {
       "work": "aic:64818",
       "entries": 8,
       "datedStart": 7,
-      "trailingDatelessCustody": false
+      "noDatedEntry": false
     },
     {
       "work": "aic:111442",
       "entries": 5,
       "datedStart": 5,
-      "trailingDatelessCustody": false
+      "noDatedEntry": false
     },
     {
       "work": "aic:111436",
       "entries": 10,
       "datedStart": 10,
-      "trailingDatelessCustody": false
+      "noDatedEntry": false
     },
     {
       "work": "aic:14598",
       "entries": 9,
       "datedStart": 9,
-      "trailingDatelessCustody": false
+      "noDatedEntry": false
     },
     {
       "work": "aic:64001",
       "entries": 11,
       "datedStart": 10,
-      "trailingDatelessCustody": false
+      "noDatedEntry": false
     },
     {
       "work": "aic:84709",
       "entries": 10,
       "datedStart": 7,
-      "trailingDatelessCustody": false
+      "noDatedEntry": false
     },
     {
       "work": "aic:87045",
       "entries": 8,
       "datedStart": 7,
-      "trailingDatelessCustody": false
+      "noDatedEntry": false
     },
     {
       "work": "aic:95998",
       "entries": 12,
       "datedStart": 7,
-      "trailingDatelessCustody": true
+      "noDatedEntry": false
     }
   ],
   "measuredElsewhere": "Getty/RKD/exhibition coverage (runtime) and honesty-gate status (npm run honesty:full)."

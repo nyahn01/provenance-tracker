@@ -56,10 +56,12 @@ jobs:
             const base = JSON.parse(fs.readFileSync("/tmp/baseline.json", "utf8"));
             const cur  = JSON.parse(fs.readFileSync("metrics/latest.json", "utf8"));
             const worse = [];
-            if (cur.worksWithTrailingDatelessCustody > base.worksWithTrailingDatelessCustody)
-              worse.push(`dateless custody ${base.worksWithTrailingDatelessCustody} -> ${cur.worksWithTrailingDatelessCustody}`);
-            if (cur.nullCoordinateEntries > base.nullCoordinateEntries)
-              worse.push(`null coords ${base.nullCoordinateEntries} -> ${cur.nullCoordinateEntries}`);
+            if (cur.worksWithNoDatedEntry > base.worksWithNoDatedEntry)
+              worse.push(`undatable chains ${base.worksWithNoDatedEntry} -> ${cur.worksWithNoDatedEntry}`);
+            // Only ungeocoded counts as a regression. countryLevelEntries is places
+            // we leave unpinned on purpose, so a rise there is not a defect.
+            if (cur.ungeocodedEntries > base.ungeocodedEntries)
+              worse.push(`ungeocoded ${base.ungeocodedEntries} -> ${cur.ungeocodedEntries}`);
             if (cur.datedStartCoveragePct < base.datedStartCoveragePct)
               worse.push(`dated coverage ${base.datedStartCoveragePct}% -> ${cur.datedStartCoveragePct}%`);
             if (worse.length) {

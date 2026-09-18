@@ -47,6 +47,8 @@ export const CITIES = {
   // US towns that appear in provenance records
   'lake forest': { lat: 42.2597, lng: -87.8398 },
   naugatuck: { lat: 41.4854, lng: -73.0504 },
+  // County-level, the finest the AIC prose gives for Boulton's seat (aic:95998).
+  oxfordshire: { lat: 51.7612, lng: -1.2465 },
   // Spanish towns that appear in provenance records
   toledo: { lat: 39.8628, lng: -4.0273 },
   'el pardo': { lat: 40.5273, lng: -3.7702 },
@@ -86,4 +88,35 @@ export function geocodeKey(place) {
   const s = String(place).toLowerCase()
   for (const key of SORTED) if (s.includes(key)) return { key, ...CITIES[key] }
   return null
+}
+
+/**
+ * Places too coarse to pin to a point, which the provenance prose nevertheless
+ * gives (AIC sometimes names only a country). These are NOT gazetteer gaps: a
+ * country gets no coordinate ON PURPOSE, because putting a dot on a national
+ * centroid would assert a location the source never gave. The entry still shows
+ * in the timeline, marked unmapped.
+ *
+ * Kept separate from CITIES so a data-quality metric can tell "we failed to
+ * geocode this" from "this is deliberately unplaced". Grows only as the prose
+ * demands it — never speculatively.
+ */
+export const COUNTRY_LEVEL = new Set([
+  'germany',      // aic:84709, the 1933–1955 wartime provenance gap
+  'netherlands',  // an owner recorded only as "the Netherlands" (docs/INSIGHTS.md)
+  'the netherlands',
+  'france',
+  'england',
+  'spain',
+  'italy',
+  'switzerland',
+  'austria',
+  'belgium',
+  'united states',
+])
+
+/** True when a place name is country-level, i.e. deliberately not pinned. */
+export function isCountryLevel(place) {
+  if (!place) return false
+  return COUNTRY_LEVEL.has(String(place).toLowerCase().replace(/^the\s+/, '').trim())
 }

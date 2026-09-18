@@ -12,6 +12,7 @@ import { writeFile, readFile } from 'fs/promises'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { geocodeKey } from './lib/cities.mjs'
+import { canonicalHolder } from './lib/holder-names.mjs'
 // One home for the extraction model + request shape + JSON parsing (curate.mjs).
 import { curateModel, thinkingFor, firstText, parseJsonObject } from './curate.mjs'
 
@@ -168,7 +169,7 @@ async function main() {
         const pt = geocode(e.place)
         return {
           name: e.place.trim(),
-          institution: e.institution?.trim() || undefined,
+          institution: canonicalHolder(e.institution) || undefined,
           lat: pt?.lat ?? null,
           lng: pt?.lng ?? null,
           startDate: e.startYear?.match(/\d{4}/)?.[0] ?? null,

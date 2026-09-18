@@ -24,6 +24,7 @@ import Anthropic from '@anthropic-ai/sdk'
 // disk prose cache), so it stays in-process rather than writing file-derived bytes
 // to the shared durable store. Network-only routes (search/reconcile/rkd) use L2.
 import { cacheGet, cacheSet, checkRateLimit, CACHE_TTL } from '@/lib/cache'
+import { canonicalHolder } from '@/lib/holder-names'
 import { geocode, geocodeNamed } from '@/lib/geocode'
 import { fetchRijks } from '@/lib/rijksmuseum'
 import { searchGetty } from '@/lib/getty'
@@ -310,7 +311,7 @@ Rules:
       const pt = geocode(e.place)
       return {
         name: e.place.trim(),
-        institution: e.institution?.trim() || undefined,
+        institution: canonicalHolder(e.institution) || undefined,
         lat: pt?.lat ?? null,
         lng: pt?.lng ?? null,
         startDate: e.startYear?.match(/\d{4}/)?.[0] ?? null,
@@ -343,7 +344,7 @@ function deterministicExtract(prose: string, sourceLabel: string): LocationEntry
     let institution: string | undefined
     const firstSeg = clause.split(/,\s*/)[0].trim()
     // Skip bare years, very short strings, and numeric-only prefixes.
-    if (firstSeg.length > 4 && !/^\d{4}$/.test(firstSeg)) institution = firstSeg
+    if (firstSeg.length > 4 && !/^\d{4}$/.test(firstSeg)) institution = canonicalHolder(firstSeg)
     const confidence: LocationEntry['confidence'] = year ? (isHighTier ? 'high' : 'medium') : 'low'
     out.push({
       name: city.name,
