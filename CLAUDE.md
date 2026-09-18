@@ -91,7 +91,7 @@ No label starts work — a human opening a session does. So no label is applied 
 |---|---|---|
 | `feedback` + `agent:<domain>` | `/api/feedback` at intake (`src/lib/feedback-routing.ts`) | An inbound report, with its domain owner. A hint, never a queue |
 | `proposal` | a sentinel, or a human | An idea, not scheduled work |
-| `priority` | a sentinel, for security/honesty only | High-stakes finding; look at this first |
+| `priority` | a security/honesty sentinel, or you | "Look at this first." Read by people, not by code |
 | `paused` | a human | Skip on the next scheduled run |
 
 A PR with `Closes #N` auto-closes the Issue on merge — the list self-cleans. To start work, name the
