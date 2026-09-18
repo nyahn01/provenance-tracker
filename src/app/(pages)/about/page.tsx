@@ -54,10 +54,10 @@ const LOOPS = [
 ]
 
 const LABELS = [
-  { chip: 'priority + agent:<domain>', meaning: 'A queued unit of work the batch squad will build', accent: C.gold },
-  { chip: 'proposal', meaning: 'A forward-looking idea — not yet queued; a human must promote it', accent: C.purple },
-  { chip: 'feedback', meaning: 'An inbound visitor report — triaged, but only a human closes it', accent: C.sage },
-  { chip: 'paused', meaning: 'Skip this one issue on the next batch run (per-item kill-switch)', accent: C.clay },
+  { chip: 'feedback', meaning: 'An inbound visitor report, filed by the in-app form. Only a human closes it', accent: C.sage },
+  { chip: 'agent:<domain>', meaning: 'The domain owner, stamped automatically at intake — a hint, not a queue', accent: C.gold },
+  { chip: 'proposal', meaning: 'A forward-looking idea, not scheduled work. A human decides if it is ever built', accent: C.purple },
+  { chip: 'paused', meaning: 'Skip this one issue on the next scheduled run (per-item kill-switch)', accent: C.clay },
 ]
 
 export default function AboutPage() {

@@ -170,3 +170,38 @@ improvement, from scratch" (#115) is a design direction, and #112 is a generated
 **An autonomy loop is capped by the quality of its queue, not by the capability of its
 builder.** Re-enable `auto_build` only alongside a real builder AND a queue of well-formed,
 single-PR issues. Reverting this simplification is the same one-line flip it always was.
+
+## Update — routing moved to intake, hand-applied queue labels removed
+
+A follow-up to the review above, from the same question: why did #228 sit for days?
+
+It had not sat unrouted. The form filed it, the cron labelled it `agent:provenance-data`
+about an hour later, and a human added `priority` two days after that. It was never picked
+up because of the head-of-queue starvation in defect 3, not because of any label.
+
+But tracing it exposed the real cost of the label ceremony. Seven labels were in the flow
+(`feedback`, `agent:<domain>`, `triage-queued`, `priority`, `ready-to-build`, `proposal`,
+`paused`) and **their only consumer was the auto-builder, which is now off**. The maintainer
+was hand-applying `priority` for a reader that no longer exists.
+
+Two changes:
+
+**Routing happens at intake.** `classifyDomain` moved from `scripts/feedback/route.mjs` to
+`src/lib/feedback-routing.ts` and is called by `/api/feedback`, so a submission is *born*
+carrying `feedback` + `agent:<domain>`. The wait on a cron interval is gone, and so is the
+scheduled step: `scripts/feedback/route.mjs` and the orchestrator's feedback block are
+deleted rather than kept as a duplicate backstop. One consumer, one home. An Issue filed
+directly on GitHub gets no `agent:` label, which is fine — it is a hint, not a gate.
+
+**No queue label is applied by hand.** `triage-queued` is gone with the step that wrote it.
+`priority` survives only as the security/honesty sentinels' own escalation marker, which they
+apply themselves. Nothing is left for the maintainer to label.
+
+The queue is now the open Issues list, ordered on the Projects board. What starts work is a
+human opening a session and naming an Issue number — which is what actually started every
+merged PR in this repo's history. The label vocabulary on `/about` was corrected to match.
+
+### The lesson
+The ceremony was not overhead *around* the loop; it was the loop's input format, left behind
+when the loop stopped reading it. **When you switch a consumer off, delete what fed it, or the
+producer keeps paying.** That producer was a person.

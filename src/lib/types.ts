@@ -382,3 +382,15 @@ export interface ReconcileResponse {
   warnings: string[]
   cached?: boolean
 }
+
+// ─── Feedback routing ────────────────────────────────────────────────────────
+
+/** The categories the in-app feedback form offers. */
+export type FeedbackCategory = 'bug' | 'data-correction' | 'feature' | 'ux' | 'general'
+
+/** Agent domains a feedback item can be routed to (the label is `agent:<domain>`). */
+export type AgentDomain =
+  | 'provenance-globe'
+  | 'design-director'
+  | 'provenance-strategy'
+  | 'provenance-data'

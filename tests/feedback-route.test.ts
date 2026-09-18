@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { classifyDomain, categoryOf, planFeedbackRouting } from '../scripts/feedback/route.mjs'
+import { classifyDomain, feedbackLabels } from '../src/lib/feedback-routing'
 
 describe('feedback router — classifyDomain', () => {
   it('routes by keyword signal first', () => {
@@ -15,23 +15,24 @@ describe('feedback router — classifyDomain', () => {
     expect(classifyDomain('feature', 'idea', 'add a thing')).toBe('provenance-strategy')
     expect(classifyDomain('general', '', '')).toBe('provenance-strategy')
   })
-})
 
-describe('feedback router — categoryOf', () => {
-  it('parses the [feedback] <category>: convention', () => {
-    expect(categoryOf({ title: '[feedback] data-correction: wrong date' })).toBe('data-correction')
-    expect(categoryOf({ title: 'no convention here' })).toBe('general')
+  it('falls back to strategy for a category it does not know', () => {
+    expect(classifyDomain('not-a-category', '', '')).toBe('provenance-strategy')
   })
 })
 
-describe('feedback router — planFeedbackRouting', () => {
-  it('routes untriaged issues and skips already-queued ones (idempotent)', () => {
-    const issues = [
-      { number: 1, title: '[feedback] ux: mobile layout broken', body: '', labels: ['feedback'] },
-      { number: 2, title: '[feedback] bug: globe crash', body: 'map pin error', labels: [{ name: 'feedback' }, { name: 'triage-queued' }] },
-    ]
-    const plan = planFeedbackRouting(issues)
-    expect(plan).toHaveLength(1)
-    expect(plan[0]).toMatchObject({ number: 1, label: 'agent:design-director' })
+describe('feedback router — feedbackLabels', () => {
+  // Routing happens at intake now, so these are the labels the issue is BORN with.
+  // Nothing downstream adds a label, and nothing is left for a human to apply.
+  it('stamps the feedback label plus the domain owner', () => {
+    expect(feedbackLabels('ux', 'mobile layout broken', '')).toEqual(['feedback', 'agent:design-director'])
+    expect(feedbackLabels('bug', 'globe crash', 'map pin error')).toEqual(['feedback', 'agent:provenance-globe'])
+  })
+
+  it('never emits a queue label — promotion stays a human decision', () => {
+    const labels = feedbackLabels('data-correction', 'wrong dates', 'custody source is off')
+    expect(labels).not.toContain('priority')
+    expect(labels).not.toContain('triage-queued')
+    expect(labels).not.toContain('ready-to-build')
   })
 })

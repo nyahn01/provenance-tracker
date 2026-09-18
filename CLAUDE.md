@@ -84,13 +84,24 @@ fallback remains if a call fails.
   work doesn't travel across devices.
 
 ## Work tracking (queue lives in GitHub, not files)
-A priority = an open Issue labeled `priority` + `agent:<domain>` (+ `paused` to skip). A PR with
-`Closes #N` auto-closes it on merge — the queue self-cleans. The Projects board is the at-a-glance
-view (readable on phone). The batch workflow reads `gh issue list --label priority`, not markdown.
+**The queue is the open Issues list; ordering lives on the Projects board (readable on phone).**
+No label starts work — a human opening a session does. So no label is applied by hand:
 
-Forward-looking ideas land as an open Issue labeled `proposal` (not `priority`) — a suggestion, not
-queued work. The human promotes one by relabeling it `priority` + `agent:<domain>`; only then is it
-built. This separates ideation from execution without an autopilot (rationale: `docs/VISION.md`).
+| Label | Applied by | Means |
+|---|---|---|
+| `feedback` + `agent:<domain>` | `/api/feedback` at intake (`src/lib/feedback-routing.ts`) | An inbound report, with its domain owner. A hint, never a queue |
+| `proposal` | a sentinel, or a human | An idea, not scheduled work |
+| `priority` | a sentinel, for security/honesty only | High-stakes finding; look at this first |
+| `paused` | a human | Skip on the next scheduled run |
+
+A PR with `Closes #N` auto-closes the Issue on merge — the list self-cleans. To start work, name the
+Issue number in a session. Do NOT reintroduce a hand-applied queue label: `triage-queued` and a
+human-applied `priority` were removed because nothing consumed them
+(`docs/decisions/0002-stage3-autonomy-model.md`).
+
+**An Issue is ready when it names one change, in one area, you could recognise as done.** An Issue
+asking for several things at once is split into one Issue per change; the original is closed as
+`not planned` pointing at its replacements. Feedback is never closed silently — a human closes it.
 
 `main` is protected by the `protect-main` ruleset (PR required, honesty+build checks must pass,
 no direct pushes). Approvals are intentionally OFF for the solo maintainer — see
