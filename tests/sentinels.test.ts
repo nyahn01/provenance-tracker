@@ -20,29 +20,43 @@ describe('data-quality sentinel', () => {
     expect(nc!.body).not.toContain('<!-- sentinel:')
   })
 
-  it('flags a trailing dateless custody entry', () => {
+  it('does NOT flag a country-level place — it is unplaced on purpose (#236)', () => {
+    // Pinning a national centroid would assert a location the source never gave,
+    // so flagging this would push a future fix toward faking a coordinate.
+    const prov = {
+      'aic:g': [
+        { name: 'Munich', institution: 'A. Mayer', lat: 48.14, lng: 11.58, startDate: '1930' },
+        { name: 'Germany', institution: 'Private collection', lat: null, lng: null, startDate: '1933' },
+      ],
+    }
+    expect(scanDataQuality(prov).find((x: any) => x.id === 'data-quality-null-coordinates')).toBeUndefined()
+  })
+
+  it('flags a chain with no dated entry anywhere — nothing anchors the sequence', () => {
     const prov = {
       'aic:2': [
-        { name: 'Paris', lat: 48.85, lng: 2.35, startDate: '1900' },
-        { name: 'Chicago', institution: 'Unknown buyer', lat: 41.88, lng: -87.63, startDate: null },
+        { name: 'Paris', institution: 'Dealer A', lat: 48.85, lng: 2.35, startDate: null, endDate: null },
+        { name: 'Chicago', institution: 'Unknown buyer', lat: 41.88, lng: -87.63, startDate: null, endDate: null },
       ],
     }
     const f = scanDataQuality(prov)
-    const t = f.find((x: any) => x.id === 'data-quality-trailing-dateless-custody')
+    const t = f.find((x: any) => x.id === 'data-quality-undatable-chain')
     expect(t).toBeTruthy()
-    expect(t!.body).toContain('Unknown buyer')
+    expect(t!.body).toContain('aic:2')
   })
 
-  it('does NOT flag a start-less entry that has an endDate (it is placeable, #103)', () => {
+  it('does NOT flag an undated entry that the source sequence can place (#236)', () => {
+    // One dated neighbour is enough: the entry is ordered by its position in the
+    // source prose, so it is no longer stranded and no longer a defect.
     const prov = {
       'aic:x': [
         { name: 'Paris', lat: 48.85, lng: 2.35, startDate: '1900', endDate: '1902' },
         { name: 'Lake Forest', institution: 'Wood', lat: 42.26, lng: -87.84, startDate: null, endDate: '1984' },
         { name: 'Chicago', institution: 'AIC', lat: 41.88, lng: -87.63, startDate: '1985', endDate: null },
+        { name: 'Chicago', institution: 'Undated heir', lat: 41.88, lng: -87.63, startDate: null, endDate: null },
       ],
     }
-    const f = scanDataQuality(prov)
-    expect(f.find((x: any) => x.id === 'data-quality-trailing-dateless-custody')).toBeUndefined()
+    expect(scanDataQuality(prov).find((x: any) => x.id === 'data-quality-undatable-chain')).toBeUndefined()
   })
 
   it('stays silent on a clean chain', () => {

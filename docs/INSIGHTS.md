@@ -20,6 +20,44 @@ written to a file, it's lost when the context window rolls. This file is the saf
 
 <!-- append insights below, newest first -->
 
+- `#data #process` SOURCE ORDER IS EVIDENCE (#236) — the "wrong or incomplete name parsing"
+  in feedback #228 was three separate defects, and the worst was not parsing at all. Custody
+  entries were sorted purely on dates, and `extractYear(null)` buckets an undated holder to
+  9999, so it dangles at the end. On [[aic:95998]] (Rembrandt, *Old Man with a Gold Chain*)
+  that stranded three of twelve holders AFTER the 1921 Art Institute acquisition — including
+  Jacob Alewijn, the FIRST owner in the source, rendering 10th. Lesson: **museum provenance
+  prose is written chronologically and our parse preserves that order, so an entry's position
+  in the source list is itself evidence.** Sorting on dates alone throws it away. The fix
+  places an undated entry between its dated neighbours *in source order*
+  (`sourceOrderedSortKeys`); no date is invented and the row still reads "?", only the
+  position changes — to the one the museum already published. Generalises: before inventing
+  a missing value, check whether the source's own structure already encodes it.
+
+- `#data` NAME CONSISTENCY IS A PARSING SIGNAL (#236) — the Art Institute of Chicago is the
+  final holder of all 13 featured works and appeared as three strings ("The Art Institute of
+  Chicago" ×8, "Art Institute of Chicago" ×4, "Art Institute" ×1), so the last row of the
+  chain read differently work to work. Visitors read that as broken parsing, and they are
+  right. Fixed with an explicit, evidenced alias table ([[holder-names]]) applied at three
+  points — the committed JSON, `preparse-provenance.mjs`, and the runtime provenance route —
+  because a fix in the data alone is undone by the next re-parse (the #55 trap). Rule adopted:
+  case/article differences are not identity **for matching**, but the displayed spelling always
+  comes from an explicit table entry. We never silently re-case a name, so every display change
+  is one reviewable line with its evidence. "Frederick"/"Frederic Clay Bartlett" is deliberately
+  NOT merged: a person's given name is an identity claim and nobody has checked it against a
+  source. A wrong merge costs more than a visible variant.
+
+- `#process #risk` A METRIC THAT CANNOT REACH ZERO HONESTLY IS A TRAP (#236) —
+  `nullCoordinateEntries` counted two different things: a place that should have geocoded (a
+  real defect, e.g. Oxfordshire missing from the gazetteer) and a place the prose gives only
+  as a country, which carries no coordinate ON PURPOSE because pinning a national centroid
+  would assert a location the source never gave. Merged, the number could never honestly hit
+  zero — which quietly pressures the next agent to invent a coordinate so it does. Split into
+  `ungeocodedEntries` (target 0, CI regression-checked) and `countryLevelEntries` (counted,
+  never flagged). Lesson: **when a health metric mixes a defect with a deliberate choice, the
+  metric itself becomes an incentive to break the honesty contract.** Check every target-zero
+  number for entries that are supposed to be there.
+
+
 - `#process` LOOP REVIEW (2026-09-18) — the self-improving loop ran green 86 times and produced
   **zero PRs** and ~228 duplicate comments (#112: 77, #115: 76, #149: 75). Four defects, one
   lesson each. (1) `dispatch()` posted its brief with no marker guard while the Sense path had

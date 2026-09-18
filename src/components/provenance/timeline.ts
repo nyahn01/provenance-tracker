@@ -163,6 +163,63 @@ export function sameName(a: string, b: string): boolean {
   return na === nb || na.includes(nb) || nb.includes(na)
 }
 
+/** Sub-year offset used to order an undated run that has neighbours on one side only. */
+const FRACTION = 0.001
+
+/**
+ * Order custody entries when a holder carries no dates at all.
+ *
+ * Museum provenance prose is written chronologically, and our parse preserves
+ * that order, so **an entry's position in the source list is itself evidence**.
+ * Ordering purely on dates throws that evidence away: `extractYear(null)` buckets
+ * an undated holder to 9999, so it dangles after the museum acquisition. On
+ * aic:95998 that put three holders (Jacob Alewijn, Lippmann, Reinhardt) at the
+ * end of the chain although the source lists them 1st, 6th and 10th of 12.
+ *
+ * So an undated entry is placed between its nearest dated neighbours **in source
+ * order**, spread evenly across the interval. No date is invented and none is
+ * displayed: the row still reads "?" and its confidence is unchanged. Only the
+ * position changes, and it changes to the one the source already published.
+ *
+ * Leading undated entries (no dated predecessor) sort just before the first known
+ * year; trailing ones just after the last. With no dated entry anywhere, source
+ * order is preserved as-is.
+ *
+ * Pure and exported so the ordering rule is unit-tested directly.
+ *
+ * @param years one entry per location, in SOURCE ORDER: its known year, or null
+ * @returns a sort key per entry, parallel to `years`
+ */
+export function sourceOrderedSortKeys(years: Array<number | null>): number[] {
+  const keys: number[] = new Array(years.length)
+  const known = years.map((y, i) => (y == null ? -1 : i)).filter(i => i >= 0)
+
+  // Nothing dated anywhere: keep the source order verbatim.
+  if (!known.length) return years.map((_, i) => i)
+
+  for (let i = 0; i < years.length; i++) {
+    const y = years[i]
+    if (y != null) { keys[i] = y; continue }
+
+    // Nearest dated neighbours on each side, in source order.
+    const prevIdx = known.filter(k => k < i).pop()
+    const nextIdx = known.find(k => k > i)
+    const prev = prevIdx == null ? null : (years[prevIdx] as number)
+    const next = nextIdx == null ? null : (years[nextIdx] as number)
+
+    if (prev != null && next != null) {
+      // Spread the undated run evenly across the interval so it keeps its order.
+      const run = nextIdx! - prevIdx!
+      keys[i] = prev + ((next - prev) * (i - prevIdx!)) / run
+    } else if (prev != null) {
+      keys[i] = prev + (i - prevIdx!) * FRACTION  // trails the last known year
+    } else {
+      keys[i] = next! - (nextIdx! - i) * FRACTION // leads the first known year
+    }
+  }
+  return keys
+}
+
 export function buildUnifiedTimeline(
   locations: LocationEntry[],
   exhibitions: ExhibitionLoan[],
@@ -172,7 +229,17 @@ export function buildUnifiedTimeline(
 ): ProvenanceEvent[] {
   const events: ProvenanceEvent[] = []
 
-  for (const loc of locations) {
+  // Order the custody chain up front, so an undated holder keeps the position the
+  // source gave it instead of bucketing to 9999 and dangling at the end.
+  const custodyKeys = sourceOrderedSortKeys(
+    locations.map(loc =>
+      loc.startDate ? extractYear(loc.startDate)
+      : loc.endDate ? extractYear(loc.endDate)
+      : null,
+    ),
+  )
+
+  for (const [i, loc] of locations.entries()) {
     const nameL = loc.name.toLowerCase()
     const instL = (loc.institution ?? '').toLowerCase()
     const combined = nameL + ' ' + instL
@@ -193,13 +260,10 @@ export function buildUnifiedTimeline(
     // its endDate instead of bucketing to 9999 (which would dangle it at the timeline
     // END, e.g. "held until 1984" landing after a 1985 museum acquisition). We invent no
     // start date: the displayed year stays "?" and the detail notes what we do know.
-    const placedKey = loc.startDate
-      ? extractYear(loc.startDate)
-      : (loc.endDate ? extractYear(loc.endDate) : 9999)
     const heldUntil = !loc.startDate && !!loc.endDate && !isArtistOrigin
     events.push({
       year: isArtistOrigin && creationYear ? String(creationYear) : fmtYear(loc.startDate ?? undefined),
-      sortKey: isArtistOrigin ? (creationYear ?? -1) : placedKey,
+      sortKey: isArtistOrigin ? (creationYear ?? -1) : custodyKeys[i],
       type,
       who,
       where,

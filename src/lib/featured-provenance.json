@@ -329,7 +329,7 @@
     },
     {
       "name": "Chicago",
-      "institution": "Palmer Family",
+      "institution": "Palmer family",
       "lat": 41.8781,
       "lng": -87.6298,
       "startDate": "1902",
@@ -569,7 +569,7 @@
     },
     {
       "name": "Chicago",
-      "institution": "Art Institute of Chicago",
+      "institution": "The Art Institute of Chicago",
       "lat": 41.8781,
       "lng": -87.6298,
       "startDate": "1933",
@@ -670,7 +670,7 @@
     },
     {
       "name": "Chicago",
-      "institution": "Art Institute of Chicago",
+      "institution": "The Art Institute of Chicago",
       "lat": 41.8781,
       "lng": -87.6298,
       "startDate": "1948",
@@ -762,7 +762,7 @@
     },
     {
       "name": "Chicago",
-      "institution": "Art Institute",
+      "institution": "The Art Institute of Chicago",
       "lat": 41.8781,
       "lng": -87.6298,
       "startDate": "1955",
@@ -782,7 +782,7 @@
     },
     {
       "name": "Paris",
-      "institution": "Bernheim-Jeune",
+      "institution": "Galerie Bernheim-Jeune",
       "lat": 48.8566,
       "lng": 2.3522,
       "startDate": "1907",
@@ -836,7 +836,7 @@
     },
     {
       "name": "Chicago",
-      "institution": "Art Institute of Chicago",
+      "institution": "The Art Institute of Chicago",
       "lat": 41.8781,
       "lng": -87.6298,
       "startDate": "1932",
@@ -875,8 +875,8 @@
     {
       "name": "Oxfordshire",
       "institution": "Matthew Piers Watt Boulton",
-      "lat": null,
-      "lng": null,
+      "lat": 51.7612,
+      "lng": -1.2465,
       "startDate": null,
       "endDate": "1911",
       "source": "AIC provenance"
@@ -946,7 +946,7 @@
     },
     {
       "name": "Chicago",
-      "institution": "Art Institute of Chicago",
+      "institution": "The Art Institute of Chicago",
       "lat": 41.8781,
       "lng": -87.6298,
       "startDate": "1921",

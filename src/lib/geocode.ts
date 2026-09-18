@@ -80,6 +80,8 @@ export const CITIES: Record<string, GeoPoint> = {
   // US towns that appear in provenance records
   'lake forest': { lat: 42.2597, lng: -87.8398 },
   'naugatuck': { lat: 41.4854, lng: -73.0504 },
+  // County-level, the finest the AIC prose gives for Boulton's seat (aic:95998).
+  oxfordshire: { lat: 51.7612, lng: -1.2465 },
   // Spanish towns that appear in provenance records
   toledo: { lat: 39.8628, lng: -4.0273 },
   'el pardo': { lat: 40.5273, lng: -3.7702 },

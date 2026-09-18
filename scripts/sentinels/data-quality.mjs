@@ -12,10 +12,11 @@
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { isCountryLevel } from '../lib/cities.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
-const extractYear = (d) => { if (!d) return 9999; const m = String(d).match(/\d{4}/); return m ? parseInt(m[0], 10) : 9999 }
+const extractYear = (d) => { if (!d) return null; const m = String(d).match(/\d{4}/); return m ? parseInt(m[0], 10) : null }
 
 /**
  * @param {Record<string, Array<{name?:string,institution?:string,lat:number|null,lng:number|null,startDate:string|null}>>} prov
@@ -25,11 +26,16 @@ export function scanDataQuality(prov) {
   const works = Object.entries(prov).map(([work, raw]) => [work, Array.isArray(raw) ? raw : []])
   const findings = []
 
-  // 1. Null / null-island coordinates (a mappable holder we cannot place honestly).
+  // 1. Coordinates we failed to resolve for a place that should have resolved.
+  //    A country-level place (AIC prose sometimes names only a country) carries no
+  //    coordinate ON PURPOSE — pinning a national centroid would assert a location
+  //    the source never gave. Flagging it would pressure a future fix to fake one,
+  //    so it is excluded here and counted separately by `npm run metrics`.
   const nullCoord = []
   for (const [work, list] of works) {
     for (const e of list) {
-      if (e.lat == null || e.lng == null || e.lat === 0 || e.lng === 0) {
+      const missing = e.lat == null || e.lng == null || e.lat === 0 || e.lng === 0
+      if (missing && !isCountryLevel(e.name)) {
         nullCoord.push({ work, where: e.institution || e.name || '(unnamed)' })
       }
     }
@@ -47,29 +53,28 @@ export function scanDataQuality(prov) {
     })
   }
 
-  // 2. Trailing UNPLACEABLE custody (a row that sorts to the chronological end and
-  //    can't be ordered at all). An entry with only an endDate is still placeable (by
-  //    that endDate) — it is NOT a defect — so we flag only entries with neither a
-  //    start nor an end date. Ordering mirrors the app timeline (endDate fallback).
-  const placed = (e) => (e.startDate ? extractYear(e.startDate) : (e.endDate ? extractYear(e.endDate) : 9999))
-  const trailing = []
+  // 2. A chain with NO dated entry anywhere. The app orders an undated holder by its
+  //    position in the source prose (#236), so a dateless row is no longer misplaced
+  //    on its own — the source sequence still places it. What remains a real defect
+  //    is a chain carrying no date at all: nothing to anchor the sequence to, so the
+  //    whole chain is unorderable and its "when" is unknown.
+  const placed = (e) => (e.startDate ? extractYear(e.startDate) : extractYear(e.endDate))
+  const undatable = []
   for (const [work, list] of works) {
     if (!list.length) continue
-    const sorted = [...list].sort((a, b) => placed(a) - placed(b))
-    const last = sorted[sorted.length - 1]
-    if (last && !last.startDate && !last.endDate) {
-      trailing.push({ work, where: last.institution || last.name || '(unnamed)' })
+    if (!list.some(e => placed(e) != null)) {
+      undatable.push({ work, where: `${list.length} entr${list.length === 1 ? 'y' : 'ies'}, none dated` })
     }
   }
-  if (trailing.length) {
+  if (undatable.length) {
     findings.push({
-      id: 'data-quality-trailing-dateless-custody',
+      id: 'data-quality-undatable-chain',
       label: 'proposal',
-      title: '[sentinel] data-quality: trailing dateless custody entries',
+      title: '[sentinel] data-quality: custody chains with no dated entry',
       body: cluster(
-        `${trailing.length} work(s) end on a dateless custody entry, which sorts to the wrong (last) position.`,
-        trailing.map(t => `${t.work} — ${t.where}`),
-        'Add the missing year from the source prose, or mark as a documented gap. Suggested: `agent:provenance-data`.',
+        `${undatable.length} work(s) carry no date on any custody entry, so the chain cannot be anchored in time.`,
+        undatable.map(t => `${t.work} — ${t.where}`),
+        'Recover years from the source prose, or drop the work from featured. Suggested: `agent:provenance-data`.',
       ),
     })
   }
