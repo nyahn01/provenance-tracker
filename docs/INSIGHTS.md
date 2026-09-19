@@ -20,6 +20,30 @@ written to a file, it's lost when the context window rolls. This file is the saf
 
 <!-- append insights below, newest first -->
 
+- `#data #design` COMPARISON WITHOUT CONVERSION (#228) — feedback said the ledger amounts needed
+  inflation adjustment and "a more intuitive explanation." The panel showed pairs like
+  `30,000 francs → $7,250` with no way to judge whether that was a markup or a loss. Both literal
+  fixes need reference data we cannot source: a CPI series (US official series starts 1913; the
+  Knoedler books start 1872, so the early decades need a reconstructed index with contested
+  methodology) and period franc/dollar rates. Both also contradict a commitment the chart
+  *publishes*: "no inflation adjustment and no currency conversion." Typing either table from
+  memory would be inventing exactly what this project exists not to invent. **The third path:
+  rank each amount inside its OWN currency's distribution.** "385,000 francs — top 10% of 433
+  recorded franc purchases" answers "was that a lot?" with no exchange rate, no index, and no
+  external source. Generalises: when a comparison needs data you cannot source, look for a
+  comparison the data you already hold can support.
+
+- `#process #risk` A SELECTED SAMPLE MAKES ITS OWN STATISTIC USELESS (#228) — after adding the
+  ranks, all eight displayed pairs read "top 10% / top 10%". Correct, and nearly worthless:
+  the panel selects `.slice(0, 8)` of pairs **sorted by sale amount descending**, so every row
+  is top-decile by construction. Worse, the caption said only "we show them side by side," so a
+  reader would fairly assume the eight were representative of all 266 — and the uniformly high
+  ranks would read as a property of the whole set. Fixed by saying so on the panel: these are the
+  largest dollar sales, not a representative sample, which is why they all rank high. Lesson:
+  **when you rank items inside a view, check what selected the view.** A statistic computed over
+  a sample chosen by that same quantity describes the selection, not the world.
+
+
 - `#data #process` SOURCE ORDER IS EVIDENCE (#236) — the "wrong or incomplete name parsing"
   in feedback #228 was three separate defects, and the worst was not parsing at all. Custody
   entries were sorted purely on dates, and `extractYear(null)` buckets an undated holder to
