@@ -275,8 +275,29 @@ export interface PriceYearStat {
 }
 
 /**
+ * Where one amount sits in the ledger's own distribution FOR ITS OWN CURRENCY.
+ *
+ * This is the honest way to answer "was that a lot?" without converting. A franc
+ * purchase is ranked only against other franc purchases, a dollar sale only
+ * against other dollar sales, so the two currencies never share a scale and no
+ * exchange rate is implied. `n` is the population it was ranked against, and it
+ * is always shown: a rank out of 40 records means less than a rank out of 1,700.
+ */
+export interface PriceRank {
+  /** 0–100, the share of the population at or below this amount. */
+  percentile: number
+  /** Population size this was ranked against. */
+  n: number
+  /** Which pool: purchases and sales are ranked separately. */
+  side: 'purchase' | 'sale'
+  currency: ParsedPrice['currency']
+}
+
+/**
  * One francs-bought → dollars-sold Knoedler record. Prices are the VERBATIM
- * ledger strings — never converted between currencies.
+ * ledger strings — never converted between currencies. The two ranks say where
+ * each amount sits among its OWN currency's records, which is comparison
+ * without conversion.
  */
 export interface ArbitragePair {
   piRecordNo: string | null
@@ -285,6 +306,9 @@ export interface ArbitragePair {
   year: number | null
   purchase: string
   sale: string
+  /** Null when the currency's population is too small to rank against honestly. */
+  purchaseRank: PriceRank | null
+  saleRank: PriceRank | null
   sourceUrl: string | null
   sourceLabel: string
 }
