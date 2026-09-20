@@ -44,6 +44,7 @@ export function scanDataQuality(prov) {
     findings.push({
       id: 'data-quality-null-coordinates',
       label: 'proposal',
+      signal: { entries: nullCoord.length },
       title: '[sentinel] data-quality: custody nodes with no coordinates',
       body: cluster(
         `${nullCoord.length} custody entr${nullCoord.length === 1 ? 'y has' : 'ies have'} null/0,0 coordinates and cannot be placed on the globe.`,
@@ -70,6 +71,7 @@ export function scanDataQuality(prov) {
     findings.push({
       id: 'data-quality-undatable-chain',
       label: 'proposal',
+      signal: { works: undatable.length },
       title: '[sentinel] data-quality: custody chains with no dated entry',
       body: cluster(
         `${undatable.length} work(s) carry no date on any custody entry, so the chain cannot be anchored in time.`,

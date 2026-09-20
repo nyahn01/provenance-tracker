@@ -7,6 +7,11 @@
  * it stays silent rather than inventing a finding.
  *
  * `summarizeAudit` is pure so it can be unit-tested with a fixture.
+ *
+ * The finding carries a `signal` of severity counts (issue #232). The runner
+ * compares it to the worst previously recorded, so an open issue is refreshed in
+ * place and speaks up only when the dependency surface actually degrades — the
+ * failure that left #202 reading "2 high" while it had become 1 critical + 6 high.
  */
 
 import { execFileSync } from 'node:child_process'
@@ -19,7 +24,7 @@ const ORDER = ['critical', 'high', 'moderate', 'low', 'info']
 /**
  * Turn `npm audit --json` output into a finding (or null when clean).
  * @param {any} audit parsed audit JSON (npm v7+ schema)
- * @returns {{id:string,label:'priority'|'proposal',title:string,body:string}|null}
+ * @returns {{id:string,label:'priority'|'proposal',title:string,body:string,signal:Record<string,number>}|null}
  */
 export function summarizeAudit(audit) {
   const meta = audit?.metadata?.vulnerabilities || {}
@@ -35,6 +40,9 @@ export function summarizeAudit(audit) {
   return {
     id: 'security-npm-audit',
     label: severe ? 'priority' : 'proposal',
+    // One counter per severity, so a new critical is visible as a counter passing
+    // its high-water mark rather than as a reworded sentence.
+    signal: Object.fromEntries(ORDER.map(s => [s, meta[s] || 0])),
     title: `[sentinel] security: ${counts} dependency vulnerabilit${total === 1 ? 'y' : 'ies'}`,
     body: `\`npm audit\` reports **${counts}**.\n\n${advisories.join('\n') || '_(no per-package detail)_'}\n\nRun \`npm audit fix\` (or bump/override the offending dep) and verify the build. Suggested: \`agent:provenance-data\`.\n\n_Filed by the security sentinel (read-only). ${severe ? '`priority` — high/critical present.' : ''}_`,
   }
