@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "verify": "node scripts/verify.mjs",
     "honesty": "node scripts/honesty-check.mjs",
     "honesty:full": "node scripts/honesty-check.mjs --full",

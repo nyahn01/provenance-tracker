@@ -49,7 +49,6 @@ export function GlobeContainer({ prov, globeHeightPct }: GlobeContainerProps) {
       if (!mounted || !containerRef.current) return
       let geo: { features: unknown[] } = { features: [] }
       try { const r = await fetch('/geo/countries-simple.json'); if (r.ok) geo = await r.json() } catch {}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const globe = (GlobeGL as any)()(containerRef.current) as any
       // Solid-color canvas texture for the ocean — avoids touching Three.js internals
       // (scene.traverse caused z-fighting / black noise artifacts when zooming).

@@ -94,7 +94,7 @@ const SECTIONS: AccordionSection[] = [
           Loss Register currently lists over 600,000 objects stolen or lost during the WWII era.
         </p>
         <p>
-          On this platform, gaps render as dashed borders and a "░ Provenance gap" indicator — not
+          On this platform, gaps render as dashed borders and a &quot;░ Provenance gap&quot; indicator — not
           hidden, never papered over.
         </p>
       </>
@@ -181,7 +181,7 @@ const SECTIONS: AccordionSection[] = [
     body: (
       <>
         <p>
-          Korea's colonial period (1910–1945) saw systematic dispersal of cultural heritage under
+          Korea&apos;s colonial period (1910–1945) saw systematic dispersal of cultural heritage under
           Japanese imperial rule. Temples, royal palaces, and private collections were stripped;
           objects entered Japanese collections, the international art market, and western museums
           with thin or falsified provenance.
