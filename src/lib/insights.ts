@@ -17,18 +17,20 @@
 import { allGettyRecords } from './getty'
 import { getFeaturedChain } from './featured-chains'
 import { FEATURED_WORKS } from './featured'
-import { parsePrice } from './prices'
+import { parsePrice, percentileRank, MIN_RANK_POPULATION } from './prices'
 import type {
-  GettyRecord,
-  YearActivity,
-  ArtistActivity,
-  PriceYearStat,
   ArbitragePair,
-  DealerLink,
+  ArtistActivity,
   BipartiteLayout,
+  DealerLink,
+  GettyRecord,
+  ParsedPrice,
+  PipelineCity,
   PipelineData,
   PipelineFlow,
-  PipelineCity,
+  PriceRank,
+  PriceYearStat,
+  YearActivity,
 } from './types'
 
 const isKnoedler = (r: GettyRecord) => r.sourceLabel.includes('Knoedler')
@@ -124,11 +126,58 @@ export function usdMedianByYear(minN = 5, records: GettyRecord[] = allGettyRecor
   return { stats: stats.sort((a, b) => a.year - b.year), totalUsdSales, belowThreshold }
 }
 
+/**
+ * Sorted amounts per currency, split by side, for ranking one amount against its
+ * OWN currency's records (issue #228). Purchases and sales are separate pools
+ * because they answer different questions: what Knoedler paid versus what it got.
+ *
+ * Nothing here converts or compares across currencies — that is the whole point.
+ */
+export function priceRankIndex(records: GettyRecord[] = allGettyRecords()): {
+  purchase: Map<string, number[]>
+  sale: Map<string, number[]>
+} {
+  const purchase = new Map<string, number[]>()
+  const sale = new Map<string, number[]>()
+  for (const r of records) {
+    if (!isKnoedler(r)) continue
+    for (const [raw, pool] of [[r.purchasePrice, purchase], [r.salePrice, sale]] as const) {
+      const p = parsePrice(raw)
+      if (!p || p.currency === 'unknown') continue
+      const list = pool.get(p.currency) ?? []
+      list.push(p.amount)
+      pool.set(p.currency, list)
+    }
+  }
+  for (const pool of [purchase, sale]) {
+    for (const list of pool.values()) list.sort((a, b) => a - b)
+  }
+  return { purchase, sale }
+}
+
+/**
+ * Where one amount sits among its own currency's records, or null when that
+ * population is too thin to rank against honestly (see MIN_RANK_POPULATION).
+ */
+function rankOf(
+  index: ReturnType<typeof priceRankIndex>,
+  price: ParsedPrice,
+  side: 'purchase' | 'sale',
+): PriceRank | null {
+  if (price.currency === 'unknown') return null
+  const pool = index[side].get(price.currency)
+  if (!pool || pool.length < MIN_RANK_POPULATION) return null
+  const percentile = percentileRank(pool, price.amount)
+  if (percentile === null) return null
+  return { percentile, n: pool.length, side, currency: price.currency }
+}
+
 /** Knoedler records bought in francs and sold in dollars — verbatim, never converted. */
 export function arbitragePairs(records: GettyRecord[] = allGettyRecords()): {
   pairs: ArbitragePair[]
   total: number
 } {
+  const index = priceRankIndex(records)
   const all: ArbitragePair[] = []
   for (const r of records) {
     if (!isKnoedler(r)) continue
@@ -142,6 +191,8 @@ export function arbitragePairs(records: GettyRecord[] = allGettyRecords()): {
       year: recordYear(r),
       purchase: (r.purchasePrice ?? '').trim(),
       sale: (r.salePrice ?? '').trim(),
+      purchaseRank: rankOf(index, bought, 'purchase'),
+      saleRank: rankOf(index, sold, 'sale'),
       sourceUrl: r.sourceUrl,
       sourceLabel: r.sourceLabel,
     })
