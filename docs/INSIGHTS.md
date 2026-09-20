@@ -20,6 +20,31 @@ written to a file, it's lost when the context window rolls. This file is the saf
 
 <!-- append insights below, newest first -->
 
+- `#process #risk` IDEMPOTENCY IS NOT SUPPRESSION (#232) — the sentinel runner treated a marker
+  match as "already reported" and returned. Correct-looking, and it let #202 read "2 high" for
+  60 consecutive runs while the real count became 1 critical + 6 high + 3 moderate, including an
+  unauthenticated RCE. **A monitor that cannot revise its own finding is a tombstone.** Fixed by
+  refreshing the open issue in place instead: the body and title are PATCHed whenever they drift.
+  Lesson: *"don't duplicate" and "don't update" are different requirements, and implementing the
+  first as the second turns a live monitor into a dated snapshot.*
+
+- `#process` BOUND A NEW WRITE PATH BEFORE YOU ADD IT (#232) — adding a talk-back path to the
+  system that had just been a comment pump (#231) needed the bound designed first, not bolted on.
+  Three properties do it. A body or title PATCH sends **no** GitHub notification, so routine
+  corrections are free. A comment fires only when a counter passes the finding's own recorded
+  **high-water mark**, not merely when it differs from last run. That mark is stored in the issue
+  body, so it survives restarts. Together they make comment count bounded by *number of times the
+  finding reached a new worst* — a count of 6→7→6→7 speaks once. Tests assert the bound directly,
+  including 60 identical re-runs producing zero writes. Lesson: **when adding a write path to
+  something that once spammed, make the bound a property you can test, not a policy you intend.**
+
+- `#process` THE SENTINEL CAUGHT ME (#232) — while wiring this, docs-drift flagged
+  `docs/decisions/0002-stage3-autonomy-model.md` referencing `scripts/feedback/route.mjs`, a file
+  I had deleted myself two PRs earlier. The broken reference was in my own ADR text describing
+  the deletion. Worth recording as evidence the read-only sentinels earn their keep: the drift
+  was invisible in review and mechanical to find.
+
+
 - `#data #design` COMPARISON WITHOUT CONVERSION (#228) — feedback said the ledger amounts needed
   inflation adjustment and "a more intuitive explanation." The panel showed pairs like
   `30,000 francs → $7,250` with no way to judge whether that was a markup or a loss. Both literal

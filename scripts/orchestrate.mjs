@@ -12,7 +12,8 @@
  * Guardrails (non-negotiable, per ADR 0002):
  *  - Sentinels are read-only; they never edit code, never merge, never close.
  *  - Idempotent: an open issue carrying the same `<!-- sentinel:ID -->` marker is
- *    updated with a comment, never duplicated.
+ *    REFRESHED in place, never duplicated. It gains a comment only when the finding
+ *    passes its own high-water mark (issue #232), so a routine re-scan is silent.
  *  - Capped by max_prs_per_run; honors the `paused` kill-switch.
  *  - Building a `priority` issue into a PR is delegated to a coding-agent step
  *    (Claude Code / Agent SDK), NOT performed here — the runner only senses + decides.
@@ -27,6 +28,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { SENTINELS } from './sentinels/index.mjs'
+import { planRefresh, renderState, mergePeak } from './sentinels/refresh.mjs'
 import { rankProposals, renderDigest } from './decision/rank.mjs'
 import { autoPromoteTarget } from './decision/promote.mjs'
 import { selectBuildable, dispatch } from './build-issue.mjs'
@@ -57,22 +59,60 @@ async function gh(path, init = {}) {
 const marker = (id) => `<!-- sentinel:${id} -->`
 
 async function openSentinelIssues() {
-  // Map of marker-id → issue number for the runner's own open issues (idempotency).
+  // marker-id → the runner's own open issue, with the text needed to refresh it.
   const issues = await gh(`/repos/${REPO}/issues?state=open&per_page=100&labels=`)
   const found = {}
   for (const it of issues) {
     const m = (it.body || '').match(/<!-- sentinel:([a-z0-9-]+) -->/)
-    if (m) found[m[1]] = it.number
+    if (m) found[m[1]] = { number: it.number, title: it.title, body: it.body || '' }
   }
   return found
 }
 
+/**
+ * File a finding, or REFRESH the open issue that already reports it (issue #232).
+ *
+ * Idempotency used to mean suppression: a marker match logged "not duplicated" and
+ * returned, which left #202 reading "2 high" for 60 runs while the real count had
+ * become 1 critical + 6 high. An open issue is now brought up to date instead.
+ *
+ * What a re-run may do, in ascending order of noise:
+ *  - nothing, when the finding is unchanged;
+ *  - PATCH the title and body, which GitHub does not notify on, so a routine
+ *    correction costs a reader nothing;
+ *  - PATCH and post ONE comment, only when the finding passes its own high-water
+ *    mark. A count that oscillates cannot pump, because the mark only rises.
+ *
+ * @returns {boolean} true when this consumed one of the run's capped slots
+ */
 async function fileFinding(f, existing) {
-  const body = `${f.body}\n\n${marker(f.id)}`
-  if (existing[f.id]) {
-    log(`exists #${existing[f.id]} — ${f.id} (idempotent: not duplicated)`) // a human triages the open one
-    return false
+  const open = existing[f.id]
+
+  if (open) {
+    if (DRY) { log(`DRY would refresh #${open.number} — ${f.id}`); return false }
+    const plan = planRefresh(open, f)
+    if (plan.action === 'noop') {
+      log(`unchanged #${open.number} — ${f.id} (no write)`)
+      return false
+    }
+    await gh(`/repos/${REPO}/issues/${open.number}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ title: plan.title, body: plan.body }),
+    })
+    if (plan.action === 'escalate') {
+      await gh(`/repos/${REPO}/issues/${open.number}/comments`, {
+        method: 'POST', body: JSON.stringify({ body: plan.comment }),
+      })
+      log(`ESCALATED #${open.number} — ${f.id} (refreshed + one comment)`)
+    } else {
+      log(`refreshed #${open.number} — ${f.id} (silent: no worse than before)`)
+    }
+    return false // a refresh is not a new filing; it never eats the cap
   }
+
+  // First sighting: record the signal as its own starting high-water mark.
+  const state = { signal: f.signal ?? undefined, peak: mergePeak(f.signal, null), label: f.label }
+  const body = `${f.body}\n\n${marker(f.id)}\n${renderState(state)}`
   if (DRY) { log(`DRY would file [${f.label}] "${f.title}"`); return true }
   const created = await gh(`/repos/${REPO}/issues`, {
     method: 'POST',

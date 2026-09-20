@@ -186,12 +186,12 @@ was hand-applying `priority` for a reader that no longer exists.
 
 Two changes:
 
-**Routing happens at intake.** `classifyDomain` moved from `scripts/feedback/route.mjs` to
-`src/lib/feedback-routing.ts` and is called by `/api/feedback`, so a submission is *born*
-carrying `feedback` + `agent:<domain>`. The wait on a cron interval is gone, and so is the
-scheduled step: `scripts/feedback/route.mjs` and the orchestrator's feedback block are
-deleted rather than kept as a duplicate backstop. One consumer, one home. An Issue filed
-directly on GitHub gets no `agent:` label, which is fine — it is a hint, not a gate.
+**Routing happens at intake.** `classifyDomain` moved into `src/lib/feedback-routing.ts`
+and is called by `/api/feedback`, so a submission is *born* carrying `feedback` +
+`agent:<domain>`. The wait on a cron interval is gone, and so is the scheduled step: the
+scripts-side router it came from, and the orchestrator's feedback block, were both deleted
+rather than kept as a duplicate backstop. One consumer, one home. An Issue filed directly
+on GitHub gets no `agent:` label, which is fine — it is a hint, not a gate.
 
 **No queue label is applied by hand.** `triage-queued` is gone with the step that wrote it.
 `priority` survives only as the security/honesty sentinels' own escalation marker, which they
