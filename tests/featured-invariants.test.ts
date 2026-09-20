@@ -13,7 +13,6 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { FEATURED_WORKS } from '../src/lib/featured'
 import committedChains from '../src/lib/featured-provenance.json'
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — plain .mjs module, no type declarations
 import { validateChain } from '../scripts/curate.mjs'
 // @ts-ignore — plain .mjs module, no type declarations

@@ -9,6 +9,7 @@
  * solid OBS.bg. StoriesApp stays the state orchestrator; this component only
  * renders and calls back.
  */
+import Link from 'next/link'
 import type { SearchResult, SearchByMode } from '@/lib/types'
 import { FEATURED_WORKS, type FeaturedWork } from '@/lib/featured'
 import { OBS } from '@/lib/design-tokens'
@@ -249,9 +250,9 @@ export function LandingEditorial({
             (Knoedler &amp; Goupil dealer records, CC0 1.0).
             Images are shown only for public-domain works, credited to their institution. Gaps are shown, never invented.
             <div style={{ marginTop: 10, display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-              <a href="/case/adele-bloch-bauer-i" style={{ color: OBS.gold, fontWeight: 600, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
+              <Link href="/case/adele-bloch-bauer-i" style={{ color: OBS.gold, fontWeight: 600, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
                 See a full restitution chain →
-              </a>
+              </Link>
               <a href="/learn" style={{ color: OBS.textMuted, textDecoration: 'none', borderBottom: `1px solid ${OBS.border}` }}>
                 Provenance glossary →
               </a>
