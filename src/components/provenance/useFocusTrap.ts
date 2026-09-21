@@ -19,7 +19,9 @@ export function useFocusTrap(
   onEscape?: () => void,
 ) {
   const escapeRef = useRef(onEscape)
-  escapeRef.current = onEscape
+  useEffect(() => {
+    escapeRef.current = onEscape
+  }, [onEscape])
 
   useEffect(() => {
     if (!active) return

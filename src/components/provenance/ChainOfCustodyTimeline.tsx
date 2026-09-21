@@ -169,6 +169,13 @@ export function ChainOfCustodyTimeline({
   const { spacerPx, intervalYears, gapHeightPx } = buildChainScale(custody, chainGaps)
   const isEmpty = custody.length === 0 && loans.length === 0 && unmatchedSales.length === 0 && chainGaps.length === 0
 
+  // Hoisted above the isEmpty early return below: hooks must run in the same
+  // order on every render, and this component instance can toggle between the
+  // empty state and a populated one (provenance data arriving after mount, a
+  // slug change) without unmounting (#243).
+  const [activeStep, setActiveStep] = useState(0)
+  const stepRefs = useRef<(HTMLElement | null)[]>([])
+
   if (isEmpty) {
     return (
       <div style={{ padding: 18, borderRadius: 8, background: GAL.surface, border: `1px dashed ${GAL.borderMid}`, fontFamily: 'var(--font-ui)' }}>
@@ -193,8 +200,6 @@ export function ChainOfCustodyTimeline({
   // button (the source citation), so a keyboard user reaches the same
   // attribution a mouse user gets by hovering. The visible ring is the
   // sitewide `:focus-visible` rule (globals.css) — no new CSS.
-  const [activeStep, setActiveStep] = useState(0)
-  const stepRefs = useRef<(HTMLElement | null)[]>([])
   let stepIndex = 0
 
   function focusStep(i: number) {
@@ -256,13 +261,13 @@ export function ChainOfCustodyTimeline({
   // Delays are computed in render order from props — deterministic, so the SSG
   // HTML matches hydration and stays fully crawlable. Reduced-motion collapses
   // both duration AND delay via the global kill switch in globals.css.
-  let assembleDelay = 0
+  const assembleDelay = { current: 0 }
   const assemble = (isGap = false): CSSProperties => {
     const style: CSSProperties = {
       animation: `fade-up ${motion.dur.event}ms ${motion.ease.standard} both`,
-      animationDelay: `${assembleDelay}ms`,
+      animationDelay: `${assembleDelay.current}ms`,
     }
-    assembleDelay += motion.stagger.chain + (isGap ? motion.stagger.gapBeat : 0)
+    assembleDelay.current += motion.stagger.chain + (isGap ? motion.stagger.gapBeat : 0)
     return style
   }
 
