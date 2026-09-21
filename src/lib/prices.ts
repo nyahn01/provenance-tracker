@@ -7,7 +7,8 @@
  * currencies are never converted or mixed on one axis.
  */
 
-import type { ParsedPrice } from './types'
+import type { InflationAdjustment, ParsedPrice } from './types'
+import { CPI_ANNUAL_INDEX, CPI_ESTIMATE_CUTOFF_YEAR, CPI_PRESENT_YEAR } from './cpi-data'
 
 export function parsePrice(raw: string | null | undefined): ParsedPrice | null {
   if (!raw) return null
@@ -72,4 +73,25 @@ export function rankBand(percentile: number): string {
   if (percentile === 50) return 'at the median'
   if (percentile >= 25) return 'below the median'
   return 'bottom quarter'
+}
+
+// ─── Inflation adjustment, USD only (issue #241) ────────────────────────────
+
+/**
+ * Restates a USD amount from `fromYear` in CPI_PRESENT_YEAR dollars, using the
+ * Minneapolis Fed's spliced CPI series (`cpi-data.ts`). Additive only — never
+ * a replacement for the as-recorded amount. Returns null rather than guessing
+ * when `fromYear` falls outside the series (there is no franc or pound series
+ * in the repo, so this is never called for those currencies).
+ */
+export function inflationAdjustUsd(amount: number, fromYear: number): InflationAdjustment | null {
+  const fromIndex = CPI_ANNUAL_INDEX[fromYear]
+  const toIndex = CPI_ANNUAL_INDEX[CPI_PRESENT_YEAR]
+  if (!fromIndex || !toIndex) return null
+  return {
+    fromYear,
+    toYear: CPI_PRESENT_YEAR,
+    adjustedAmount: amount * (toIndex / fromIndex),
+    estimated: fromYear < CPI_ESTIMATE_CUTOFF_YEAR,
+  }
 }

@@ -55,7 +55,7 @@ describe('honest degradation on empty data', () => {
 
   it('PriceTrajectoryChart with one point degrades to the empty note', () => {
     const html = renderToStaticMarkup(
-      <PriceTrajectoryChart stats={[{ year: 1900, medianUsd: 5000, n: 9 }]} totalUsdSales={9} arbitrage={[]} arbitrageTotal={0} />,
+      <PriceTrajectoryChart stats={[{ year: 1900, medianUsd: 5000, n: 9, inflationAdjusted: null }]} totalUsdSales={9} arbitrage={[]} arbitrageTotal={0} />,
     )
     expect(html).not.toContain('NaN')
     expect(html.toLowerCase()).toContain('minimum sample')

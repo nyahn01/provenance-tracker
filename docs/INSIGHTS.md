@@ -20,6 +20,23 @@ written to a file, it's lost when the context window rolls. This file is the saf
 
 <!-- append insights below, newest first -->
 
+- `#data #process` A SOURCED BLOCKER RESOLVES WHEN THE HUMAN SUPPLIES THE SOURCE (#241) — #241
+  documented why inflation-adjusted ledger prices were blocked, not merely unbuilt: the sandbox's
+  egress proxy has no route to bls.gov or minneapolisfed.org (confirmed via curl and WebFetch,
+  both `EGRESS_BLOCKED`/403), and typing CPI figures from memory would be inventing exactly what
+  the honesty gate exists to forbid. Asked, the maintainer pasted the Minneapolis Fed's full
+  1800–present CPI table (1967=100) directly into the conversation — at that point it was
+  reviewable, sourced, on-the-record text, not a memory guess, and safe to commit as data.
+  Shipped as `src/lib/cpi-data.ts` (1872–2025, base year and source URL as named constants,
+  `CPI_ESTIMATE_CUTOFF_YEAR = 1913` flagging the pre-BLS reconstructed years) plus
+  `inflationAdjustUsd()` in `prices.ts`. Kept every #241 design constraint: additive only (the
+  as-recorded amount stays primary), the index and base year are visible on screen (not just a
+  tooltip), pre-1913 figures are labelled estimates inline, and francs are never adjusted since
+  no franc CPI series exists in the repo — the chart's "no currency conversion" claim is still
+  true, only its "no inflation adjustment" clause changed. Lesson: **a blocker that says "needs a
+  sourced dataset" is a scoped ask, not a dead end** — surface exactly what's missing and let the
+  human supply it, rather than treating "I can't fetch this" as "this can't be built."
+
 - `#process #risk` IDEMPOTENCY IS NOT SUPPRESSION (#232) — the sentinel runner treated a marker
   match as "already reported" and returned. Correct-looking, and it let #202 read "2 high" for
   60 consecutive runs while the real count became 1 critical + 6 high + 3 moderate, including an

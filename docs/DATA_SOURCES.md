@@ -24,6 +24,7 @@ Rule: a fact may use any tier, but the tier must be visible to the user. Never l
 - [x] **Cleveland Museum of Art API** (A) — open-access, dated structured provenance, images; `openaccess.clevelandart.org`. *Live.*
 - [x] **Getty Provenance Index** (A) — Knoedler (4,388 dealer records) + Goupil & Cie seeded via `scripts/seed-goupil.mjs`; art market transactions 1820–1970. *Live.*
 - [x] **RKD Netherlands Art Institute** (A) — Old Masters provenance research; `src/lib/rkd.ts`; teal badge in sidebar. *Live.*
+- [x] **Federal Reserve Bank of Minneapolis — CPI, 1800–present** (A) — annual US CPI, 1967=100, committed as data (`src/lib/cpi-data.ts`); powers the additive inflation-adjusted reading on `PriceTrajectoryChart` (issue #241). Not an API — the maintainer supplied the series directly, since the sandbox cannot reach `minneapolisfed.org`. *Live, USD only; no franc/pound series exists.*
 - [ ] **Auction archives** (C) — Christie's/Sotheby's public lot archives (scrape-extract, label C). *Future.*
 - [ ] **Repatriation/looted-art + news** (D) — extract movement events with Claude, label D + date. *Future.*
 - [ ] **Google Arts & Culture** (C) — partner pages; extract exhibition/location mentions, label C. *Future.*

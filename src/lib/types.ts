@@ -267,11 +267,26 @@ export interface ArtistActivity {
   years: YearActivity[]
 }
 
+/**
+ * A USD amount restated in a later year's purchasing power via a published CPI
+ * series (issue #241). Additive only — the as-recorded amount is never replaced.
+ * `estimated` is true when `fromYear` predates the series' official-CPI cutoff,
+ * i.e. it rests on a historical reconstruction rather than measured CPI.
+ */
+export interface InflationAdjustment {
+  fromYear: number
+  toYear: number
+  adjustedAmount: number
+  estimated: boolean
+}
+
 /** Median USD sale price for one year (Knoedler only; n = bucket size, shown). */
 export interface PriceYearStat {
   year: number
   medianUsd: number
   n: number
+  /** Null when the year falls outside the CPI series. */
+  inflationAdjusted: InflationAdjustment | null
 }
 
 /**
@@ -309,6 +324,8 @@ export interface ArbitragePair {
   /** Null when the currency's population is too small to rank against honestly. */
   purchaseRank: PriceRank | null
   saleRank: PriceRank | null
+  /** The dollar `sale` figure restated in present-day dollars. Never applied to `purchase` (francs) — no franc CPI series is in the repo. */
+  saleAdjusted: InflationAdjustment | null
   sourceUrl: string | null
   sourceLabel: string
 }
