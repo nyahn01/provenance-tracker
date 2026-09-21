@@ -127,7 +127,10 @@ export default function StoriesApp() {
     const slug = new URLSearchParams(window.location.search).get('work')
     if (!slug) return
     const f = FEATURED_WORKS.find(w => w.slug === slug)
-    if (f) selectFeatured(f)
+    if (!f) return
+    // Deferred to a microtask: openWork's setState calls belong in a callback,
+    // not the effect body itself, so this doesn't cascade into the same commit.
+    queueMicrotask(() => selectFeatured(f))
   }, [selectFeatured])
 
   const selectResult = (r: SearchResult) => openWork(r, r.thumbnail, null)
