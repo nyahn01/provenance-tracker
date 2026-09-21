@@ -17,7 +17,7 @@
 import { allGettyRecords } from './getty'
 import { getFeaturedChain } from './featured-chains'
 import { FEATURED_WORKS } from './featured'
-import { parsePrice, percentileRank, MIN_RANK_POPULATION } from './prices'
+import { parsePrice, percentileRank, inflationAdjustUsd, MIN_RANK_POPULATION } from './prices'
 import type {
   ArbitragePair,
   ArtistActivity,
@@ -121,7 +121,7 @@ export function usdMedianByYear(minN = 5, records: GettyRecord[] = allGettyRecor
     amounts.sort((a, b) => a - b)
     const mid = Math.floor(amounts.length / 2)
     const medianUsd = amounts.length % 2 ? amounts[mid] : (amounts[mid - 1] + amounts[mid]) / 2
-    stats.push({ year, medianUsd, n: amounts.length })
+    stats.push({ year, medianUsd, n: amounts.length, inflationAdjusted: inflationAdjustUsd(medianUsd, year) })
   }
   return { stats: stats.sort((a, b) => a.year - b.year), totalUsdSales, belowThreshold }
 }
@@ -184,15 +184,18 @@ export function arbitragePairs(records: GettyRecord[] = allGettyRecords()): {
     const bought = parsePrice(r.purchasePrice)
     const sold = parsePrice(r.salePrice)
     if (!bought || !sold || bought.currency !== 'FRF' || sold.currency !== 'USD') continue
+    const year = recordYear(r)
     all.push({
       piRecordNo: r.piRecordNo,
       title: r.title,
       artist: r.artist ? displayArtist(r.artist) : null,
-      year: recordYear(r),
+      year,
       purchase: (r.purchasePrice ?? '').trim(),
       sale: (r.salePrice ?? '').trim(),
       purchaseRank: rankOf(index, bought, 'purchase'),
       saleRank: rankOf(index, sold, 'sale'),
+      // Purchase stays in francs — no franc CPI series is in the repo, so it is never adjusted.
+      saleAdjusted: year !== null ? inflationAdjustUsd(sold.amount, year) : null,
       sourceUrl: r.sourceUrl,
       sourceLabel: r.sourceLabel,
     })
